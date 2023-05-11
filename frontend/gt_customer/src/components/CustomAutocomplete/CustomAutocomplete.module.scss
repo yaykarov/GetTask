@@ -1,0 +1,126 @@
+.customSelect {
+  position: relative;
+}
+
+.customSelect select {
+  display: none; /*hide original SELECT element: */
+  /*opacity: 0.1;*/
+}
+
+.selectSelected {
+  height: 100%;
+  width: 100%;
+  background-color: #F2F2F2;
+  border-radius: 6px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.selectSelected:hover {
+  background-color: #ebebeb;
+  transition: .1s;
+}
+
+.selectSelected > input {
+  width: calc(100% - 30px);
+  outline: none;
+  border: none;
+  background: transparent;
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.selectSelected.selectArrowActive:hover {
+  background-color: white;
+}
+
+/* Style the arrow inside the select element: */
+.selectSelected:after {
+  position: absolute;
+  content: "";
+  top: 15px;
+  right: 15px;
+  display: block;
+  width: 10px;
+  height: 10px;
+  /*border: 2px solid transparent;*/
+  /*border-color: transparent #000 #000 transparent;*/
+  background: url("prev_icon.svg") no-repeat center;
+  /*transform: rotate(45deg);*/
+  transition: .3s;
+}
+
+/* Point the arrow upwards when the select box is open (active): */
+.selectSelected.selectArrowActive:after {
+  /*border-color: #000 transparent transparent #000;*/
+  transform: rotate(-180deg);
+  transition: .3s;
+}
+
+/* style the items (options), including the selected item: */
+.selectItems div,.selectSelected {
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+/* Style items (options): */
+.selectItems {
+  position: absolute;
+  background-color: #F2F2F2;;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  box-shadow: 0 8px 8px rgba(0,0,0,0.1);
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+/* Hide the items when the select box is closed: */
+.selectHide {
+  display: none;
+}
+
+.selectItems div:hover, .sameAsSelected {
+  background-color: #ebebeb;
+}
+
+.selectWhite {
+  background-color: white;
+  box-shadow: 0 8px 8px rgba(0,0,0,0.1);
+}
+
+.selectNoBorder {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.dropdownMenu {
+  height: 40px;
+  flex-shrink: 0;
+  flex-grow: 1;
+  background: #F2F2F2;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 16px;
+  border: none;
+}
+
+.disabled, .disabled * {
+  background: #afafaf !important;
+  cursor: default !important;
+}
+
+.disabled:hover {
+  background: #afafaf !important;
+}

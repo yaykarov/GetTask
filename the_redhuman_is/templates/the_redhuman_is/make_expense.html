@@ -1,0 +1,1001 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block buttons %}
+{% endblock %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.css"/>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"/>
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />
+
+{% endblock %}
+
+{% block table-data %}
+<style>
+table, tr, th, td, div table, table tr, table th, table td, table tr, thead tr, tbody tr, tr th {
+    line-height: 1;
+    border: 0;
+    border-bottom: 0;
+    border-top: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border-width: thin;
+    border-left: 0;
+    border-right: 0;
+}
+.right-strip {
+    border-right: 1px solid #007bff;
+}
+.hidden {
+    display: none;
+    -webkit-transition: all .8s;
+    -moz-transition: all .8s;
+    -ms-transition: all .8s;
+    -o-transition: all .8s;
+    transition: all .8s;
+}
+#make-expense-page {
+    font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
+}
+.card-body, .list-group, .card-text {
+    padding: 0;
+    margin: 0;
+}
+.list-group-item {
+    padding: 5px;
+}
+.card-title {
+    margin: 10px;
+}
+.debet-name, .credit-name {
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 5px;
+    font-size: 12pt;
+}
+#operation_form textarea {
+    margin-bottom: 10px;
+}
+input {
+    font-size: 12pt;
+}
+#cost-group-items {
+    font-weight: bold;
+}
+.bold {
+    font-weight: bold;
+}
+
+.datepicker-prepend {
+    min-width: 120px;
+}
+</style>
+
+<div class="container" id="make-expense-page">
+    <div class="row">
+        <div id="cost-group-items" class="col-lg-3">
+            <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action" data-cost-group="material">Материалы</a>
+                <a href="#" class="list-group-item list-group-item-action" data-cost-group="expenses">Одобренные расходы</a>
+                <a href="#" class="list-group-item list-group-item-action" data-cost-group="accountable_person">Выдача подотчетному лицу</a>
+                <a href="#" class="list-group-item list-group-item-action" data-cost-group="accountable_change">Возврат остатка подотчетной суммы</a>
+                <a href="#" class="list-group-item list-group-item-action" data-cost-group="deposit">Внесение залога</a>
+                <a href="#" class="list-group-item list-group-item-action" data-cost-group="taxes">Налоги</a>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div id="debet-params" class="card hidden">
+                <div id="customer-types" class="card-body">
+                    <div id="client-select">
+                        <div class="card-title bold" style="font-size: 80%;">{{ form.customer.label_tag }}</div>
+                        <div class="input-group">{{ form.customer}}</div>
+                    </div>
+                    <div id="material-types">
+                        <div class="card-title bold" style="font-size: 80%;">Статьи расходов:</div>
+                        <div class="card-text list-group">
+                        {% for material in material_types %}
+                            <a href="" class="list-group-item list-group-item-action" data-cost-type="{{ material.pk }}">{{ material.name }}</a>
+                        {% endfor %}
+                        </div>
+                    </div>
+                    <div id="industrial-cost-types">
+                        <div class="card-title bold">Статьи расходов:</div>
+                        <div class="card-text list-group">
+                        {% for cost_type in industrial_types %}
+                            <a href="" class="list-group-item list-group-item-action" data-cost-type="{{ cost_type.pk }}">{{ cost_type.name }}</a>
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div id="office-cost-types" class="card-body hidden">
+                    <div class="card-title bold">Статьи расходов:</div>
+                    <div class="card-text list-group">
+                        {% for cost_type in admin_types %}
+                        <a href="" class="list-group-item list-group-item-action" data-cost-type="{{ cost_type.pk }}">{{ cost_type.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <form>
+                    <div id="accperson-select" class="card-body hidden">
+                        <div class="card-title bold">{{ form.person.label_tag }}</div>
+                        <div class="input-group">{{ form.person }}</div>
+                    </div>
+                    <div id="paysheet-select" class="card-body">
+                        <div class="card-title bold">{{ form.paysheet.label_tag }}</div>
+                        <div class="input-group">{{ form.paysheet }}</div>
+                    </div>
+                    <div id="deposit" class="card-body hidden">
+                        <div class="card-title bold"><label for="id_worker">Рабочий:</label></div>
+                        <div class="input-group">{{ worker_form.worker}}</div>
+                    </div>
+                    <div id="legal-entity" class="card-body hidden">
+                        <div class="card-title bold"><label for="id_legal_entity">Юрлицо:</label></div>
+                        <div class="input-group">{{ legal_entity_form.legal_entity }}</div>
+                    </div>
+                    <div id="legal-entity-customer" class="card-body hidden">
+                        <div class="card-title bold"><label for="id_customer">Клиент:</label></div>
+                        <div class="input-group">{{ legal_entity_customer.legal_entity_customer}}</div>
+                    </div>
+                </form>
+
+                <div id="payment-interval" class="form-group mt-3 hidden">
+                    <div class='input-group date' id='id_operation_first_day' data-target-input="nearest">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text datepicker-prepend" for="id_operation_first_day_input">Оплата с</label>
+                        </div>
+                        <input type="text" class="form-control datetimepicker-input" data-target="#id_operation_first_day" id="id_operation_first_day_input">
+                        <div class="input-group-append" data-target="#id_operation_first_day" data-toggle="datetimepicker">
+                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                        </div>
+                    </div>
+
+                    <div class='input-group date' id='id_operation_last_day' data-target-input="nearest">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text datepicker-prepend" for="id_operation_last_day_input">Оплата по</label>
+                        </div>
+                        <input type="text" class="form-control datetimepicker-input" data-target="#id_operation_last_day" id="id_operation_last_day_input">
+                        <div class="input-group-append" data-target="#id_operation_last_day" data-toggle="datetimepicker">
+                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="expenses-block" class="card-body">
+                    <form>
+                        <input id="expense_filter" name="expense_filter" type="hidden">
+                        <div class="card-title bold"><label for="id_expense">Расход:</label></div>
+                        <div class="input-group">{{ expense_form.expense }}</div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div id="credit-params" class="hidden">
+                <div class="card">
+                    <div>
+                        <div class="card-header" id="collapse50header">
+                            <a href="#" class="card-link bold" data-toggle="collapse" data-target="#collapse50acc" aria-controls="collapse50acc">50 Счет</a>
+                        </div>
+                        <div id="collapse50acc" class="collapse" aria-labelledby="collapse50header" data-parent="#credit-params">
+                            <div class="list-group">
+                                {% for account in account50_children %}
+                                <a href="" class="list-group-item" data-pk="{{account.pk}}">{{ account.name }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div id="accounts_51" aria-controls="collapse-one">
+                        <div class="card-header" id="collapse51header">
+                            <a href="#" class="card-link bold" data-target="#collapse51acc" data-toggle="collapse" aria-controls="collapse51acc">51 Счет</a>
+                        </div>
+                        <div id="collapse51acc" class="collapse" aria-labelledby="collapse51header" data-parent="#credit-params">
+                            <div class="list-group">
+                                {% for account in account51_general_children %}
+                                <a href="" class="list-group-item general-account" data-pk="{{account.pk}}">{{ account.name }}</a>
+                                {% endfor %}
+                                {% for account in account51_extra_children %}
+                                <a href="" class="list-group-item klaskur-account" data-pk="{{account.pk}}">{{ account.name }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div id="accounts_71" aria-controls="collapse-one">
+                        <div class="card-header" id="collapse71header">
+                            <a href="#" class="card-link bold" data-target="#collapse71acc" data-toggle="collapse" aria-controls="collapse71acc">71 Счет</a>
+                        </div>
+                        <div id="collapse71acc" class="collapse" aria-labelledby="collapse71header" data-parent="#credit-params">
+                            <div class="list-group">
+                                {% for account in account71_children %}
+                                <a href="" class="list-group-item" data-pk="{{account.pk}}">{{ account.name }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="taxes-params" class="hidden">
+                <div class="card">
+                    <div id="simple-tax-types" class="list-group hidden">
+                    {% for item in simple_tax_types %}
+                    <a href="" class="list-group-item" data-pk="{{ item.0 }}">{{ item.1 }}</a>
+                    {% endfor %}
+                    </div>
+                    <div id="general-tax-types"class="list-group hidden">
+                    {% for item in general_tax_types %}
+                    <a href="" class="list-group-item" data-pk="{{ item.0 }}">{{ item.1 }}</a>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="operation-modal" class="col-lg-3 hidden">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-title bold">Операция</div>
+                    <form action="" id="operation_form" class="card-text">
+                        <p class="debet-name"><strong>Дебет:</strong> <span name="debet"></span></p>
+                        <p class="credit-name"><strong>Кредит:</strong> <span name="credit"></span></p>
+                        <div class="input-group ">
+                            <input type="text" name="amount" class="form-control" placeholder="Сумма">
+                        </div>
+                        <div class="input-group ">
+                            <textarea name="comment" id="operation-comment" class="form-control" placeholder="Комментарий"></textarea>
+                        </div>
+                        <div class="form-group ">
+                            <div class="input-group date" id="datetimepicker" data-target-input="nearest">
+                                <input id="operation-date" type="text" class="form-control datetimepicker-input" data-target="#datetimepicker">
+                                <div class="input-group-append" data-target="#datetimepicker" data-toggle="datetimepicker">
+                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-group" role="group">
+                        <button class="btn btn btn-sm btn-outline-primary btn-clear">Очистить</button>
+                        <button class="btn btn btn-sm btn-outline-primary btn-ok">ОК</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="user-operation-page">
+        <div class="col-lg-12">
+            <div><br>
+                <p class="bold">Операции пользователя за сегодня и вчера</p>
+                <table id="user-operation-tbl" class="display">
+                    <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Дебет-Счет</th>
+                        <th>Кредит-Счет</th>
+                        <th>Сумма</th>
+                        <th>Время</th>
+                        <th>Комментарий</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+            <div id="edit-modal" class="modal fade" tab-index="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <p class="modal-title bold">Операция</p>
+                        </div>
+                        <div class="modal-body">
+                            <form action="" id="edit_form">
+                                <p class="debet-name"><strong>Дебет:</strong> <span data-name="debet"></span></p>
+                                <p class="credit-name"><strong>Кредит:</strong> <span data-name="credit"></span></p>
+                                <div class="form-group row">
+                                    <label for="">Сумма: </label>
+                                    <input type="text" name="amount" class="form-control" placeholder="Сумма">
+                                </div>
+                                <div class="form-group row">
+                                    <label for="">Комментарий:</label>
+                                    <textarea name="comment" class="form-control" placeholder="Комментарий"></textarea>
+                                </div>
+                                <input type="hidden" name="pk" value="">
+                            </form>
+                            <div class="left">
+                                <button class="btn btn-danger btn-delete">Удалить</button>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                            <button class="btn btn-primary btn-ok">ОК</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="message-modal" class="modal fade" tab-index="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="modal-title">Операция</p>
+            </div>
+            <div class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{{ form.media }}
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+<script>
+function set_only_active(item, parent) {
+    let isActive = $(item).hasClass("active");
+    parent.find("a").removeClass("active");
+    if (!isActive)
+        $(item).addClass("active");
+}
+
+function show_message_modal(title, message) {
+    if (message.length>200) {
+        message = message.substring(0,200) + "...";
+    }
+    let message_modal = $("#message-modal");
+    message_modal.find(".modal-title").html("<h5>"+title+"</h5>");
+    message_modal.find(".modal-body").html(message);
+    message_modal.modal('show');
+}
+
+function get_cost_group() {
+    let cost_group_item = $("#cost-group-items a[data-cost-group].active");
+    if (cost_group_item.length != 0) {
+        return cost_group_item.attr("data-cost-group");
+    } else {
+        return null;
+    }
+}
+
+function collect_data(show_message) {
+    let params = {};
+    let cost_group = get_cost_group();
+    if (!cost_group) {
+        if (show_message) show_message_modal("Недостаточно данных","Выберите группу");
+        return false;
+    }
+    params.cost_group = cost_group;
+
+    if (["industrial", "office", "taxes"].includes(cost_group)) {
+        let first_day = $("#id_operation_first_day_input").val();
+        let last_day = $("#id_operation_last_day_input").val();
+
+        if (show_message) {
+            if (!first_day) {
+                show_message_modal("Недостаточно данных", "Выберите первый день интервала, за который производится оплата");
+                return false;
+            }
+            if (!last_day) {
+                show_message_modal("Недостаточно данных", "Выберите последний день интервала, за который производится оплата");
+                return false;
+            }
+        }
+        params.first_day = first_day;
+        params.last_day = last_day;
+    }
+
+    let debet;
+    let credit;
+    let customer;
+    if (cost_group == "industrial" || cost_group == "material") {
+        customer = $("#id_customer").val();
+        if (customer == "") {
+            if (show_message) show_message_modal("Недостаточно данных","Выберите клиента");
+            return false;
+        }
+        params.customer = customer;
+        var cost_type = undefined;
+        if (cost_group == "industrial") {
+            cost_type = $("#industrial-cost-types a[data-cost-type].active").attr("data-cost-type");
+        } else {
+            cost_type = $("#material-types a[data-cost-type].active").attr("data-cost-type");
+        }
+        if (cost_type == undefined || cost_type.length == 0) {
+            if (show_message) show_message_modal("Недостаточно данных","Выберите статью расхода");
+            return false;
+        }
+        params.cost_type = cost_type;
+    } else if (cost_group == "expenses") {
+        const expense = $("#id_expense").val();
+        if (expense == "") {
+            if (show_message) show_message_modal("Недостаточно данных", "Выберите расход");
+            return false;
+        }
+        params.expense = expense;
+    } else if (cost_group == "office") {
+        let cost_type = $("#office-cost-types a[data-cost-type].active").attr("data-cost-type");
+        if (cost_type == undefined || cost_type.length == 0) {
+            if (show_message) show_message_modal("Недостаточно данных","Выберите статью расхода");
+            return false;
+        }
+        params.cost_type = cost_type;
+    } else if (cost_group == "accountable_person" || cost_group == "accountable_change") {
+        const accperson = $("#id_person").val();
+        const expense = $("#id_expense").val();
+        if (!accperson && !expense) {
+            if (show_message) show_message_modal("Недостаточно данных", "Выберите подотчетное лицо либо расход");
+            return false;
+        }
+        params.accperson = accperson;
+        paysheet = $("#id_paysheet").val();
+        if (paysheet) {
+            params.paysheet = paysheet;
+        }
+        params.expense = expense;
+    } else if (cost_group == "deposit") {
+        let worker = $("#id_worker").val();
+        if (!worker) {
+            if (show_message) show_message_modal("Недостаточно данных", "Выберите рабочего");
+            return false;
+        }
+        params.worker = worker;
+    } else if (cost_group == "taxes") {
+        let legal_entity = $("#id_legal_entity").val();
+        if (!legal_entity) {
+            if (show_message) show_message_modal("Недостаточно данных", "Выберите юрлицо");
+            return false;
+        }
+        params.legal_entity = legal_entity;
+
+        let tax_type = $("#taxes-params [data-pk].active");
+        if (tax_type.lenght == 0) {
+            if (show_message) show_message_modal("Недостаточно данных", "Выберите тип налога");
+        }
+        params.tax_type = tax_type.attr("data-pk");
+
+        if (params.tax_type == 'vat') {
+            let customer = $("#id_legal_entity_customer").val();
+            if (!customer) {
+                if (show_message) show_message_modal("Недостаточно данных", "Выберите клиента");
+                return false;
+            }
+            params.customer = customer;
+        }
+    }
+
+    if (cost_group != "deposit" && cost_group != "taxes") {
+        let collapse_item = $("#credit-params [data-pk].active");
+        if (cost_group != "expenses" && collapse_item.length == 0) {
+            if (show_message) show_message_modal("Недостаточно данных","Выберите счет-кредит");
+            return false;
+        }
+        credit = collapse_item.attr("data-pk");
+        if (credit) {
+            params.credit = credit;
+        }
+    }
+
+    return params;
+}
+
+function setup_pickers_interval(id_first_day, id_last_day) {
+    let first_day = $(id_first_day);
+    let last_day = $(id_last_day);
+
+    first_day.datetimepicker(
+        {
+            locale: "ru",
+            format: "DD.MM.YYYY",
+        }
+    );
+    last_day.datetimepicker(
+        {
+            locale: "ru",
+            format: "DD.MM.YYYY",
+            useCurrent: false
+        }
+    );
+
+    first_day.on(
+        "change.datetimepicker",
+        function(e) {
+            $(id_last_day).datetimepicker("minDate", e.date);
+
+        }
+    );
+    last_day.on(
+        "change.datetimepicker",
+        function(e) {
+            $(id_first_day).datetimepicker("maxDate", e.date);
+        }
+    );
+}
+
+let last_fetch_id = 0;
+
+function fetch_tax_type() {
+    let legal_entity_pk = $('#id_legal_entity').val();
+    if (!legal_entity_pk) {
+        return
+    }
+
+    last_fetch_id += 1;
+    const fetch_id = last_fetch_id;
+    let url = "{% url 'the_redhuman_is:legal_entity_uses_simple_tax_system' 123456 %}".replace("123456", legal_entity_pk);
+    fetch(url, { method: 'get' }).then(
+        response => response.json()
+    ).then(
+        body => {
+            if (fetch_id != last_fetch_id) {
+                return;
+            }
+
+            if (body.simple_tax_system) {
+                $("#simple-tax-types").removeClass("hidden");
+                $("#general-tax-types").addClass("hidden");
+            } else {
+                $("#simple-tax-types").addClass("hidden");
+                $("#general-tax-types").removeClass("hidden");
+            }
+        }
+    )
+}
+
+$(document).ready(function(){
+    $("#datetimepicker").datetimepicker(
+        {
+            locale: "ru",
+            format: "DD.MM.YYYY HH:mm",
+            icons: {time: "fa fa-clock"}
+        }
+    );
+
+    setup_pickers_interval("#id_operation_first_day", "#id_operation_last_day");
+
+    let now = new Date();
+    $("#operation-date").val(
+        ('0' + now.getDate()).slice(-2) + '.' +
+        ('0' + (now.getMonth() + 1)).slice(-2) + '.' +
+        now.getFullYear() + ' ' +
+        ('0' + now.getHours()).slice(-2) + ':' +
+        ('0' + now.getMinutes()).slice(-2)
+    );
+
+    // Клик на элемент в корневом списке (тип расхода)
+    $("#cost-group-items a[data-cost-group]").on(
+        "click",
+        function() {
+            $("#operation_form span[name=debet]").html('');
+            $("#operation_form span[name=credit]").html('');
+            $("#operation-comment").val('').change();
+
+            $("#id_expense").val('').change();
+            $("#id_legal_entity").val('').change();
+
+            $("#legal-entity-customer").addClass("hidden");
+
+            let isActive = $(this).hasClass("active");
+            let cost_group = this.getAttribute("data-cost-group");
+            if (isActive) {
+                $("#debet-params").addClass("hidden");
+                $("#credit-params").addClass("hidden");
+                $("#operation-modal").addClass("hidden");
+                $("#taxes-params").addClass("hidden");
+            } else {
+                $("#debet-params").removeClass("hidden");
+                if (cost_group == "taxes") {
+                    $("#taxes-params").removeClass("hidden");
+                    $("#credit-params").addClass("hidden");
+                } else {
+                    $("#taxes-params").addClass("hidden");
+                    $("#credit-params").removeClass("hidden");
+                }
+                $("#operation-modal").removeClass("hidden");
+
+                if (cost_group == "expenses") {
+                    $(".klaskur-account").each(function() { $(this).removeClass("hidden") })
+                    $(".general-account").each(function() { $(this).addClass("hidden") })
+                    $('#id_expense').prop('disabled', false);
+                } else {
+                    $(".klaskur-account").each(function() { $(this).addClass("hidden") })
+                    $(".general-account").each(function() { $(this).removeClass("hidden") })
+                }
+
+                if (cost_group == "accountable_person") {
+                    $("#expense_filter").val('unassigned');
+                } else {
+                    $("#expense_filter").val('unpayed');
+                }
+
+                if (cost_group == "material") {
+                    $("#accperson-select").addClass('hidden');
+                    $("#deposit").addClass("hidden");
+                    $("#expenses-block").addClass("hidden");
+                    $("#industrial-cost-types").addClass("hidden");
+                    $("#legal-entity").addClass("hidden");
+                    $("#office-cost-types").addClass("hidden");
+                    $("#payment-interval").addClass("hidden");
+                    $("#paysheet-select").addClass('hidden');
+
+                    $("#customer-types").removeClass("hidden");
+                    $("#material-types").removeClass("hidden");
+                    $("#client-select").removeClass("hidden");
+                } else if (cost_group == "expenses") {
+                    $("#accperson-select").addClass('hidden');
+                    $("#client-select-industrial").addClass("hidden");
+                    $("#client-select-material").addClass("hidden");
+                    $("#customer-types").addClass("hidden");
+                    $("#deposit").addClass("hidden");
+                    $("#industrial-cost-types").addClass("hidden");
+                    $("#legal-entity").addClass("hidden");
+                    $("#material-types").addClass("hidden");
+                    $("#office-cost-types").addClass("hidden");
+                    $("#payment-interval").addClass("hidden");
+                    $("#paysheet-select").addClass("hidden");
+
+                    $("#expenses-block").removeClass("hidden");
+                } else if (cost_group == "industrial") {
+                    $("#accperson-select").addClass('hidden');
+                    $("#client-select-material").addClass("hidden");
+                    $("#deposit").addClass("hidden");
+                    $("#expenses-block").addClass("hidden");
+                    $("#legal-entity").addClass("hidden");
+                    $("#material-types").addClass("hidden");
+                    $("#office-cost-types").addClass("hidden");
+                    $("#paysheet-select").addClass('hidden');
+
+                    $("#customer-types").removeClass("hidden");
+                    $("#industrial-cost-types").removeClass("hidden");
+                    $("#client-select-industrial").removeClass("hidden");
+                    $("#payment-interval").removeClass("hidden");
+                } else if (cost_group == "office") {
+                    $("#accperson-select").addClass('hidden');
+                    $("#client-select-industrial").addClass("hidden");
+                    $("#client-select-material").addClass("hidden");
+                    $("#customer-types").addClass("hidden");
+                    $("#deposit").addClass("hidden");
+                    $("#expenses-block").addClass("hidden");
+                    $("#industrial-cost-types").addClass("hidden");
+                    $("#legal-entity").addClass("hidden");
+                    $("#material-types").addClass("hidden");
+                    $("#paysheet-select").addClass('hidden');
+
+                    $("#office-cost-types").removeClass("hidden");
+                    $("#payment-interval").removeClass("hidden");
+                } else if (cost_group == "accountable_person" || cost_group == "accountable_change") {
+                    $("#id_person").val('').change();
+
+                    $("#client-select-industrial").addClass("hidden");
+                    $("#client-select-material").addClass("hidden");
+                    $("#customer-types").addClass("hidden");
+                    $("#deposit").addClass("hidden");
+                    $("#industrial-cost-types").addClass("hidden");
+                    $("#legal-entity").addClass("hidden");
+                    $("#material-types").addClass("hidden");
+                    $("#office-cost-types").addClass("hidden");
+                    $("#payment-interval").addClass("hidden");
+
+                    $("#accperson-select").removeClass('hidden');
+
+                    if (cost_group == "accountable_person") {
+                        $("#paysheet-select").removeClass('hidden');
+                        $("#expenses-block").removeClass("hidden");
+                    } else {
+                        $("#paysheet-select").addClass('hidden');
+                        $("#expenses-block").addClass("hidden");
+                    }
+                } else if (cost_group == "deposit") {
+                    $("#accperson-select").addClass('hidden');
+                    $("#client-accounts").addClass("hidden");
+                    $("#client-select-industrial").addClass("hidden");
+                    $("#client-select-material").addClass("hidden");
+                    $("#credit-params").addClass("hidden");
+                    $("#customer-types").addClass("hidden");
+                    $("#expenses-block").addClass("hidden");
+                    $("#legal-entity").addClass("hidden");
+                    $("#material-types").addClass("hidden");
+                    $("#office-cost-types").addClass("hidden");
+                    $("#payment-interval").addClass("hidden");
+                    $("#paysheet-select").addClass('hidden');
+
+                    $("#deposit").removeClass("hidden");
+                } else if (cost_group == "taxes") {
+                    $("#accperson-select").addClass('hidden');
+                    $("#client-accounts").addClass("hidden");
+                    $("#client-select-industrial").addClass("hidden");
+                    $("#client-select-material").addClass("hidden");
+                    $("#credit-params").addClass("hidden");
+                    $("#customer-types").addClass("hidden");
+                    $("#deposit").addClass("hidden");
+                    $("#expenses-block").addClass("hidden");
+                    $("#material-types").addClass("hidden");
+                    $("#office-cost-types").addClass("hidden");
+                    $("#paysheet-select").addClass('hidden');
+
+                    $("#legal-entity").removeClass("hidden");
+                    $("#payment-interval").removeClass("hidden");
+                }
+            }
+        }
+    );
+    $.each($("#debet-params .list-group a"), function(index, item) {
+        $(item).on("click", function() {
+            set_only_active(this,$("#debet-params"));
+            return false;
+        })
+    });
+    $.each($("#credit-params .list-group a"), function(index, item) {
+        $(item).on("click", function() {
+            set_only_active(this,$("#credit-params"));
+            return false;
+        })
+    });
+    $.each($("#cost-group-items .list-group a"), function(index, item) {
+        $(item).on("click", function() {
+            set_only_active(this, $("#cost-group-items"));
+            return false;
+        })
+    });
+    $.each($("#taxes-params .list-group a"), function(index, item) {
+        $(item).on("click", function() {
+            set_only_active(this, $("#taxes-params"));
+            if ($(this).attr('data-pk') == 'vat') {
+                $("#legal-entity-customer").removeClass('hidden');
+            } else {
+                $("#legal-entity-customer").addClass('hidden');
+            }
+            return false;
+        })
+    });
+
+    refreshOperationTable();
+
+    // подготовка к проведению операции
+    function prepare_accounts() {
+        const groups = [
+            'id_customer',
+            'id_expense',
+            'id_legal_entity',
+            'id_legal_entity_customer',
+            'id_paysheet',
+            'id_person',
+            'id_worker',
+        ];
+        if ($(this).hasClass("active") || groups.includes($(this).attr("id"))) {
+            let url = new URL(document.location.protocol+"//"+document.location.host+"{% url 'the_redhuman_is:make_expense' %}");
+            let params = collect_data(false);
+            if (params == false) {
+                $("#operation-modal [name]").html("");
+                return false;
+            } else {
+                for (let key of Object.keys(params)) {
+                    url.searchParams.append(key, params[key])
+                }
+            }
+            $.ajax(
+                {
+                    'url': url.toString(),
+                    "method": "GET",
+                    success: function (data) {
+                        $("#operation_form span[name=debet]").html(data.debet);
+                        $("#operation_form span[name=credit]").html(data.credit);
+
+                        if (data.amount) {
+                            $("#operation_form input[name=amount]").val(data.amount);
+                        }
+                        if (data.comment) {
+                            $("#operation_form textarea[name=comment]").val(data.comment);
+                        }
+
+                        let cost_group_item = $("#cost-group-items a[data-cost-group].active");
+                        if (cost_group_item.length != 0) {
+                            let cost_group = cost_group_item.attr("data-cost-group");
+                            if (cost_group == 'deposit') {
+                                $("#operation-comment").val("Внесение залога.");
+                            }
+                            if (cost_group == 'accountable_change') {
+                                $("#operation-comment").val("Возврат остатка подотчетных средств.");
+                            }
+                        }
+                    },
+                    error: function (data) {
+                        show_message_modal("Ошибка", data.responseText);
+                        console.log(data);
+                    }
+                }
+            );
+        }
+        else {
+            if ($(this).parents("#debet-params").length > 0)
+                $("#operation-modal [name=debet]").html("");
+            if ($(this).parents("#credit-params").length > 0)
+                $("#operation-modal [name=credit]").html("");
+        }
+    }
+
+    $("#debet-params a").on("click", prepare_accounts);
+    $("#credit-params a").on("click", prepare_accounts);
+    $("#taxes-params a").on("click", prepare_accounts);
+    $("#id_customer").change(prepare_accounts);
+    $("#id_worker").change(prepare_accounts);
+    $("#id_person").change(
+        function() {
+            $('#id_paysheet').val('').change();
+            prepare_accounts();
+
+            if ($('#id_person').val()) {
+                $('#id_paysheet').prop('disabled', false);
+                $('#id_expense').prop('disabled', false);
+            } else {
+                $('#id_paysheet').prop('disabled', true);
+                $('#id_expense').prop('disabled', true);
+            }
+        }
+    );
+    $('#id_paysheet').change(prepare_accounts);
+    $("#id_paysheet").change(
+        () => {
+            if ($('#id_paysheet').val()) {
+                $('#id_expense').prop('disabled', true);
+            } else {
+                $('#id_expense').prop('disabled', false);
+            }
+        }
+    );
+    $('#id_legal_entity').change(
+        function() {
+            $("#simple-tax-types").addClass("hidden");
+            $("#general-tax-types").addClass("hidden");
+            last_fetch_id += 1;
+
+            prepare_accounts();
+
+            fetch_tax_type();
+        }
+    );
+    $('#id_legal_entity_customer').change(prepare_accounts);
+    $('#id_expense').change(prepare_accounts);
+    $('#id_expense').change(
+        () => {
+            if (get_cost_group() == 'accountable_person') {
+                if ($('#id_expense').val()) {
+                    $('#id_paysheet').prop('disabled', true);
+                } else {
+                    $('#id_paysheet').prop('disabled', false);
+                }
+            }
+        }
+    );
+
+    // провести операцию
+    $("#operation-modal button.btn-ok").on("click", function() {
+
+        let url = new URL(document.location.protocol+"//"+document.location.host+"{% url 'the_redhuman_is:make_expense' %}");
+        let params = collect_data(true);
+        if (params == false)
+            return false;
+        else
+            for (let key of Object.keys(params)) {
+                url.searchParams.append(key,params[key]);
+            }
+        //url += "amount="+$("#operation_form input[name=amount]").val()+"&";
+        let amount = $("#operation_form input[name=amount]").val().replace(',', '.');
+        if (!amount.match(/^\d+(\.\d+)?$/g)) {
+            show_message_modal('Неправильные данные','Неправильная сумма');
+            return false;
+        }
+        url.searchParams.append("amount",amount);
+        //url += "comment="+$("#operation_form input[name=comment]").val()+"&";
+        url.searchParams.append("comment",$("#operation_form textarea[name=comment]").val());
+        let time_str = $("#datetimepicker>input").val();
+        if (!time_str.match(/^\d{1,2}\.\d{1,2}\.\d{1,4} +\d{1,2}:\d{1,2}$/g)) {
+            show_message_modal('Неправильные данные','Нужно установить дату в формате ДД.ММ.ГГГГ чч:мм');
+            return false;
+        }
+        //url += "timepoint="+date+" "+time;
+        url.searchParams.append("timepoint", time_str);
+        //url += "execute_operation=true";
+        url.searchParams.append("execute_operation",true);
+
+        $("#operation-modal button.btn-ok").attr('disabled', true);
+
+        $.ajax({
+            'url': url.toString(),
+            "method":"GET",
+            success: function(data) {
+                $("#operation-modal").modal('hide');
+                //show_message_modal("Операция проведена успешно",data.message);
+                refreshOperationTable();
+                $("#operation_form input[name=amount]").val('');
+                $("#operation_form textarea[name=comment]").val('');
+
+                $('#id_expense').val('').change();
+
+                $("#operation-modal button.btn-ok").attr('disabled', false);
+            },
+            error: function(data) {
+                show_message_modal("Ошибка",data.responseText);
+                console.log(data);
+
+                $("#operation-modal button.btn-ok").attr('disabled', false);
+            }
+        });
+        $('#id_paysheet').val('').change();
+    });
+    $("#operation-modal button.btn-clear").on("click",function(){
+        $("#operation-modal [name]").val("");
+    });
+    $("#edit-modal .btn-ok").on('click', function() {
+        let form = $("#edit_form");
+
+        let amount = form.find("span[name=amount]").val();
+        let comment = form.find("textarea[name=comment]").val();
+        let pk = form.find("input[name=pk]").val();
+        let data = {amount: amount, comment: comment, pk: pk};
+        $.ajax({
+            url: "{% url 'the_redhuman_is:edit_expense' %}", method: "GET", data: data, success: function (data) {
+                //alert(data.message);
+                show_message_modal("Изменения сохранены",data.message);
+                refreshOperationTable();
+                $("#edit-modal").modal('hide');
+            },
+            error: function(data) {
+                show_message_modal("Ошибка",data.responseText);
+                console.log(data);
+            }
+        });
+    });
+    $("#edit-modal .btn-delete").on('click',function(){
+        let pk = $("#edit_form input[name=pk]").val();
+        let data = {pk: pk, delete: "true"};
+        $.ajax({
+            url: "{% url 'the_redhuman_is:edit_expense' %}", method: "GET", data: data, success: function (data) {
+                //alert(data.message);
+                show_message_modal("Изменения сохранены",data.message);
+                refreshOperationTable();
+                $("#edit-modal").modal('hide');
+            },
+            error: function(data) {
+                show_message_modal("Ошибка",data.responseText);
+                console.log(data);
+            }
+        });
+    });
+});
+
+function refreshOperationTable(){
+    let url = "{% url 'the_redhuman_is:get_user_operations' %}";
+    $.ajax({url: url,method: "GET",success: function(data){
+        let table = $("#user-operation-tbl").DataTable({retrieve: true});
+        table.destroy();
+        table = $("#user-operation-tbl").DataTable({data: data.operations, order: [[0, 'desc']]});
+        $("#user-operation-tbl").on('click', 'button', function(){
+            let data = table.row($(this).parents('tr')).data();
+            let form = $("#edit_form");
+            form.find("span[data-name=debet]").text(data[1]);
+            form.find("span[data-name=credit]").text(data[2]);
+            form.find("input[name=amount]").val(data[3]);
+            form.find("input[name=comment]").val(data[5]);
+            form.find("input[name=pk]").val(data[0]);
+            $("#edit-modal").modal({'show':true});
+        });
+    }});
+}
+
+</script>
+{% endblock %}

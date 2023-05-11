@@ -1,0 +1,155 @@
+{% extends 'the_redhuman_is/photo_load_sort.html' %}
+{% load crispy_forms_tags %}
+{% block forms %}
+<span>Выберите рабочего.</span>
+<div class="row border-bottom pb-xl-2 pb-1">
+    <div class="col-auto">
+        {{ worker_search }}
+    </div>
+</div>
+<div class="row border-bottom pb-xl-2 pb-1">
+    <div class="col pt-1 pt-xl-2">
+        <ul class="nav nav-tabs mb-1 mb-xl-2" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" href="#worker" role="tab" data-toggle="tab">Рабочий</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#contract" role="tab" data-toggle="tab">Договор</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade show active" id="worker">
+                <div class="rh-vertical-form">
+                    <div role="tabpanel" class="tab-pane fade show active" id="worker">
+                        <div class="rh-vertical-form">
+                            <div id="div_id_worker-last_name" class="form-group row">
+                                <label for="id_worker-last_name" class="col-form-label col-lg-4">
+                                    Фамилия
+                                </label>
+                                <div class="col-lg-8">
+                                    <input class="form-control-plaintext" id="id_worker-last_name" maxlength="100" name="worker-last_name" type="text" readonly>
+                                </div>
+                            </div>
+                            <div id="div_id_worker-name" class="form-group row">
+                                <label for="id_worker-name" class="col-form-label col-lg-4">
+                                    Имя
+                                </label>
+                                <div class="col-lg-8">
+                                    <input class="form-control-plaintext" id="id_worker-name" maxlength="100" name="worker-name" type="text" readonly>
+                                </div>
+                            </div>
+                            <div id="div_id_worker-patronymic" class="form-group row">
+                                <label for="id_worker-patronymic" class="col-form-label col-lg-4">
+                                    Отчество
+                                </label>
+                                <div class="col-lg-8">
+                                    <input class="form-control-plaintext" id="id_worker-patronymic" maxlength="100" name="worker-patronymic" type="text" readonly>
+                                </div>
+                            </div>
+                            <div id="div_id_worker-tel_number" class="form-group row">
+                                <label for="id_worker-tel_number" class="col-form-label col-lg-4">
+                                    Телефон
+                                </label>
+                                <div class="col-lg-8">
+                                    <input class="textinput textInput form-control-plaintext" id="id_worker-tel_number" maxlength="11" name="worker-tel_number" type="text">
+                                </div>
+                            </div>
+                            <div id="div_id_worker-birth_date" class="form-group row">
+                                <label for="id_worker-birth_date" class="col-form-label col-lg-4">
+                                    Дата рождения
+                                </label>
+                                <div class="col-lg-8">
+                                    <input class="dateinput form-control-plaintext" id="id_worker-birth_date" name="worker-birth_date" type="text">
+                                </div>
+                            </div>
+                            <div id="div_id_worker-place_of_birth" class="form-group row">
+                                <label for="id_worker-place_of_birth" class="col-form-label col-lg-4 requiredField">
+                                    Место рождения
+                                </label>
+                                <div class="col-lg-8">
+                                    <input class="form-control-plaintext" id="id_worker-place_of_birth_name" name="worker-place_of_birth_name" readonly>
+                                </div>
+                            </div>
+                            <div id="div_id_worker-citizenship" class="form-group row">
+                                <label for="id_worker-citizenship" class="col-form-label col-lg-4 requiredField">
+                                    Гражданство
+                                </label>
+                                <div class="col-lg-8">
+                                    <input class="form-control-plaintext" id="id_worker-citizenship_name" name="worker-citizenship_name" readonly>
+                                </div>
+                            </div>
+                            <div id="div_id_worker-position" class="form-group row">
+                                <label for="id_worker-position" class="col-form-label col-lg-4 requiredField">
+                                    Должность
+                                </label>
+                                <div class="col-lg-8">
+                                    <input class="form-control-plaintext" id="id_worker-position_name" name="worker-position_name" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="contract">
+                <div class="rh-vertical-form">
+                    {% crispy contract_form %}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-auto ml-auto">
+                <button class="btn btn-sm btn-primary" type="submit">Сохранить</button>
+                <button class="btn btn-sm btn-secondary" type="reset">Сбросить</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row pt-xl-2 pt-1 border-bottom">
+    <div class="col">
+        <div class="font-weight-bold">Комментарии</div>
+        {% include 'the_redhuman_is/photo_load_messages_list.html' %}
+        <div class="row my-xl-2 my-1">
+            <div class="col-auto ml-auto">
+                <button class="btn btn-sm btn-outline-primary ml-auto" data-toggle="modal" data-target="#commentModal" type="button">Добавить комментарий</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row pt-xl-2 pt-1 pb-2">
+    <div class="col-auto ml-auto">
+        <a href="{% url 'the_redhuman_is:photo_load_close_session' object.pk %}" class="btn btn-sm btn-danger">Закрыть сессию</a>
+    </div>
+</div>
+{{ worker_search.media }}
+<script>
+    $(document).ready(function () {
+        $('#id_worker').change(function () {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'the_redhuman_is:ajax_worker' %}?q=" + $(this).val(),
+                success: function (response) {
+                    $('#worker_id').val(response.id);
+                    $('#id_worker-last_name').val(response.last_name);
+                    $('#id_worker-name').val(response.name);
+                    $('#id_worker-patronymic').val(response.patronymic);
+                    $('#id_worker-sex').val(response.sex);
+                    $('#id_worker-tel_number').val(response.tel_number);
+                    $('#id_worker-birth_date').val(reformatDate(response.birth_date));
+                    $('#id_worker-place_of_birth_name').val(response.place_of_birth_name);
+                    $('#id_worker-citizenship_name').val(response.citizenship_name);
+                    $('#id_worker-position_name').val(response.position_name);
+                }
+            });
+            $.ajax({
+                type: "GET",
+                url: "{% url 'the_redhuman_is:ajax_worker_contract' %}?q=" + $(this).val(),
+                success: function (response) {
+                    $('#id_contract-c_worker_id').val(response.c_worker);
+                    $('#id_contract-begin_date').val(reformatDate(response.begin_date));
+                    $('#id_contract-cont_type').val(response.cont_type);
+                }
+            });
+        });
+    })
+</script>
+{% endblock %}

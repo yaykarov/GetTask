@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block extra_html_head %}
+{{ filter_form.media }}
+{% endblock %}
+
+{% block buttons %}
+<h4>Кюне+Нагель: сверки</h4>
+{% endblock %}
+
+{% block obj-data %}
+<h5 class="mt-1"><a href="{% url 'the_redhuman_is:kuehne_nagel_sheets_list' %}">список загруженных отчетов</a></h5>
+<div class="row mb-5 mt-5">
+    <div class="col col-2">
+    <form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:kuehne_nagel_save_kn_sheet' %}">
+        {% csrf_token %}
+        <input type="file" name="kn_sheet" class="mb-2"/>
+        <button type="submit" class="btn btn-sm btn-outline-primary">Отправить сверку на проверку</button>
+    </form>
+    </div>
+</div>
+
+{% endblock %}

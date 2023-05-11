@@ -1,0 +1,46 @@
+<style>
+.section {
+    margin-top: 15px;
+}
+</style>
+
+<div class="section">
+    <table>
+        <tr><th colspan="2">Клиент</th></tr>
+        {{ customer_form.as_table }}
+    </table>
+    <div id="customer_calc_container">
+        {{ customer_calc|safe }}
+    </div>
+</div>
+
+<div class="section">
+    <table>
+        <tr><th colspan="2">Бригадир</th></tr>
+        {{ foreman_form.as_table }}
+    </table>
+    <div id="foreman_calc_container">
+        {{ foreman_calc|safe }}
+    </div>
+</div>
+
+<div class="section">
+    <table>
+        <tr><th colspan="2">Рабочий</th></tr>
+        {{ worker_form.as_table }}
+    </table>
+    <div id="worker_calc_container">
+        {{ worker_calc|safe }}
+    </div>
+</div>
+
+<button class="section btn btn-sm btn-primary" id="id_save_settings">Сохранить</button>
+<label class="section" id="id_save_settings_result"></label>
+
+<script>
+setupCalculatorForm("customer");
+setupCalculatorForm("foreman");
+setupCalculatorForm("worker");
+
+setupSubmitButton("#id_save_settings");
+</script>

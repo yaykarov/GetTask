@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+<script>
+
+</script>
+<style>
+    .res_table tr,td {
+        border: 1px solid black;
+    }
+    .res_table {
+        border-collapse: collapse;
+    }
+</style>
+{% block cform1 %}
+<form action="{% url 'search_ads:get_search_results' %}" name="search_params" method="POST">
+    {% csrf_token %}
+    <div>
+        <label for="">Выберите биржу</label>
+        <div class="prop_container">
+            <div><input type="checkbox" name="site[]" value="avito"><span>Авито (Идентификатор)</span><input type="text" name="avito_id"></div>
+            <div><input type="checkbox" name="site[]" value="birge"><span>Бирге (Идентификатор)</span><input type="text" name="birge_name"></div>
+            <div><input type="checkbox" name="site[]" value="rabota"><span>Работа (Телефон)</span><input type="text" name="rabota_tel"></div>
+            <div><input type="checkbox" name="site[]" value="jerdesh"><span>Жердеш (Телефон)</span><input type="text" name="jerdesh_phone"></div>
+            <div><input type="checkbox" name="site[]" value="jobmo"><span>Job-mo (Идентификатор)</span><input type="text" name="jobmo_id"></div>
+        </div>
+    </div>
+    <div>
+        <label for="">Число позиций отслеживания</label>
+        <input type="text" name="maxpos" value="30"></div>
+    <div>
+        <label for="">Сортировка по дате</label>
+        <input type="checkbox" name="sort_by_date">
+    </div>
+    <div>
+        <label for="">Сортировка по цене</label>
+        <input type="checkbox" name="sort_by_price">
+    </div>
+    <div>
+        <label for="">Сортировка по позиции</label>
+        <input type="checkbox" name="sort_by_pos">
+    </div>
+    <div class="keyword">
+        <label for=""></label>
+        <input type="text" name="keyword" value="{{keyword}}">
+    </div>
+    <div>
+        <button id="search-btn">Искать</button>
+    </div>
+</form>
+{% endblock cform1 %}
+{% block table1 %}
+<table class="res_table">
+    <tr class="table_header">
+        <!--  ["keyword","position","site","date_time","id_or_tel","title","price","url"]; -->
+        <th>Ключевое слово</th>
+        <th>Позиция в выдаче по поисковому запросу</th>
+        <th>Сайт</th>
+        <th>дата и время</th>
+        <th>телефон/id</th>
+        <th>Заголовок</th>
+        <th>Ссылка</th>
+    </tr>
+</table>
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/search_scripts.js' %}" ></script>
+{% endblock table1 %}

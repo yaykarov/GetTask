@@ -1,0 +1,664 @@
+{% extends 'base.html' %}
+{% load human_readable_values %}
+{% load humanize %}
+{% load mathfilters %}
+{% load static %}
+{% load thumbnail %}
+
+{% block extra_html_head %}
+<script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<style>
+.is_in_paysheet {
+    background-color: #DFD;
+}
+</style>
+{% endblock %}
+
+{% block buttons %}
+<div class="inlineblock">
+    <h4>
+        {{ worker }}{% if worker.tel_number %}, {{ worker.tel_number }}{% endif %}
+        <a href="{% url 'the_redhuman_is:worker_edit' pk=worker.pk %}">
+            <i class="far fa-edit"></i>
+        </a>
+        {% if request.user.is_superuser %}
+        <a href="{% url 'the_redhuman_is:make_payroll'%}?worker={{ worker.pk }}">
+            начислить
+        </a>
+        {% endif %}
+    </h4>
+</div>
+{% endblock %}
+
+{% block obj-data %}
+{% include 'the_redhuman_is/core/modal.include' with link_class='popup_link' modal_id='dialog' modal_body_id='dialog_body' title=' ' %}
+<div class="row">
+{% if show_personal_info %}
+    <div class="col">
+        <h6>
+            Миграционная карта
+            {% if not is_for_customer %}
+                <a href="{% url 'the_redhuman_is:worker_edit' pk=worker.pk %}">
+                    <i class="far fa-edit"></i>
+                </a>
+            {% endif %}
+        </h6>
+        <table class="table rh-table-documents">
+            <thead>
+            <tr>
+                <th>Дата внесения</th>
+                <th>Дата рождения</th>
+                <th>Место рождения</th>
+                <th>Гражданство</th>
+                <th>Серия</th>
+                <th>Номер</th>
+                <th>Дата выдачи</th>
+                <th>Дата окончания</th>
+            </tr>
+            </thead>
+            <tr>
+                <td>{{ worker.input_date|date:"G:i d.m.Y" }}</td>
+                <td {% if not worker.birth_date %}class="table-danger" title="Введите дату рождения" {% endif %}>
+                    {{ worker.birth_date|date:"d.m.Y" }}
+                </td>
+                <td>{{ worker.place_of_birth }}</td>
+                <td>{{ worker.citizenship }}</td>
+                <td>{{ worker.mig_series }}</td>
+                <td>{{ worker.mig_number }}</td>
+                <td {% if not worker.m_date_of_issue %}style="background: #fee;" title="Введите дату выдачи миграционной карты" {% endif %}>
+                    {{ worker.m_date_of_issue|date:"d.m.Y" }}
+                </td>
+                <td>{{ worker.m_date_of_exp|date:"d.m.Y" }}</td>
+            </tr>
+        </table>
+        <h6>
+            Паспорт
+            {% if not is_for_customer %}
+                <a href="{% url 'the_redhuman_is:new_passport' pk=worker.pk %}">
+                    <i class="far fa-plus-square"></i>
+                </a>
+            {% endif %}
+            {% if not workerpasss %}
+                <p class="text-dange">Необходимо добавить паспорт.</p>
+            {% endif %}
+            {% if not workerpasss_active %}
+                <p class="text-dange">Нет активного паспорта.</p>
+            {% endif %}
+        </h6>
+        <table class="table rh-table-documents">
+            <thead>
+            <tr>
+                <th>Тип паспорта</th>
+                <th>Серия</th>
+                <th>Номер</th>
+                <th>Дата выдачи</th>
+                <th>Дата окончания</th>
+                <th>Кем выдан</th>
+                <th>Актуальный</th>
+                <th></th>
+            </tr>
+            </thead>
+            {% for workerpass in workerpasss %}
+                <tr>
+                    <td>{{ workerpass.passport_type }}</td>
+                    <td>{{ workerpass.passport_series }}</td>
+                    <td>{{ workerpass.another_passport_number }}</td>
+                    <td {% if not workerpass.date_of_issue %}style="background: #fee;" title="Введите дату выдачи паспорта" {% endif %}>
+                        {{ workerpass.date_of_issue|date:"d.m.Y" }}
+                    </td>
+                    <td>{{ workerpass.date_of_exp|date:"d.m.Y" }}</td>
+                    <td>{{ workerpass.issued_by }}</td>
+                    <td>{% if workerpass.is_actual %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+                    <td>
+                        {% if not is_for_customer %}
+                            <a href="{% url 'the_redhuman_is:edit_passport' pk=workerpass.pk %}">
+                                <i class="far fa-edit"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <h6>
+            Регистрация
+            {% if not is_for_customer %}
+                <a href="{% url 'the_redhuman_is:new_registration' pk=worker.pk %}">
+                    <i class="far fa-plus-square"></i>
+                </a>
+            {% endif %}
+            {% if not workerregs %}
+                <p class="text-danger">Необходимо добавить регистрацию.</p>
+            {% endif %}
+            {% if not workerregs_active %}
+                <p class="text-danger">Нет активной регистрации.</p>
+            {% endif %}
+        </h6>
+        <table class="table rh-table-documents">
+            <thead>
+            <tr>
+                <th>номер</th>
+                <th>Дата пост. на учет</th>
+                <th>Город</th>
+                <th>Улица</th>
+                <th>Дом</th>
+                <th>Строение</th>
+                <th>Квартира</th>
+                <th>Актуальная</th>
+                <th></th>
+            </tr>
+            </thead>
+            {% for workerreg in workerregs %}
+                <tr>
+                    <td>{{ workerreg.pk }}</td>
+                    <td {% if not workerreg.r_date_of_issue %}style="background: #fee;" title="Введите дату регистрации" {% endif %}>
+                        {{ workerreg.r_date_of_issue|date:"d.m.Y" }}
+                    </td>
+                    <td>{{ workerreg.city }}</td>
+                    <td>{{ workerreg.street }}</td>
+                    <td>{{ workerreg.house_number }}</td>
+                    <td>{{ workerreg.building_number }}</td>
+                    <td>{{ workerreg.appt_number }}</td>
+                    <td>{% if workerreg.is_actual %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+                    <td>
+                        {% if not is_for_customer %}
+                            <a href="{% url 'the_redhuman_is:edit_registration' pk=workerreg.pk %}">
+                                <i class="far fa-edit"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <h6>
+            Патенты
+            {% if not is_for_customer %}
+                <a href="{% url 'the_redhuman_is:new_patent' pk=worker.pk %}">
+                    <i class="far fa-plus-square"></i>
+                </a>
+            {% endif %}
+        </h6>
+        <table class="table rh-table-documents">
+            <thead>
+            <tr>
+                <th>№</th>
+                <th>Серия</th>
+                <th>Номер</th>
+                <th>Дата выдачи</th>
+                <th>Дата окончания</th>
+                <th>Кем выдан</th>
+                <th>Профессия</th>
+                <th>Код профессии</th>
+                <th>Актуален</th>
+                <th></th>
+            </tr>
+            </thead>
+            {% for workerpatent in workerpatents %}
+                <tr>
+                    <td>{{ workerpatent.pk }}</td>
+                    <td>{{ workerpatent.series }}</td>
+                    <td>{{ workerpatent.number }}</td>
+                    <td {% if not workerpatent.date_of_issue %}style="background: #fee;" title="Введите дату выдачи" {% endif %}>
+                        {{ workerpatent.date_of_issue|date:"d.m.Y" }}
+                    </td>
+                    <td {% if not workerpatent.date_end %}style="background: #fee;" title="Введите дату окончания" {% endif %}>
+                        {{ workerpatent.date_end|date:"d.m.Y" }}
+                    </td>
+                    <td>{{ workerpatent.issued_by }}</td>
+                    <td>{{ workerpatent.profession }}</td>
+                    <td>{{ workerpatent.profession_id }}</td>
+                    <td>{% if workerpatent.is_actual %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+                    <td>
+                        {% if not is_for_customer %}
+                            <a href="{% url 'the_redhuman_is:edit_patent' pk=workerpatent.pk %}">
+                                <i class="far fa-edit"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <h6>
+            Договоры
+            {% if not is_for_customer %}
+                <a href="{% url 'the_redhuman_is:new_contract' pk=worker.pk %}">
+                    <i class="far fa-plus-square"></i>
+                </a>
+            {% endif %}
+        </h6>
+        <form id="notifications">
+            <div class="row mb-3">
+                <div class="col col-auto">
+                {{ contractor_form.contractor }}
+                {{ proxy_form.proxy }}
+                </div>
+            </div>
+        </form>
+
+        <table class="table rh-table-documents">
+            <thead>
+            <tr>
+                <th>№</th>
+                <th>Тип</th>
+                <th>С кем заключен</th>
+                <th>Дата заключения</th>
+                <th>Дата окончания</th>
+                <th>Действует</th>
+                <th>Фото</th>
+                <th></th>
+                <th></th>
+            </tr>
+            </thead>
+            {% for contract in contracts %}
+                <tr>
+                    <td>{{ contract.number }}</td>
+                    <td>{{ contract.cont_type }}</td>
+                    <td>{% if contract.contractor %}{{ contract.contractor }}{% else %}-{% endif %}</td>
+                    <td {% if not contract.begin_date %}class="table-danger"  title="Введите дату заключения" {% endif %}>
+                        {{ contract.begin_date|date:"d.m.Y" }}
+                    </td>
+                    <td {% if not contract.end_date %}class="table-danger"  title="Введите дату окончания" {% endif %}>
+                        {{ contract.end_date|date:"d.m.Y" }}
+                    </td>
+                    <td>{% if contract.is_actual %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+                    <td>
+                        {% if contract.image %}
+                            <a href="{% url 'the_redhuman_is:contract_image' pk=contract.pk %}" target="_blank">{{ contract.image.url|truncatechars_html:9 }}</a>
+                        {% endif %}
+                        {% if contract.image2 %}
+                            <a href="{% url 'the_redhuman_is:contract_image2' pk=contract.pk %}" target="_blank">{{ contract.image2.url|truncatechars_html:9 }}</a>
+                        {% endif %}
+                        {% if contract.image3 %}
+                            <a href="{% url 'the_redhuman_is:contract_image3' pk=contract.pk %}" target="_blank">{{ contract.image3.url|truncatechars_html:9 }}</a>
+                        {% endif %}
+                        {% for item in contract.get_images %}
+                            <a href="{% url 'the_redhuman_is:get_photo' pk=item.pk %}" target="_blank">{{ item.image.url|truncatechars_html:9 }}</a>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <div>
+                            {% if contract.is_actual %}
+                                <input type="hidden" name="id" value="{{ contract.id }}" form="notifications"/>
+                                <button class="btn btn-sm btn-outline-primary" type="submit" formaction="{% url 'the_redhuman_is:download_notices' 'contract' %}" form="notifications" onclick="return checkContractorProxy();">УОЗ</button>
+                                <button class="btn btn-sm btn-outline-primary" type="submit" formaction="{% url 'the_redhuman_is:download_notices' 'terminate' %}" form="notifications" onclick="return checkContractorProxy();">УОР</button>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if not is_for_customer %}
+                            <a href="{% url 'the_redhuman_is:edit_contract' pk=contract.pk %}">
+                                <i class="far fa-edit"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <h6>
+            Медкнижки
+            {% if not is_for_customer %}
+                <a href="{% url 'the_redhuman_is:worker_add_med_card' pk=worker.pk %}">
+                    <i class="far fa-plus-square"></i>
+                </a>
+            {% endif %}
+        </h6>
+        <table class="table rh-table-documents">
+            <thead>
+            <tr>
+                <th>Номер</th>
+                <th>Дата выдачи</th>
+                <th>Дата окончания</th>
+                <th>Фото</th>
+                <th>Фото</th>
+                <th>Фото</th>
+                <th></th>
+            </tr>
+            </thead>
+            {% for med_card in med_cards %}
+                <tr>
+                    <td>{{ med_card.number }}</td>
+                    <td>{{ med_card.card_date_of_issue }}</td>
+                    <td>{{ med_card.card_date_of_exp }}</td>
+                    <td>
+                        {% if med_card.image %}
+                            <a href="{% url 'the_redhuman_is:med_card_image' pk=med_card.pk %}" target="_blank">{{ med_card.image.url|truncatechars_html:9 }}</a>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if med_card.image2 %}
+                            <a href="{% url 'the_redhuman_is:med_card_image2' pk=med_card.pk %}" target="_blank">{{ med_card.image2.url|truncatechars_html:9 }}</a>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if med_card.image3 %}
+                            <a href="{% url 'the_redhuman_is:med_card_image3' pk=med_card.pk %}" target="_blank">{{ med_card.image3.url|truncatechars_html:9 }}</a>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not is_for_customer %}
+                            <a href="{% url 'the_redhuman_is:worker_edit_med_card' pk=med_card.pk %}">
+                                <i class="far fa-edit"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <h6>
+            СНИЛС
+        {% if not is_for_customer %}
+            <a class="popup_link" href="{% url 'the_redhuman_is:worker_snils' worker_pk=worker.pk %}">
+                <i class="far fa-plus-square"></i>
+            </a>
+        {% endif %}
+        </h6>
+        <table class="table rh-table-documents">
+        <thead>
+        <tr>
+            <th>Номер</th>
+            <th>Дата регистрации</th>
+            <th>Фото</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% with snils=worker.snils %}
+        {% if snils %}
+        <tr>
+            <td>{{ snils.number }}</td>
+            <td>{{ snils.date_of_issue|date:'d.m.Y' }}</td>
+            <td>
+                {% if snils.photo %}
+                    <a href="{% url 'the_redhuman_is:get_photo' snils.photo.pk %}" target="_blank">фото</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if not is_for_customer %}
+                    <a class="popup_link" href="{% url 'the_redhuman_is:worker_snils' worker_pk=worker.pk %}">
+                        <i class="far fa-edit"></i>
+                    </a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endif %}
+        {% endwith %}
+        </tbody>
+        </table>
+
+        <h6>
+            Статус самозанятого
+            <a class="popup_link" href="{% url 'the_redhuman_is:worker_self_employment_data' worker_pk=worker.pk %}">
+                <i class="far fa-plus-square"></i>
+            </a>
+        </h6>
+        <table class="table rh-table-documents">
+        <thead>
+        <tr>
+            <th>ИНН</th>
+            <th>Р/С</th>
+            <th>Банк</th>
+            <th>БИК</th>
+            <th>К/С</th>
+            <th>ФИО держателя карты</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% if selfemployment_data %}
+            <tr>
+                <td>{{ selfemployment_data.tax_number }}</td>
+                <td>{{ selfemployment_data.bank_account }}</td>
+                <td>{{ selfemployment_data.bank_name }}</td>
+                <td>{{ selfemployment_data.bank_identification_code }}</td>
+                <td>{{ selfemployment_data.correspondent_account }}</td>
+                <td>{{ selfemployment_data.cardholder_name }}</td>
+            </tr>
+            {% endif %}
+        </tbody>
+        </table>
+    </div>
+{% endif %}
+
+    <div class="col-lg-4">
+        {% if not is_for_customer and account %}
+        <h6>Взаиморасчеты</h6>
+            <table class="table rh-table-documents">
+                <thead>
+                <tr>
+                    <th>Выплачено</th>
+                    <th>Начислено</th>
+                    <th>Начислить</th>
+                    <th>Выплатить</th>
+                    {% if worker.deposit %}
+                        <th>Залог</th>
+                        <th/>
+                    {% endif %}
+                </tr>
+                </thead>
+                <tr>
+                    {% if account.turnover_saldo >= 0 %}
+                        <td>{{ account.turnover_debet|intcomma }}</td>
+                        <td>{{ account.turnover_credit|intcomma }}</td>
+                        <td>{{ account.turnover_saldo|intcomma }}</td>
+                        <td>0</td>
+                    {% elif account.turnover_saldo < 0 %}
+                        <td>{{ account.turnover_debet|intcomma }}</td>
+                        <td>{{ account.turnover_credit|intcomma }}</td>
+                        <td>0</td>
+                        <td>{{ account.turnover_saldo|abs|intcomma }}</td>
+                    {% endif %}
+                    {% if worker.deposit %}
+                        <td>{{ worker.deposit.account.turnover_saldo|abs|intcomma }}</td>
+                        <td>
+                            <form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:worker_return_deposit' pk=worker.pk %}">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-primary" type="submit">вернуть залог</button>
+                            </form>
+                        </td>
+                    {% endif %}
+                </tr>
+            </table>
+        {% endif %}
+        <p></p>
+        {% for item in worker_images %}
+            {% thumbnail item.image "x200" as im %}
+                <a href="{% url 'the_redhuman_is:get_photo' pk=item.pk %}"><img src="{{ im.url }}"></a>
+            {% endthumbnail %}
+        {% endfor %}
+
+
+        {% if not is_for_customer %}
+            <h6>Комментарии</h6>
+            {% for comment in comments %}
+                <p>
+                    <small>
+                        {{ comment.date|date:"d.m.Y H:i" }}
+                        <br>
+                        {{ comment.author }}
+                        <br>
+                        {{ comment.text }}
+                        <br>
+                    </small>
+                </p>
+            {% endfor %}
+        {% endif %}
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col col-auto">
+        {% if applicants %}
+        <div class="alert alert-danger" id="modal-form-alert">
+            Нажмите на одну из следующих заявок, чтобы связать ее с этим работником!
+        </div>
+        <div class="list-group">
+            {% for applicant in applicants %}
+            <a href="{% url 'the_redhuman_is:worker_link_applicant' worker.pk applicant.pk %}" class="list-group-item list-group-item-action">
+                {{ applicant.init_date|date:"d.m" }}, {{ applicant.phone }}, {{ applicant.name }}, {{ applicant.author }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if worker.applicant_link %}
+        <div class="list-group-item">
+            Связанный кандидат:
+            {% with applicant=worker.applicant_link.applicant %}
+                {{ applicant.init_date|date:"d.m" }}, {{ applicant.phone }}, {{ applicant.name }}, {{ applicant.author }}
+            {% endwith %}
+            <a href="{% url 'the_redhuman_is:worker_remove_applicant_link' worker.pk %}">
+                <button class="btn btn-sm btn-outline-primary">разорвать связь</button>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<form method="POST" action="{% url 'the_redhuman_is:worker_create_user' worker.pk %}">
+    {% csrf_token %}
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            <label for="id_username">Пользователь</label>
+            <input id="id_username" type="text" name="username">
+        </div>
+        <div class="form-group col col-auto">
+            <label for="id_username">Пароль</label>
+            <input type="text" name="password">
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+                Завести пользователя
+            </button>
+        </div>
+    </div>
+</form>
+
+{% if not is_for_customer and account %}
+<table class="table rh-table-full-width table-hover">
+    <caption>Взаиморасчеты детализация</caption>
+    <thead>
+    <tr>
+        <th>Дата</th>
+        <th>Часов</th>
+        <th>К оплате</th>
+        <th>Оплачено</th>
+        <th>Сальдо</th>
+        <th>Клиент</th>
+        <th>Объект</th>
+        <th>Смена</th>
+        <th>Комментарий</th>
+    </tr>
+    </thead>
+    {% for operation, saldo in operations %}
+    <tr{% if operation.is_in_paysheet %} class="is_in_paysheet" {% endif %}>
+            <td>{{ operation.timepoint|date:"d.m.Y" }}</td>
+            {% if operation.timesheet_pk %}
+                <td>
+                    {% if request.user.is_superuser and operation.turnout %}
+                    <a href="{% url 'admin:the_redhuman_is_workerturnout_change' operation.turnout %}" target="_blank">
+                    {% endif %}
+                        {{ operation.hours_worked }}
+                    {% if request.user.is_superuser %}
+                    </a>
+                    {% endif %}
+                </td>
+            {% else %}
+                <td></td>
+            {% endif %}
+
+            {% if operation.amount == None %}
+                <td></td>
+                <td></td>
+            {% else %}
+                {% if operation.debet == account %}
+                <td></td>
+                {% endif %}
+
+                <td>
+                {% if request.user.is_superuser %}
+                <a href="{% url 'admin:finance_operation_change' operation.pk %}" target="_blank">
+                {% endif %}
+                    {{ operation.amount|intcomma }}
+                {% if request.user.is_superuser %}
+                </a>
+                {% endif %}
+                </td>
+
+                {% if operation.credit == account %}
+                <td></td>
+                {% endif %}
+            {% endif %}
+            
+            <td>{{ saldo|separate }}</td>
+
+            {% if operation.timesheet_pk %}
+                <td nowrap>
+                    <a href="{% url 'the_redhuman_is:customer_detail' pk=operation.customer_pk %}" target="_blank">
+                    {{ operation.customer_name }}
+                    </a>
+                </td>
+                <td nowrap>{{ operation.location_name }}</td>
+                <td>
+                    <a href="{% url 'the_redhuman_is:timesheet' pk=operation.timesheet_pk %}" target="_blank">
+                    {{ operation.turn }}
+                    </a>
+                </td>
+            {% else %}
+                <td></td>
+                <td></td>
+                <td></td>
+            {% endif %}
+
+            <td>
+            {% if operation.comment_url %}
+                <a href="{{ operation.comment_url|safe }}" target="_blank">
+                    {{ operation.comment }}
+                </a>
+            {% else %}
+                {{ operation.comment }}
+            {% endif %}
+            </td>
+
+        </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+{% endblock %}
+
+{% block img %}
+{% endblock %}
+
+{% block scripts %}
+{{ contractor_form.media }}
+{{ proxy_form.media }}
+<script>
+function checkContractorProxy() {
+    if($("#id_proxy")[0].selectedIndex == 0) {
+        alert("Выберите, пожалуйста, доверенное лицо.");
+        return false;
+    }
+    return true;
+}
+$(document).ready(
+    function () {
+        msg = '';
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.extra_tags == 'notice_of_arrival' %}
+                    msg = msg + '{{ message }}' + '\n';
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        if (msg) {
+            alert(msg);
+        }
+    }
+);
+</script>
+{% endblock %}

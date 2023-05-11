@@ -1,0 +1,84 @@
+@import "./_viewports";
+
+@mixin for-mobile {
+  @media (min-width: breakpoint(sm)) {
+    @content;
+  }
+}
+
+@mixin for-tablet {
+  @media (min-width: breakpoint(md)) {
+    @content;
+  }
+}
+
+@mixin for-tablet-lg {
+  @media (min-width: breakpoint(lg)) {
+    @content;
+  }
+}
+
+@mixin for-desktop {
+  @media (min-width: breakpoint(xl)) {
+    @content;
+  }
+}
+
+@mixin for-desktop-lg {
+  @media (min-width: breakpoint(xxl)) {
+    @content;
+  }
+}
+
+
+
+@function calc-media-value($value) {
+  @if (type-of($value)=="number"and index("cm""mm""in""px""pt""pc", unit($value)) !=null) {
+    $value: $value;
+  }
+
+  @else {
+    $value: $value + px;
+  }
+
+  @return $value;
+}
+
+@mixin mediaWidth($num1, $num2) {
+  $min: 0;
+  $max: 0;
+
+  @if $num1>$num2 {
+    $min: $num2;
+    $max: $num1;
+  }
+
+  @else {
+    $min: $num1;
+    $max: $num2;
+  }
+
+  $min: calc-media-value($min);
+  $max: calc-media-value($max);
+
+  @media screen and (min-width: $min) and (max-width: $max) {
+    @content;
+  }
+}
+
+@mixin minWidth ($value) {
+  $min-width: calc-media-value($value);
+
+  @media (min-width: $min-width) {
+    @content;
+  }
+}
+
+
+@mixin maxWidth ($value) {
+  $max-width: calc-media-value($value);
+
+  @media (max-width: $max-width) {
+    @content;
+  }
+}

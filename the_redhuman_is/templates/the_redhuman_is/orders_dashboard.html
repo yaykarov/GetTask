@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_html_head %}
+    <link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+    <link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+
+{% endblock %}
+
+{% block buttons %}
+
+{% endblock %}
+
+{% block obj-data %}
+    <div class="row">
+        <div class="col-auto d-flex align-content-center flex-wrap">
+            <h6 class="mb-0">
+                Заявки
+            </h6>
+        </div>
+        <div class="col">
+            <a href="{% url 'the_redhuman_is:new_customer' %}" class="btn btn-sm btn-outline-primary">
+                Добавить клиента
+            </a>
+            <a href="{% url 'the_redhuman_is:new_worker' %}" class="btn btn-sm btn-outline-primary">
+                Добавить рабочего
+            </a>
+            <a href="{% url 'the_redhuman_is:executed_orders' %}" class="btn btn-sm btn-outline-primary">
+                Выполненные заявки <span class="badge badge-success">{{ executed_orders }} шт.</span>
+            </a>
+            <a href="{% url 'the_redhuman_is:list_orders' %}" class="btn btn-sm btn-outline-primary">
+                Все заявки <span class="badge badge-success">{{ all_orders }} шт.</span>
+            </a>
+        </div>
+    </div>
+    <div class="row mb-3">
+    </div>
+
+    <form action="{% url 'the_redhuman_is:manage_order' %}" method="post" id="orders_form">
+        {% csrf_token %}
+
+        <input id="id_form-TOTAL_FORMS" name="form-TOTAL_FORMS" type="hidden" value="1">
+        <input id="id_form-INITIAL_FORMS" name="form-INITIAL_FORMS" type="hidden" value="0">
+        <input id="id_form-MIN_NUM_FORMS" name="form-MIN_NUM_FORMS" type="hidden" value="0">
+        <input id="id_form-MAX_NUM_FORMS" name="form-MAX_NUM_FORMS" type="hidden" value="1">
+
+        <table id="orders-table" class="table rh-table">
+            <thead>
+                <tr>
+                    <th class="col-auto">Дата подачи</th>
+                    <th class="col-auto">Дата вызова</th>
+                    <th class="col-auto">Время вызова</th>
+                    <th class="col-auto">Клиент</th>
+                    <th class="col-auto">Обьект</th>
+                    <th class="col-auto">Смена</th>
+                    <th class="col-auto">Кол-во по запросу</th>
+                    <th class="col-auto">Наличие табеля</th>
+                    <th class="col-auto">Добавить табель</th>
+                </tr>
+            </thead>
+            {% for order in unexecuted_orders_n %}
+                <tr>
+                    {% if order.timesheet__count >= 1 %}
+                        <td>{{ order.bid_date_time|date:"d.m.Y" }}</td>
+                        <td>{{ order.on_date|date:"d.m.Y" }}</td>
+                        <td>{{ order.on_time|date:"H:i" }}</td>
+                        <td>{{ order.customer }}</td>
+                        <td>{{ order.cust_location }}</td>
+                        <td>{{ order.bid_turn }}</td>
+                        <td>{{ order.number_of_workers }}</td>
+                        <td>да ({{ order.timesheet__count }})</td>
+                        <th>
+                            <a href="{% url 'the_redhuman_is:new_timesheet' pk=order.pk %}">
+                                <i class="far fa-plus-square"></i>
+                            </a>
+                        </th>
+                    {% else %}
+                        <td>{{ order.bid_date_time|date:"d.m.Y" }}</td>
+                        <td>{{ order.on_date|date:"d.m.Y" }}</td>
+                        <td>{{ order.on_time|date:"H:i" }}</td>
+                        <td>{{ order.customer }}</td>
+                        <td>{{ order.cust_location }}</td>
+                        <td>{{ order.bid_turn }}</td>
+                        <td>{{ order.number_of_workers }}</td>
+                        <td>нет ({{ order.timesheet__count }})</td>
+                        <td class="text-center">
+                            <a href="{% url 'the_redhuman_is:new_timesheet' pk=order.pk %}">
+                                <i class="far fa-plus-square"></i>
+                            </a>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+        <div class="row">
+            <div class="col-auto">
+                <button id="add_row_button" class="btn btn-sm btn-primary"><i class="far fa-plus-square"></i></button>
+                <button id="" type="submit" class="btn btn-sm btn-primary">Сохранить</button>
+            </div>
+        </div>
+    </form>
+    <div id="result"></div>
+    <hr>
+    <div class="row">
+        <div class="col-auto d-flex align-content-center flex-wrap">
+            <h6 class="mb-0">Табели</h6>
+        </div>
+        <div class="col">
+            <a href="{% url 'the_redhuman_is:unexecuted_timesheets' %}" class="btn btn-sm btn-outline-primary">
+                Табелей заполненных незакрытых <span class="badge badge-success">{{ unexecuted_timesheets }} шт.</span>
+            </a>
+            <a href="{% url 'the_redhuman_is:execute_timesheets' %}" class="btn btn-sm btn-outline-primary">
+                Закрыть табели <span class="badge badge-success">{{ unexecuted_timesheets }} шт.</span>
+            </a>
+            <a href="{% url 'the_redhuman_is:timesheets' %}" class="btn btn-sm btn-outline-primary">
+                Все табели <span class="badge badge-success">{{ all_timesheets }} шт.</span>
+            </a>
+        </div>
+    </div>
+    <!--<a href="{% url 'the_redhuman_is:unexecuted_orders' %}"><button type="submit">Добавить табели<br>{{ unexecuted_orders }} шт. (заявок без табеля)</button></a>
+<a href="{% url 'the_redhuman_is:empty_timesheets' %}"><button type="submit">Добавить рабочих<br>{{ empty_timesheets }} шт. (табелей без рабочих)</button></a>
+<a href="{% url 'the_redhuman_is:unexecuted_timesheets_hours_not' %}"><button type="submit">Добавить часы<br>{{ unexecuted_timesheets_hours_not }} шт. (табелей с рабочими, без часов)</button></a>-->
+    <div class="row mb-3">
+    </div>
+    <table class="table rh-table">
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Смена</th>
+                <th>Заказчик</th>
+                <th>Объект</th>
+                <th>Контактное лицо</th>
+                <th>Бригадир</th>
+                <th>Кол-во<br>рабочих</th>
+                <th>Кол-во<br>рабочих</th>
+                <th>Кол-во<br>часов</th>
+                <th>Добавить<br>фото</th>
+            </tr>
+        </thead>
+        {% for timesheet in all_timesheets_n %}
+            <tr>
+                <td>
+                    <a href="{% url 'the_redhuman_is:timesheet' pk=timesheet.pk %}">{{ timesheet.sheet_date|date:"d.m.Y" }}</a>
+                </td>
+                <td>{{ timesheet.sheet_turn }}</td>
+                <td>{{ timesheet.customer }}</td>
+                <td>{{ timesheet.cust_location }}</td>
+                <td>{{ timesheet.customer_repr }}</td>
+                <td>{{ timesheet.foreman }}</td>
+                <td>{{ timesheet.turnouts_number }}</td>
+                <td>{{ timesheet.turnouts }}</td>
+                {% if timesheet.hours_worked == None %}
+                    <td>
+                        <a href="{% url 'the_redhuman_is:add_hours' pk=timesheet.pk %}" class="btn btn-sm btn-outline-primary">
+                            Нет (+ часы)
+                        </a>
+                    </td>
+                {% else %}
+                    <td>{{ timesheet.hours_worked }}</td>
+                {% endif %}
+                <td>
+                    <a href="{% url 'the_redhuman_is:new_timesheet_to_close' pk=timesheet.pk %}" class="btn btn-sm btn-outline-primary">
+                        + фото
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="/static/admin/js/vendor/select2/select2.full.js"></script>
+<script type="text/javascript" src="/static/autocomplete_light/autocomplete_light.js"></script>
+<script type="text/javascript" src="/static/autocomplete_light/select2.js"></script>
+<script type="text/javascript" src="/static/autocomplete_light/i18n/ru.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+
+    <script>
+
+        var n = 0;
+
+        $('#add_row_button').on("click", function () {
+            $.ajax({
+                url: '{% url 'the_redhuman_is:manage_order' %}' + '?n=' + n,
+                data: $(this).serialize(),
+                context: this,
+                success: function (data, status) {
+                    $('#orders-table').append(data);
+                    n++;
+                    $('#id_form-TOTAL_FORMS').val(n);
+                    $('#id_form-MAX_NUM_FORMS').val(n);
+                },
+                error: function (data, status) {
+                }
+            });
+            return false;
+        });
+
+        $('#orders-table').on("click", "#remove_row_button", function () {
+            var row = $(this).parent().parent();
+            var prefix = $(row).attr('id');
+            var row_id =  parseInt(prefix.replace('form-', ''));
+
+            var order_id = $("#id_"+prefix+"-id").val();
+
+            if (order_id)
+            {
+                var del_input = '<input id="id_'+prefix+'-DELETE" name="'+prefix+'-DELETE" value="1" type="hidden">';
+                $('#orders-table').append(del_input);
+                row.hide();
+            }
+            else
+            {
+                row.remove();
+
+                for (i=row_id+1; i<n; i++)
+                {
+                    var k = i;
+                    k--;
+                    console.log('form-'+i, 'form-'+k);
+
+                    var new_id = $('#form-' + i).attr('id').replace(i, k);
+
+                    $('#form-' + i).attr('id', new_id);
+
+                    $('#id_form-' + i + '-id').attr('id', $('#id_form-' + i + '-id').attr('id').replace(i, k));
+                    $('#id_form-' + k + '-id').attr('name', $('#id_form-' + k + '-id').attr('name').replace(i, k));
+
+                    $('#id_form-' + i + '-bid_date_time').attr('id', $('#id_form-' + i + '-bid_date_time').attr('id').replace(i, k));
+                    $('#id_form-' + k + '-bid_date_time').attr('name', $('#id_form-' + k + '-bid_date_time').attr('name').replace(i, k));
+
+                    $('#id_form-' + i + '-on_date').attr('id', $('#id_form-' + i + '-on_date').attr('id').replace(i, k));
+                    $('#id_form-' + k + '-on_date').attr('name', $('#id_form-' + k + '-on_date').attr('name').replace(i, k));
+
+                    $('#id_form-' + i + '-on_time').attr('id', $('#id_form-' + i + '-on_time').attr('id').replace(i, k));
+                    $('#id_form-' + k + '-on_time').attr('name', $('#id_form-' + k + '-on_time').attr('name').replace(i, k));
+
+                    $('#id_form-' + i + '-customer').attr('id', $('#id_form-' + i + '-customer').attr('id').replace(i, k));
+                    $('#id_form-' + k + '-customer').attr('name', $('#id_form-' + k + '-customer').attr('name').replace(i, k));
+
+                    $('#id_form-' + i + '-cust_location').attr('id', $('#id_form-' + i + '-cust_location').attr('id').replace(i, k));
+                    $('#id_form-' + k + '-cust_location').attr('name', $('#id_form-' + k + '-cust_location').attr('name').replace(i, k));
+
+                    $('#id_form-' + i + '-bid_turn').attr('id', $('#id_form-' + i + '-bid_turn').attr('id').replace(i, k));
+                    $('#id_form-' + k + '-bid_turn').attr('name', $('#id_form-' + k + '-bid_turn').attr('name').replace(i, k));
+
+                    $('#id_form-' + i + '-number_of_workers').attr('id', $('#id_form-' + i + '-number_of_workers').attr('id').replace(i, k));
+                    $('#id_form-' + k + '-number_of_workers').attr('name', $('#id_form-' + k + '-number_of_workers').attr('name').replace(i, k));
+
+                    $('#select2-id_form-' + i + '-customer-container').attr('id', $('#select2-id_form-' + i + '-customer-container').attr('id').replace(i, k));
+                    $('#dal-forward-conf-for-id_form-' + i + '-cust_location').attr('id', $('#dal-forward-conf-for-id_form-' + i + '-cust_location').attr('id').replace(i, k));
+                }
+
+                n--;
+
+                $('#id_form-TOTAL_FORMS').val(n);
+                $('#id_form-MAX_NUM_FORMS').val(n);
+            }
+
+            return false;
+        });
+
+        $('#orders-table').on("click", ".ts_button", function () {
+            window.location.href = $(this).attr('href');
+            return false;
+        });
+
+        $(document).on('submit', '#orders_form', function () {
+            $.ajax({
+
+                type: $(this).attr('method'),
+                url: this.action,
+                data: $(this).serialize(),
+                context: this,
+                success: function (data, status) {
+
+                    var inputs = $('#orders-table').find('.id');
+
+                    n = data.orders.length
+
+                    $.each(data.orders, function(index, value) {
+                        $(inputs[index]).val(value);
+                        $("#form-"+index + ' th').html('<a href="/new-timesheet/'+value+'/" class="ts_button btn btn-outline-primary">+</a>')
+                    });
+
+                    $('#result').html('Данные сохранены!');
+
+                    $('#id_form-TOTAL_FORMS').val(n);
+                    $('#id_form-MAX_NUM_FORMS').val(n);
+                    $('#id_form-INITIAL_FORMS').val(n);
+                },
+                error: function (data, status) {
+                    var errors = '';
+                    $.each(data.responseJSON, function(index, value) {
+                        if (value.on_date)
+                            errors += value.on_date[0] + '<br>';
+                        if (value.on_time)
+                            errors += value.on_time[0] + '<br>';
+                        if (value.bid_date_time)
+                            errors += value.bid_date_time[0] + '<br>';
+                        if (value.customer)
+                            errors += value.customer[0] + '<br>';
+                        if (value.cust_location)
+                            errors += value.cust_location[0] + '<br>';
+                    });
+                    console.log(data);
+                    $('#result').html(errors);
+                }
+            });
+            return false;
+        });
+
+    </script>
+{% endblock %}

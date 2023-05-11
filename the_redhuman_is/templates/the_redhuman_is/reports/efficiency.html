@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% load human_readable_values %}
+{% load static %}
+
+{% block extra_html_head %}
+{{ interval_form.media }}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+<style>
+.revenue-header {
+    background: #DFD;
+}
+.costs-header {
+    background: #FDD;
+}
+</style>
+{% endblock %}
+
+{% block buttons %}
+<h4>Рентабельность</h4>
+{% endblock %}
+
+{% block obj-data %}
+<form method="GET" class="form-inline">
+    <div class="form-row">
+        {{ interval_form.first_day }}
+        {{ interval_form.last_day }}
+        <div class="col col-auto">
+            <button class="btn btn-sm btn-outline-primary " type="submit">Показать</button>
+        </div>
+    </div>
+</form>
+
+<h5 class="mt-1">Итоговая рентабельность, с учетом "общих" расходов</h5>
+<table class="table rh-table table-hover">
+    <thead>
+        <tr>
+            <th rowspan=2>Всего<br>часов</th>
+            <th colspan=3 class="revenue-header">Доходы</th>
+            <th colspan=7 class="costs-header">Расходы</th>
+            <th rowspan=2>Прибыль</th>
+            <th rowspan=2>Рентабельность</th>
+            <th rowspan=2>Рентабельность<br>без НДС</th>
+        </tr>
+        <tr>
+            <th>Выручка</th>
+            <th>В т.ч. вычеты<br>с выходами</th>
+            <th>В т.ч. вычеты<br>без выходов</th>
+            <th>Всего</th>
+            <th>НДС</th>
+            <th>Штрафы</th>
+            <th>Счет 10</th>
+            <th colspan=2>Счет 20</th>
+            <th>Счет 26</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="text-right">{{ total_hours|separate }}</td>
+            <td class="text-right"><a target="_blank" href="{% url 'the_redhuman_is:report_efficiency_operations_list' 'revenue' %}?first_day={{ first_day|date:'d.m.Y'}}&last_day={{ last_day|date:'d.m.Y'}}">{{ revenue|separate }}</a></td>
+            <td class="text-right"><a target="_blank" href="{% url 'the_redhuman_is:report_efficiency_operations_list' 'turnoutdeductions' %}?first_day={{ first_day|date:'d.m.Y'}}&last_day={{ last_day|date:'d.m.Y'}}">{{ turnout_deductions|separate }}</a></td>
+            <td class="text-right"><a target="_blank" href="{% url 'the_redhuman_is:report_efficiency_operations_list' 'workerdeductions' %}?first_day={{ first_day|date:'d.m.Y'}}&last_day={{ last_day|date:'d.m.Y'}}">{{ worker_deductions|separate }}</a></td>
+            <td class="text-right">{{ costs|separate }}</td>
+            <td class="text-right">{{ vat_total|separate }}</td>
+            <td class="text-right"><a target="_blank" href="{% url 'the_redhuman_is:report_efficiency_operations_list' 'fines' %}?first_day={{ first_day|date:'d.m.Y'}}&last_day={{ last_day|date:'d.m.Y'}}">{{ fines|separate }}</a></td>
+            <td class="text-right"><a target="_blank" href="{% url 'the_redhuman_is:operating_account_detail' account_10 %}?first_day={{ first_day|date:'d.m.Y'}}&last_day={{ last_day|date:'d.m.Y'}}">{{ costs_10|separate }}</a></td>
+            <td class="text-right"><a target="_blank" href="{% url 'the_redhuman_is:operating_account_detail' account_20 %}?first_day={{ first_day|date:'d.m.Y'}}&last_day={{ last_day|date:'d.m.Y'}}">{{ costs_20|separate }}</a></td>
+            <td class="text-right">(<a target="_blank" href="{% url 'the_redhuman_is:report_efficiency_operations_list' 'raw20bonuses' %}?first_day={{ first_day|date:'d.m.Y'}}&last_day={{ last_day|date:'d.m.Y'}}">{{ raw_20_bonus|separate }}</a>)</td>
+            <td class="text-right"><a target="_blank" href="{% url 'the_redhuman_is:operating_account_detail' account_26 %}?first_day={{ first_day|date:'d.m.Y'}}&last_day={{ last_day|date:'d.m.Y'}}">{{ costs_26|separate }}</a></td>
+            <td class="text-right">{{ profit|separate}}</td>
+            <td class="text-right">{{ efficiency|floatformat:1 }}%</td>
+            <td class="text-right">{{ efficiency_wo_vat|floatformat:1 }}%</td>
+        </tr>
+    </tbody>
+</table>
+
+<h5 class="mt-3">Рентабельность по клиентам, без учета "общих" расходов</h5>
+<div class="container">
+<div class="row">
+<div class="col col-auto">
+<table class="table rh-table table-hover table-compact" id="customers-table">
+    <thead>
+        <tr>
+            <th rowspan=2>Клиент</th>
+            <th rowspan=2>Всего<br>часов</th>
+            <th colspan=2 class="revenue-header">Доходы</th>
+            <th colspan={{ costs_20_titles|length|add:3 }} class="costs-header">Расходы</th>
+            <th rowspan=2>Прибыль</th>
+            <th rowspan=2>Рентабельность</th>
+            <th rowspan=2>Рентабельность<br>без НДС</th>
+        </tr>
+        <tr>
+            <th>Выручка</th>
+            <th>В т.ч. вычеты<br>с выходами</th>
+            <th>Всего</th>
+            <th>НДС</th>
+            <th>Штрафы</th>
+            {% for name in costs_20_titles %}
+            <th style="overflow-wrap: break-word; width: 20px;">{{ name }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for result in results %}
+        <tr>
+            <td><a href="{% url 'the_redhuman_is:customer_detail' result.customer.pk %}" target="_blank">{{ result.customer.cust_name }}</a> ({{ result.legal_entity.legal_entity }} с {{ result.first_day|date:'d.m.Y' }} по {{ result.last_day|date:'d.m.Y' }})</td>
+            <td class="text-right">{{ result.hours_worked|separate }}</td>
+            <td class="text-right">{{ result.revenue|separate }}</td>
+            <td class="text-right">{{ result.deductions|separate }}</td>
+            <td class="text-right">{{ result.costs|separate }}</td>
+            <td class="text-right">{% if result.vat_comment %}{{ result.vat_comment }}{% else %}{{ result.vat_amount|separate }}{% endif %}</td>
+            <td class="text-right">{{ result.fines|separate }}</td>
+            {% for item in result.detailed_costs %}
+            {% if item %}
+            <td class="text-right"><a target="_blank" href="{% url 'the_redhuman_is:operating_account_detail' item.0 %}?first_day={{ first_day|date:'d.m.Y'}}&last_day={{ last_day|date:'d.m.Y'}}">{{ item.1|separate }}</a></td>
+            {% else %}
+            <td class="text-right">Н/д</td>
+            {% endif %}
+            {% endfor %}
+            <td class="text-right">{{ result.profit|separate }}</td>
+            <td class="text-right">{{ result.efficiency|floatformat:1 }}%</td>
+            <td class="text-right">{{ result.efficiency_wo_vat|floatformat:1 }}%</td>
+        </tr>
+        {% for service in result.services %}
+        <tr>
+            <td><a href="{% url 'the_redhuman_is:customer_detail' result.customer.pk %}" target="_blank">{{ result.customer.cust_name }}</a> {{ service.0 }}</td>
+            <td class="text-right">{{ service.1|separate }}</td>
+            <td class="text-right">{{ service.2|separate }}</td>
+            <td></td>
+            <td class="text-right">{{ service.4|separate }}</td>
+            <td class="text-right">{{ service.5|separate }}</td>
+            <td></td>
+            {% for item in result.detailed_costs %}
+            <td></td>
+            {% endfor %}
+            <td class="text-right">{{ service.6|separate }}</td>
+            <td class="text-right">{{ service.7|floatformat:1 }}%</td>
+            <td class="text-right">{{ service.8|floatformat:1 }}%</td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script>
+$(document).ready(function () {
+    $('th').addClass("text-center");
+
+    jQuery.extend(
+        jQuery.fn.dataTableExt.oSort,
+        {
+            "numeric-comma-pre": function (a) {
+                if (a == "-") {
+                    return -1.0;
+                }
+                if (a == "Н/д") {
+                    return 0.0;
+                }
+                return parseFloat(a.replace(/\s/g, '').replace(/,/, "."));
+            },
+
+            "numeric-comma-asc": function (a, b) {
+                return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+            },
+
+            "numeric-comma-desc": function (a, b) {
+                return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+            }
+        }
+    );
+
+    $('#customers-table').DataTable({
+        "pageLength": 50,
+        "order": [],
+        "lengthMenu": [[100, 20, -1], [100, 20, "Все"]],
+        "stateSave": true,
+        "searching": false,
+        "info": false,
+        "paging": false,
+        "oLanguage": {
+            "sLengthMenu": "Отображено _MENU_ записей на страницу",
+            "sSearch": "Поиск:",
+            "sZeroRecords": "Ничего не найдено - извините",
+            "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+            "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+            "sInfoFiltered": "(filtered from _MAX_ total records)",
+            "oPaginate": {
+                "sFirst": "Первая",
+                "sNext": ">",
+                "sPrevious": "<",
+                "sLast": "Последняя",
+            },
+        },
+    });
+});
+</script>
+{% endblock %}

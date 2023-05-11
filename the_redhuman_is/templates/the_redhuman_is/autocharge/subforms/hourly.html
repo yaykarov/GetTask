@@ -1,0 +1,6 @@
+<form  name="{{ id_suffix }}" id="id_form_{{ id_suffix }}" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label for="id_bonus_{{ id_suffix }}">Бонус:</label><input id="id_bonus_{{ id_suffix }}" type="text" value="{{ bonus }}" name="bonus" />
+    <label for="id_tariff_{{ id_suffix }}">Ставка в час:</label><input id="id_tariff_{{ id_suffix }}" type="text" value="{{ tariff }}" name="tariff" />
+    <label for="id_tariff_{{ id_suffix }}">Граница:</label><input id="id_threshold_{{ id_suffix }}" type="text" value="{{ threshold }}" name="tariff" />
+</form>

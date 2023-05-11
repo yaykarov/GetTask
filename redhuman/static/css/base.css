@@ -1,0 +1,262 @@
+@charset "UTF-8";
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font: 13px/1.2 "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
+}
+
+.page-container {
+    min-width: 1024px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.page-container-inner {
+    min-width: 1024px;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0;
+    overflow: hidden;
+}
+
+.page-header, .page-content {
+    width: 100%;
+}
+.page-header {
+    margin-bottom: 30px;
+}
+
+.sidebar-menu ul, .buttons ul, .dashboard-menu ul {
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar-menu {
+    margin-bottom: 10px;
+    border-bottom: 2px solid black;
+}
+
+.sidebar-menu div {
+    display: inline-block;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-menu ul {
+    display: inline-block;
+}
+
+.sidebar-menu li {
+    display: inline-block;
+    font-size: 14px;
+    line-height: 2em;
+    margin: 2px 6px;
+}
+
+.menu > .menu-item {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.menu .menu-list-item {
+    position: relative;
+    display: inline-block;
+}
+.menu .menu-list-item .menu-popup-item {
+    position: absolute;
+    list-style: none;
+    display: none;
+    background: white;
+    z-index: 1;
+    border: 1px solid grey;
+}
+
+.menu .menu-list-item:hover .menu-popup-item {
+    display: table;
+}
+
+.buttons {
+    min-width: 90%;
+    padding-left: 5px;
+    display: block;
+}
+#operation_form input {
+    width: 250px;
+}
+
+.buttons li {
+    display: inline-block;
+    max-width: 40%;
+    font-size: 14px;
+    line-height: 2em;
+    margin: 0 10px;
+    vertical-align: top;
+}
+
+.obj-data {
+    min-width: 90%;
+    vertical-align: top;
+    margin-left: 5px;
+    padding-top: 10px;
+}
+
+.obj-data-kassform1 {
+    display: inline-block;
+    position: relative;
+    max-width: 50%;
+    top: 0;
+    vertical-align: top;
+    margin: 0;
+    float: left;
+}
+
+.obj-data-img {
+    display:inline-block;
+    float: right;
+    position: relative;
+    top: 0;
+    vertical-align: top;
+    max-width: 49%;
+    margin: 0;
+}
+
+.table-data {
+    display: block;
+    margin: 20px 0;
+}
+
+.table1 {
+    display: inline-block;
+    vertical-align: top;
+    float: left;
+    max-width: 50%;
+    padding-right: 5px;
+}
+
+.table2 {
+    display: inline-block;
+    vertical-align: top;
+    padding-left: 5px;
+    max-width: 50%
+}
+
+.inlineblock {
+    display: inline-block;
+}
+
+/* внешние границы таблицы серого цвета толщиной 1px */
+/*
+table {
+    border: 1px solid grey;
+    border-collapse: collapse;
+}
+*/
+table caption {
+    font-size: 14px;
+    font-weight: 900;
+}
+/*
+table tr {
+    border: 1px solid grey;
+}
+*/
+/* границы ячеек первого ряда таблицы */
+/*
+table td {
+    color: DarkSlateGray;
+}
+
+table th, table td {
+    line-height: 1.4em;
+    border: 1px solid grey;
+    padding: 1px 3px;
+}
+*/
+table.with-num {
+    counter-reset: schetchik -1;
+}
+table.with-num thead tr:nth-child(-n+1):before {
+    content: "№";
+}
+table.with-num tbody tr:nth-child(n+2) {
+    counter-increment: schetchik;
+}
+table.with-num tbody tr:nth-child(-n+1):before {
+    content: "1";
+}
+table.with-num tr {
+    counter-increment: schetchik;
+}
+table.with-num tr::before {
+    content: counter(schetchik);
+    display: table-cell;
+    vertical-align: middle;
+    color: DarkSlateGray;
+}
+
+.menu-links {
+    display: inline-block;
+}
+
+.dashboard-menu {
+    padding-left: 0;
+}
+
+.dashboard-menu div {
+    min-height: 69px;
+    display: block;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.dashboard-menu ul {
+    display: block;
+}
+
+.dashboard-menu ul>li {
+    display: inline-block;
+    line-height: 2em;
+    border: 0 solid rgba(0, 0, 0, 0.3);
+    margin: 10px 1.5px;
+}
+
+.notify-table {
+    width: 100%;
+    table-layout: fixed;
+}
+.notify-table tr > th {
+    width: calc(100% / 9);
+    font-weight: normal;
+    vertical-align: top;
+}
+.notify-table > tbody > .nums-row > td  {
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 10px;
+}
+.form-row {
+    margin: 15px 0;
+}
+
+table.dataTable.all-contracts {
+    box-sizing: border-box;
+    border-collapse: collapse;
+    margin-top: 4px;
+}
+.dataTables_filter {
+    margin-bottom: 4px;
+}
+
+.finance-account-debet { background-color: #efe; }
+.finance-account-credit { background-color: #fee; }
+
+.error{
+    color: red;
+}
+
+.statement_form .account_select select
+{
+    width: 500px !important;
+}

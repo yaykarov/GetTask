@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block body %}
+    {% if messages %}
+        <div class="row">
+            {% for message in messages %}
+                <div class="col-auto">
+                    <div class="alert {{ message.extra_tags }} py-1 py-xl-2 mb-1 mb-xl-2" role="alert">
+                        <small>{{ message }}</small>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <form action="." method="post" id="workerForm">
+        <div class="row mb-2">
+            <div class="col">
+                <div class="row mb-2 page-header">
+                    <div class="col-auto pr-0 d-flex align-items-baseline">
+                        <a href="{% url 'the_redhuman_is:photo_load_session_list' %}" target="_blank" class="d-flex align-items-baseline align-self-center header-link">
+                            <div class="align-self-center">
+                                <i class="fas fa-angle-double-left"></i>Назад
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-auto pr-0 font-weight-bold header-text">
+                        {{ title }}
+                    </div>
+                    <div class="col-auto d-flex align-items-baseline">
+            <span class="badge align-self-center
+            {% if object.status == 'new' %}
+            badge-warning
+            {% elif object.status == 'work' %}
+            badge-success
+            {% elif object.status == 'comment' %}
+            badge-danger
+            {% elif object.status == 'complete' %}
+            badge-light
+            {% endif %}">
+            {{ object.get_status }}
+        </span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="row">
+                            <div class="col-auto">
+                                <div class="card mb-2 rh-photo-gallery">
+                                    <div class="card-header pb-2 pt-2">
+                                        Фотографии
+                                    </div>
+                                    <div class="card-body pb-2 pt-2">
+                                        {% for item in photo2session %}
+                                            <div class="row mb-2">
+                                                <div class="col-auto mx-1 px-0 d-flex align-items-stretch border rounded rh-image-container">
+                                                    <img src='{{ item.image.url }}?{% now "Hisu" %}' data-pk="{{ item.pk }}">
+                                                    <input id="photo_checkbox_{{item.pk}}" type="checkbox" class="rh-image-checkbox" name="images" value="{{ item.pk }}"/>
+                                                    <button class="btn btn-sm btn-outline-danger rh-image-button danger" type="button" title="Отправить сообщение: Фотография нечитаемая" onclick="sendAlert({{ item.pk }})">
+                                                        <i class="fas fa-exclamation-triangle fa-lg"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col" id="big-img">
+                                <div class="col-12 px-1 mb-2 rh-image-big">
+                                    {% for item in photo2session %}
+                                        <img src='{{ item.image.url }}?{% now "Hisu" %}' class="img-full {% if forloop.counter0 %}d-none{% endif %}" style="max-width: 100%" data-pk="{{ item.pk }}">
+                                    {% endfor %}
+                                    <button type="button" class="btn btn-sm btn-success rh-image-rotate" id="rotateImage">
+                                        <i class="fas fa-redo"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-auto border-left">
+                {% block forms %}
+                {% endblock %}
+            </div>
+        </div>
+    </form>
+    <div class="modal" tabindex="-1" role="dialog" id="commentModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Добавить комментарий</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="commentForm" action="{% url 'the_redhuman_is:photo_load_add_comment' object.pk %}">
+                        {% crispy comment_form %}
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-sm btn-primary" form="commentForm">Сохранить</button>
+                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript" src="{% static 'js/jquery.mousewheel.min.js' %}"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/jquery.panzoom/3.2.3/jquery.panzoom.min.js"
+        integrity="sha256-0VQjGFcaWn4MqMSXpuAKD4qhS6kUypCIoyXCCYIqXaE="
+        crossorigin="anonymous"
+    >
+    </script>
+    <script type="text/javascript">
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        function reformatDate(val) {
+            if (val) {
+                let dateArray = val.split('-');
+                return dateArray[2] + '.' + dateArray[1] + '.' + dateArray[0]
+            } else {
+                return ''
+            }
+        }
+
+        function sendAlert(id) {
+            $('#photo_checkbox_' + id).prop('checked', false);
+            $('#photo_checkbox_' + id).prop('disabled', true);
+            jQuery.ajax({
+                type: "POST",
+                url: "{% url 'the_redhuman_is:photo_load_bad_photo_alert' %}",
+                data: {id: id},
+                success: function (data) {
+                    $.notify({message: data.message},
+                        {type: 'success'});
+                },
+                error: function (data) {
+                    message = data.message ? data.message : 'Сообщение не отправлено';
+                    $.notify({message: message},
+                        {type: 'danger'});
+                },
+            })
+        }
+
+        function updateSelect(elem, value, text) {
+            if ($(elem).find("option[value='" + value + "']").length) {
+                $(elem).val(value).trigger('change');
+            } else {
+                var newOption = new Option(text, value, true, true);
+                $(elem).append(newOption).trigger('change');
+            }
+        }
+
+        $(document).ready(function () {
+            let angle = 0;
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+                    }
+                }
+            });
+            $('.clear-subform').click(function () {
+                let subform_id = $(this).data('name');
+                $('*[id^=' + subform_id + ']').val('');
+            });
+            let $panzoom = $(".img-full").panzoom();
+            $panzoom.parent().on('mousewheel.focal', function (e) {
+                e.preventDefault();
+                var delta = e.delta || e.originalEvent.wheelDelta;
+                var zoomOut = delta ? delta < 0 : e.originalEvent.deltaY > 0;
+                $panzoom.panzoom('zoom', zoomOut, {
+                    animate: false,
+                    focal: e
+                });
+            });
+            $('.rh-image-container img').click(function () {
+                angle = 0;
+                $('.img-full').css("transform", "rotate("+angle+"deg)");
+                $('.img-full').addClass('d-none');
+                $('.img-full[data-pk=' + $(this).attr('data-pk') + ']').removeClass('d-none');
+            });
+            $("#commentForm").submit(function (e) {
+                e.preventDefault();
+                $('#commentSaveSuccess').addClass('d-none');
+                $('#commentSaveError').addClass('d-none');
+                let form = $(this);
+                let url = form.attr('action');
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: form.serialize(),
+                    success: function (data) {
+                        $('#noComments').hide();
+                        let comments = document.getElementById('commentsList');
+                        let innerHtml = comments.innerHTML;
+                        comments.innerHTML = innerHtml +
+                            '<div class="row">' +
+                            '<div class="col">' +
+                            '<small class="text-muted">' + data.date + data.user + '</small>' +
+                            '</div>' +
+                            '</div>' +
+                            '<div class="row border-bottom">' +
+                            '<div class="col">' + data.comment + '</div>' +
+                            '</div>';
+                        $.notify(
+                            {message: 'Комментарий успешно добавлен'},
+                            {type: 'success'}
+                        );
+                    },
+                    error: function () {
+                        $.notify(
+                            {message: 'Комментарий не добавлен'},
+                            {type: 'danger'}
+                        );
+                    }
+                });
+                $('#commentModal').modal('hide');
+                form.trigger("reset");
+            });
+            $('#rotateImage').click(function () {
+                angle += 90;
+                $('.img-full').css("transform", "rotate("+angle+"deg)");
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+<style>
+    label {
+        font-weight: 700;
+    }
+</style>
+{% load humanize mathfilters static %}
+
+
+{% block buttons %}
+    <div class="dashboard-menu">
+        <ul>
+            {% if worker %}
+                <li>
+                    <label>ФИО:
+                        <a href="{% url 'the_redhuman_is:worker_detail' pk=worker.pk %}">{{ worker }}</a></label>
+                </li>
+                <li>
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        {{ form }}
+                        <button type="submit" class="btn btn-sm btn-primary">Поиск</button>
+                    </form>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+{% endblock %}
+
+
+{% block obj-data %}
+    <div class="row">
+        <div class="col-xl-6 col-lg-8 col-md-10">
+            <table class="table rh-table">
+                <caption><strong>Неоплаченные выходы</strong></caption>
+                <tr>
+                    <th>Табель</th>
+                    <th>Заказчик</th>
+                    <th>Объект</th>
+                    <th>Смена</th>
+                    <th>Участок</th>
+                    <th>Кол-во<br>часов</th>
+                    <th>Сумма</th>
+                </tr>
+                {% for turnout in turnouts %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'the_redhuman_is:timesheet' pk=turnout.timesheet.pk %}">{{ turnout.timesheet.sheet_date|date:"d.m.Y" }}
+                        </td>
+                        <td>{{ turnout.timesheet.customer }}</td>
+                        <td>{{ turnout.timesheet.cust_location }}</td>
+                        <td>{{ turnout.timesheet.sheet_turn }}</td>
+                        <td>{{ turnout.worker_function }}</td>
+                        <td>{{ turnout.hours_worked }}</td>
+                        <td>{{ turnout.turnoutoperationtopay_set.first.operation.amount }}</td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="5">Итого:</td>
+                    <td>{{ avgs.hours_worked__sum }}</td>
+                    <td colspan="2">{{ avgs.turnoutoperationtopay__operation__amount__sum|default_if_none:'-' }}</td>
+                </tr>
+            </table>
+            <br>
+            <table class="table rh-table">
+                <caption><strong>Неоплаченные Акты</strong></caption>
+                <tr>
+                    <th>Табель</th>
+                    <th>Заказчик</th>
+                    <th>Объект</th>
+                    <th>Смена</th>
+                    <th>Участок</th>
+                    <th>Кол-во<br>часов</th>
+                    <th>Сумма</th>
+                    <th>В РКО</th>
+                </tr>
+                {% for turnout in acts %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'the_redhuman_is:timesheet' pk=turnout.timesheet.pk %}">{{ turnout.timesheet.sheet_date|date:"d.m.Y" }}
+                        </td>
+                        <td>{{ turnout.timesheet.customer }}</td>
+                        <td>{{ turnout.timesheet.cust_location }}</td>
+                        <td>{{ turnout.timesheet.sheet_turn }}</td>
+                        <td>{{ turnout.worker_function }}</td>
+                        <td>{{ turnout.hours_worked }}</td>
+                        <td>{{ turnout.turnoutoperationtopay_set.first.operation.amount }}</td>
+                        <td>
+                            {% if rko %}
+                                <a href="{% url 'the_redhuman_is:add_act_into_rko' pk=turnout.pk pk_rko=rko.pk %}" class="btn btn-sm btn-outline-primary">В РКО</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="5">Итого:</td>
+                    <td>{{ acts_avgs.hours_worked__sum|default_if_none:'-' }}</td>
+                    <td colspan="2">{{ acts_avgs.turnoutoperationtopay__operation__amount__sum|default_if_none:'-' }}</td>
+                </tr>
+            </table>
+            <a href="{% url 'the_redhuman_is:download_acts' pk=worker.pk %}" class="btn btn-sm btn-outline-primary">Скачать все Акты</a>
+            <a href="{% url 'the_redhuman_is:all_acts_status_change' pk=worker.pk %}" class="btn btn-sm btn-outline-primary">Добавить все Акты в РКО</a>
+            <!--<a href="{% url 'the_redhuman_is:all_acts_status_change' pk=worker.pk %}"><button type="submit">Поменять статус на "Оплачен" всем</button></a>-->
+
+            <br><br>
+            <table class="table rh-table">
+                <caption>
+                    <strong>Расходный кассовый ордер №{{ rko.pk }} от {{ rko.date|date:"d.m.Y" }} </strong>
+                </caption>
+                <tr>
+                    <th>Табель</th>
+                    <th>Заказчик</th>
+                    <th>Объект</th>
+                    <th>Смена</th>
+                    <th>Участок</th>
+                    <th>Кол-во<br>часов</th>
+                    <th>Сумма</th>
+                </tr>
+                {% for turnout in acts_in_rko %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'the_redhuman_is:timesheet' pk=turnout.timesheet.pk %}">{{ turnout.timesheet.sheet_date|date:"d.m.Y" }}
+                        </td>
+                        <td>{{ turnout.timesheet.customer }}</td>
+                        <td>{{ turnout.timesheet.cust_location }}</td>
+                        <td>{{ turnout.timesheet.sheet_turn }}</td>
+                        <td>{{ turnout.worker_function }}</td>
+                        <td>{{ turnout.hours_worked }}</td>
+                        <td>{{ turnout.turnoutoperationtopay_set.first.operation.amount }}</td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="5">Итого:</td>
+                    <td>{{ rko_avgs.hours_worked__sum|default_if_none:'-' }}</td>
+                    <td colspan="2">{{ rko_avgs.turnoutoperationtopay__operation__amount__sum|default_if_none:'-' }}</td>
+                </tr>
+            </table>
+            <a href="{% url 'the_redhuman_is:create_rko' pk=worker.pk %}" class="btn btn-sm btn-outline-primary">Создать РКО</a>
+            {% if rko %}
+                <a href="{% url 'the_redhuman_is:download_rko' pk=rko.pk %}" class="btn btn-sm btn-outline-primary">Скачать РКО</a>
+            {% endif %}
+
+            <table class="table rh-table">
+                <caption>
+                    <strong><a href="{% url 'the_redhuman_is:operating_account_detail' pk=acc_kass.pk %}">Касса</a></strong>
+                </caption>
+                <tr>
+                    <th>Дата</th>
+                    <th>Проводка</th>
+                    <th>Комментарий</th>
+                    <th>Приход</th>
+                    <th>Расход</th>
+                    <th>Остаток</th>
+                </tr>
+                <tr>
+                    {% if "Касса старая" in k_op.debet.name %}
+                        <td>{{ k_op.timepoint|date:"d.m.Y" }}</td>
+                        {% if k_op.debet.get_worker.pk %}
+                            <td>
+                                <a href="{% url 'the_redhuman_is:worker_detail' pk=k_op.debet.get_worker.pk %}">Д{{ k_op.debet }}</a>__К{{ k_op.credit }}
+                            </td>
+                        {% else %}
+                            <td>Д{{ k_op.debet }}__К{{ k_op.credit }}</td>
+                        {% endif %}
+                        <td>{{ k_op.comment }}</td>
+                        <td>{{ k_op.amount|intcomma }}</td>
+                        <td></td>
+                    {% endif %}
+                    {% if "Касса старая" in k_op.credit.name %}
+                        <td>{{ k_op.timepoint|date:"d.m.Y" }}</td>
+                        {% if k_op.debet.get_worker.pk %}
+                            <td>
+                                <a href="{% url 'the_redhuman_is:worker_detail' pk=k_op.debet.get_worker.pk %}">Д{{ k_op.debet }}</a>__К{{ k_op.credit }}
+                            </td>
+                        {% else %}
+                            <td>Д{{ k_op.debet }}__К{{ k_op.credit }}</td>
+                        {% endif %}
+                        <td>{{ k_op.comment }}</td>
+                        <td></td>
+                        <td>{{ k_op.amount|intcomma }}</td>
+                    {% endif %}
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="font-weight-bold">Итого</td>
+                    <td></td>
+                    <td></td>
+                    <td class="font-weight-bold">{{ total_kd_ops|intcomma }}</td>
+                    <td class="font-weight-bold">{{ total_kc_ops|intcomma }}</td>
+                    <td class="font-weight-bold">{{ kass_saldo|intcomma }}</td>
+                </tr>
+            </table>
+
+            <link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+            <link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+            <script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+            <script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+            <script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+            <script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+            <script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+            <script>
+                $(document).ready(function () {
+                    {% if msg %}
+                        msg = "{{ msg }}";
+                        alert(msg);
+                    {% endif %}
+                })
+            </script>
+        </div>
+        <div class="col-xl-6 col-lg-4 col-md-12">
+            <table class="table rh-table">
+                <tr>
+                    <th>Начислено</th>
+                    <th>Выплачено</th>
+                    <th>К выплате</th>
+                </tr>
+                <tr>
+                    {% if total_wc_ops >= 0 %}
+                        <td>{{ total_wc_ops|intcomma }}</td>
+                        <td>{{ total_wd_ops|intcomma }}</td>
+                        <td>{{ worker_saldo|intcomma }}</td>
+                    {% else %}
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                    {% endif %}
+                </tr>
+            </table>
+
+            <div class="dashboard-menu">
+                <ul>
+                    <li>
+                        <form action="{% url 'the_redhuman_is:form_po' pk=worker.pk %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <table>
+                                {{ form_po.as_table }}
+                            </table>
+                            <button type="submit" class="btn btn-primary">Провести оплату выходов</button>
+                        </form>
+                    </li>
+                    {% if rko %}
+                        <li>
+                            <form action="{% url 'the_redhuman_is:form_acts' pk=rko.pk %}" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <table>
+                                    {{ form_acts.as_table }}
+                                </table>
+                                <button type="submit" class="btn btn-primary">Провести оплату Актов</button>
+                            </form>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block img %}
+{% endblock %}
+
+{% block table-data %}
+{% endblock %}

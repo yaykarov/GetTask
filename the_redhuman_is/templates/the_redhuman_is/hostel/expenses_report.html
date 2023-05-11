@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load human_readable_values %}
+
+{% block extra_html_head %}
+{{ customer_form.media }}
+{{ interval_form.media }}
+<script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+{% endblock %}
+
+{% block buttons %}
+<h4>Компенсации за проживание не в наших общежитиях с {{ first_day|date:"d.m.y"}} по {{ last_day|date:"d.m.y"}}</h4>
+{% endblock %}
+
+{% block obj-data %}
+<form method="GET" class="form-inline">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            {{ customer_form.customer }}
+            {{ interval_form.first_day }}
+            {{ interval_form.last_day }}
+            <button type="submit" class="ml-2 btn btn-sm btn-outline-primary">
+                Показать
+            </button>
+            <button class="ml-2 btn btn-sm btn-outline-primary" type="submit" name="format" value="xls">
+                <i class="fas fa-download"></i>
+            </button>
+        </div>
+    </div>
+</form>
+
+<table class="table rh-table table-hover">
+    <thead>
+        <tr>
+            <th rowspan=2>Рабочий</th>
+            {% for day in days %}
+                <th>{{ day|date:"d.m" }}</th>
+            {% endfor %}
+            <th rowspan=2>Итого</th>
+        </tr>
+        <tr>
+            {% for day in days %}
+                <th>{{ day|date:"D" }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    {% for worker, operations, row_sum in grid %}
+    <tr>
+        <td style="white-space: nowrap;"><a href="{% url 'the_redhuman_is:worker_detail' pk=worker.pk %}">{{ worker }}</a></td>
+        {% for operation in operations %}
+        <td class="text-center">{% if operation %}{{ operation.amount|separate }}{% endif %}</td>
+        {% endfor %}
+        <td class="text-center">{{ row_sum|separate }}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td>Итого</td>
+        {% for day_sum in days_sums %}
+        <td class="text-center">{{ day_sum|separate }}</td>
+        {% endfor %}
+        <td class="text-center">{{ total_sum|separate }}</td>
+    </tr>
+</table>
+{% endblock %}

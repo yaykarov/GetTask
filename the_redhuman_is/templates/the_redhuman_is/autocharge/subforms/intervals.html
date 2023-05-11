@@ -1,0 +1,28 @@
+<form name="{{ id_suffix }}" id="id_form_{{ id_suffix }}" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div id="container_{{ id_suffix }}">
+        <div class="in">
+        </div>
+        <button id="id_add_button_{{ id_suffix }}" type="submit" onClick="return onAdd('{{ id_suffix }}')">+</button>
+        {% if is_linear_payment %}
+        <div>
+            <label for="id_performance_for_linear_payment_{{ id_suffix }}">Граница чистой сделки:</label><input id="id_performance_for_linear_payment_{{ id_suffix }}" type="text" value="{{ performance_for_linear_payment }}" name="performance_for_linear_payment" />
+        </div>
+        <div>
+            <label for="id_linear_payment_coefficient_{{ id_suffix }}">Плата за коробку:</label><input id="id_linear_payment_coefficient_{{ id_suffix }}" type="text" value="{{ linear_payment_coefficient }}" name="linear_payment_coefficient" />
+        </div>
+        {% endif %}
+    </div>
+</form>
+
+<script>
+{% for pair in pairs %}
+    addField(
+        'container_{{ id_suffix }}',
+        'id_add_button_{{ id_suffix }}',
+        '{{ pair.id_suffix }}',
+        '{{ pair.key }}',
+        '{{ pair.value }}'
+    );
+{% endfor %}
+</script>

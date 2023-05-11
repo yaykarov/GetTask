@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% load human_readable_values %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+<style>
+.cell {
+    border-left: 1px solid #AAAA;
+    border-right: 1px solid #AAAA;
+}
+.cell-working {
+    background-color: #EFED;
+}
+.cell-working-hard {
+    background-color: #CFCD;
+}
+.cell-newbie-working {
+    background-color: #FFCD;
+}
+.cell-newbie-working-hard {
+    background-color: #FFAD;
+}
+.cell-waiting {
+    background-color: #FEED;
+}
+</style>
+{% endblock %}
+
+{% block buttons %}
+<h5>Рабочие, выходившие на доставку {{ day }}</h5>
+{% endblock %}
+
+{% block obj-data %}
+<form method="GET">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            {{ form.date }}
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+                Показать
+            </button>
+        </div>
+    </div>
+</form>
+
+<table class="table rh-table table-hover" id="main-table">
+<thead>
+    <tr>
+        <th>№</th>
+        <th>Рабочий</th>
+        <th>Гр-во</th>
+        <th>Лет</th>
+        <th>Филиал</th>
+        {% for slot_name in slots %}
+        <th>{{ slot_name }}</th>
+        {% endfor %}
+        <th>Всего<br>заявок</th>
+        <th>Всего<br>руб</th>
+        <th>Всего<br>кг</th>
+        <th>Первый<br>раз на линии</th>
+        <th>Последний<br>раз на линии</th>
+        <th>Версия<br>прил-я</th>
+        <th>Карта</th>
+    </tr>
+</thead>
+<tbody>
+    {% for worker in workers %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td><a href="{% url 'the_redhuman_is:worker_detail' worker.pk %}" target="_blank">{{ worker }}</a></td>
+        <td>{{ worker.citizenship }}</td>
+        <td>{{ worker.age|default_if_none:"-" }}</td>
+        <td>{{ worker.zone_name }}</td>
+        {% for slot in worker.slots %}
+        <td colspan="{{ slot.length }}" class="cell {% if slot.objects|length > 1 %}{% if worker.not_newbie %}cell-working-hard{% else %}{cell-newbie-working-hard}{% endif %}{% elif slot.objects|length %}{% if worker.not_newbie %}cell-working{% else %}cell-newbie-working{% endif %}{% else %}cell-waiting{% endif %}" {% if slot.title%}title="{{slot.title}}"{% endif %}>
+                {% if slot.text %}{{ slot.text }}{% endif %}
+            </td>
+            {% for empty_cell in slot.empty_cells %}
+            <td style="display: none;"></td>
+            {% endfor %}
+        {% endfor %}
+        <td class="text-center">{{ worker.day_requests }}</td>
+        <td class="text-right">{{ worker.day_amount|separate }}</td>
+        <td class="text-right">{{ worker.day_mass|separate }}</td>
+        <td class="text-center" title="{{ worker.online.start|date:"H:i:s d.m" }}">{{ worker.online.start|date:"H:i:s"|default:"-" }}</td>
+        <td class="text-center" title="{{ worker.online.finish|date:"H:i:s d.m" }}">{{ worker.online.finish|date:"H:i:s"|default:"-" }}</td>
+        <td>{{ worker.online.version|default:"-" }}</td>
+        <td class="text-center">
+            <form action="{% url 'the_redhuman_is:backoffice_delivery_worker_map_data' %}" method="GET">
+                <input type="hidden" name="worker" value="{{ worker.pk }}"/>
+                <input type="hidden" name="date" value="{{ day|date:"d.m.Y" }}"/>
+                <button class="hop" type="submit">хоп</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+{{ form.media }}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/3.2.6/js/dataTables.fixedColumns.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+
+<script>
+$(document).ready(
+    function () {
+        $.fn.dataTable.moment('DD.MM.YYYY');
+        let main_table = $('#main-table').DataTable({
+            "pageLength": -1,
+            "order": [],
+            "lengthMenu": [[300, 150, 50, -1], [300, 150, 50, "Все"]],
+            "stateSave": true,
+            "searching": true,
+            "info": true,
+            "oLanguage": {
+                "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                "sSearch": "Поиск:",
+                "sZeroRecords": "Ничего не найдено - извините",
+                "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                "sInfoFiltered": "(filtered from _MAX_ total records)",
+                "oPaginate": {
+                    "sFirst": "Первая",
+                    "sNext": ">",
+                    "sPrevious": "<",
+                    "sLast": "Последняя",
+                },
+            },
+            "fixedHeader": true,
+            "scrollY": "82vh",
+            "scrollX": true,
+            "scrollCollapse": true,
+            "fixedColumns": {
+                "leftColumns": 5,
+            },
+            "columnDefs": [
+                { "width": "40px", "targets": [{% for slot_name in slots %}4 + {{ forloop.counter }},{% endfor %}] },
+                { "orderable": false, "targets": [0, {% for slot_name in slots %}4 + {{ forloop.counter }},{% endfor %} {{ slots|length }} + 11] }
+            ],
+            "orderCellsTop": true,
+        });
+        main_table.on(
+            "order.dt search.dt",
+            function () {
+                main_table.column(
+                    0,
+                    { search: "applied", order: "applied" }
+                ).nodes().each(
+                    function (cell, i) {
+                        cell.innerHTML = i + 1;
+                    }
+                );
+            }
+        ).draw();
+        $("button.hop").click(function (e) {
+            e.preventDefault();
+            let button = $(this);
+            let form = button.parents('form');
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function (r) {
+                    const form = document.createElement('form');
+                    form.method = 'post'
+                    form.action = "{% url 'the_redhuman_is:delivery_map' %}"
+                    form.target = "_blank"
+                    for (const key in r) {
+                        if (r.hasOwnProperty(key)) {
+                            const hiddenField = document.createElement('input');
+                            hiddenField.type = 'hidden';
+                            hiddenField.name = key;
+                            hiddenField.value = r[key];
+                            form.appendChild(hiddenField);
+                        }
+                    }
+                    document.body.appendChild(form);
+                    form.submit();
+                    document.body.removeChild(form);
+                },
+            })
+        })
+    }
+);
+</script>
+{% endblock %}

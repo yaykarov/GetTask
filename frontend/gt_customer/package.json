@@ -1,0 +1,66 @@
+{
+    "name": "gt_customer",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "@react-leaflet/core": "^1.0.2",
+        "@testing-library/jest-dom": "^4.2.4",
+        "@testing-library/react": "^9.5.0",
+        "@testing-library/user-event": "^7.2.1",
+        "@wojtekmaj/react-timerange-picker": "^3.3.0",
+        "antd": "^4.16.1",
+        "axios": "^0.21.1",
+        "content-disposition": "^0.5.3",
+        "css-element-queries": "^1.2.3",
+        "date-fns": "^2.22.1",
+        "js-cookie": "^2.2.1",
+        "js-file-download": "^0.4.12",
+        "leaflet": "^1.7.1",
+        "moment": "^2.29.1",
+        "node-sass": "^4.14.1",
+        "prettier": "^2.5.1",
+        "react": "^16.14.0",
+        "react-cool-onclickoutside": "^1.6.2",
+        "react-dadata": "^2.9.3",
+        "react-date-range": "^1.1.4",
+        "react-dom": "^16.14.0",
+        "react-input-mask": "^3.0.0-alpha.2",
+        "react-input-slider": "^6.0.0",
+        "react-leaflet": "^3.1.0",
+        "react-minimal-pie-chart": "^8.2.0",
+        "react-onclickoutside": "^6.11.2",
+        "react-redux": "^7.2.4",
+        "react-router-dom": "^5.2.0",
+        "react-scripts": "3.4.1",
+        "react-tooltip": "^4.2.21",
+        "reactjs-popup": "^1.5.0",
+        "redux": "^4.1.0",
+        "redux-axios-middleware": "^4.0.1",
+        "redux-thunk": "^2.3.0",
+        "reselect": "^4.0.0",
+        "styled-components": "^5.3.0",
+        "underscore": "^1.13.1"
+    },
+    "scripts": {
+        "postinstall": "node ./scripts/enable-css-sourcemaps.js",
+        "start": "npm run postinstall && react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject"
+    },
+    "eslintConfig": {
+        "extends": "react-app"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    }
+}

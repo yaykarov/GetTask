@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.css"/>
+{% endblock %}
+
+{% block buttons %}
+<h4>Распределение основных<sup>*</sup> рабочих по клиентам.</h4>
+<p>
+* - основным рабочим считается рабочий, у которого не менее {{ target_turnouts_count }} выходов на интервале
+c {{ target_first_day|date:'d.m.y' }}
+по {{ target_last_day|date:'d.m.y' }}
+</p>
+{% endblock %}
+
+{% block obj-data %}
+<form method="GET">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Интервал выборки:</span>
+                </div>
+                <select name="target_interval" class="form-control form-control-sm">
+                    <option value="normal" {% if target_interval == 'normal' %}selected{% endif %}>обычный</option>
+                    <option value="extended" {% if target_interval == 'extended' %}selected{% endif %}>расширенный</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group col col-auto">
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Необходимое количество выходов:</span>
+                </div>
+                <input class="form-control form-control-sm" id="target-count-input" style="width: 60px;" type="text" name="target_turnouts_count" value="{{ target_turnouts_count }}"/>
+            </div>
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.first_day }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.last_day }}
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+                Показать
+            </button>
+        </div>
+    </div>
+</form>
+
+<table class="table rh-table table-hover" id="main-table">
+<thead>
+<tr>
+    <th>Клиент</th>
+    <th>Объект</th>
+    {% for item_name, item_value in data.0.2 %}
+    <th>{{ item_name }}</th>
+    {% endfor %}
+</tr>
+</thead>
+<tbody>
+{% for name1, name2, row in data %}
+{% if forloop.counter != data|length %}
+<tr>
+    <td>{{ name1|safe }}</td>
+    <td>{{ name2 }}</td>
+    {% for item_name, item_value in row %}
+    <td>{{ item_value }}</td>
+    {% endfor %}
+</tr>
+{% endif %}
+{% endfor %}
+</tbody>
+<tfoot>
+{% with last_item=data|last %}
+    <td>{{ last_item.0|safe }}</td>
+    <td>{{ last_item.1 }}</td>
+    {% for item_name, item_value in last_item.2 %}
+    <td>{{ item_value }}</td>
+    {% endfor %}
+{% endwith %}
+</tfoot>
+</table>
+{% endblock %}
+
+{% block scripts %}
+{{ filter_form.media }}
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.js"></script>
+
+<script>
+$(document).ready(function () {
+    $('#main-table').DataTable({
+        "pageLength": 50,
+        "order": [],
+        "lengthMenu": [[100, 20, -1], [100, 20, "Все"]],
+        "stateSave": true,
+        "oLanguage": {
+            "sLengthMenu": "Отображено _MENU_ записей на страницу",
+            "sSearch": "Поиск:",
+            "sZeroRecords": "Ничего не найдено - извините",
+            "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+            "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+            "sInfoFiltered": "(filtered from _MAX_ total records)",
+            "oPaginate": {
+                "sFirst": "Первая",
+                "sNext": ">",
+                "sPrevious": "<",
+                "sLast": "Последняя",
+            },
+        },
+    });
+});
+</script>
+{% endblock %}

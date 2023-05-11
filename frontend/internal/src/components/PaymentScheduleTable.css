@@ -1,0 +1,27 @@
+.debit-row:not(:hover) {
+    background: #EFE;
+}
+
+.credit-row:not(:hover) {
+    background: #FEE;
+}
+
+tr:not(:hover) > .planned-operations-cell {
+    background: #DDF;
+}
+
+.future-cell:hover {
+    background: #CCF;
+}
+
+.future-cell:not(:hover) {
+    background: #1112;
+}
+
+.balance-cell {
+    border-top: 1px solid black !important;
+}
+
+.weekend-cell {
+    background: #FEE;
+}

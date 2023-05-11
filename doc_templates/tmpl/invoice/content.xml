@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:calcext="urn:org:documentfoundation:names:experimental:calc:xmlns:calcext:1.0" xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0" xmlns:css3t="http://www.w3.org/TR/css3-text/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dom="http://www.w3.org/2001/xml-events" xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:drawooo="http://openoffice.org/2010/draw" xmlns:field="urn:openoffice:names:experimental:ooo-ms-interop:xmlns:field:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0" xmlns:formx="urn:openoffice:names:experimental:ooxml-odf-interop:xmlns:form:1.0" xmlns:grddl="http://www.w3.org/2003/g/data-view#" xmlns:loext="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0" xmlns:math="http://www.w3.org/1998/Math/MathML" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0" xmlns:of="urn:oasis:names:tc:opendocument:xmlns:of:1.2" xmlns:officeooo="http://openoffice.org/2009/office" xmlns:ooo="http://openoffice.org/2004/office" xmlns:oooc="http://openoffice.org/2004/calc" xmlns:ooow="http://openoffice.org/2004/writer" xmlns:rpt="http://openoffice.org/2005/report" xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:tableooo="http://openoffice.org/2009/table" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:xforms="http://www.w3.org/2002/xforms" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" office:version="1.2">
+   <office:scripts />
+   <office:font-face-decls>
+      <style:font-face style:name="Mangal1" svg:font-family="Mangal" />
+      <style:font-face style:name="Arial" svg:font-family="Arial" style:font-family-generic="roman" style:font-pitch="variable" />
+      <style:font-face style:name="Liberation Sans" svg:font-family="'Liberation Sans'" style:font-family-generic="swiss" style:font-pitch="variable" />
+      <style:font-face style:name="Arial1" svg:font-family="Arial" style:font-family-generic="system" style:font-pitch="variable" />
+      <style:font-face style:name="Mangal" svg:font-family="Mangal" style:font-family-generic="system" style:font-pitch="variable" />
+      <style:font-face style:name="Microsoft YaHei" svg:font-family="'Microsoft YaHei'" style:font-family-generic="system" style:font-pitch="variable" />
+   </office:font-face-decls>
+   <office:automatic-styles>
+      <style:style style:name="Table1" style:family="table">
+         <style:table-properties style:width="18.09cm" fo:margin-left="0cm" fo:margin-top="0cm" fo:margin-bottom="0cm" table:align="left" style:writing-mode="lr-tb" />
+      </style:style>
+      <style:style style:name="Table1.A" style:family="table-column">
+         <style:table-column-properties style:column-width="4.373cm" />
+      </style:style>
+      <style:style style:name="Table1.B" style:family="table-column">
+         <style:table-column-properties style:column-width="4.371cm" />
+      </style:style>
+      <style:style style:name="Table1.C" style:family="table-column">
+         <style:table-column-properties style:column-width="1.753cm" />
+      </style:style>
+      <style:style style:name="Table1.D" style:family="table-column">
+         <style:table-column-properties style:column-width="7.594cm" />
+      </style:style>
+      <style:style style:name="Table1.1" style:family="table-row">
+         <style:table-row-properties style:min-row-height="0.423cm" fo:keep-together="auto" />
+      </style:style>
+      <style:style style:name="Table1.A1" style:family="table-cell">
+         <style:table-cell-properties fo:padding-left="0.088cm" fo:padding-right="0.088cm" fo:padding-top="0.053cm" fo:padding-bottom="0.053cm" fo:border-left="1.5pt solid #000000" fo:border-right="0.75pt solid #000000" fo:border-top="1.5pt solid #000000" fo:border-bottom="0.75pt solid #ffffff" />
+      </style:style>
+      <style:style style:name="Table1.C1" style:family="table-cell">
+         <style:table-cell-properties fo:padding-left="0.088cm" fo:padding-right="0.088cm" fo:padding-top="0.053cm" fo:padding-bottom="0.053cm" fo:border-left="0.75pt solid #000000" fo:border-right="0.75pt solid #000000" fo:border-top="1.5pt solid #000000" fo:border-bottom="0.75pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table1.D1" style:family="table-cell">
+         <style:table-cell-properties fo:padding-left="0.088cm" fo:padding-right="0.088cm" fo:padding-top="0.053cm" fo:padding-bottom="0.053cm" fo:border-left="0.75pt solid #000000" fo:border-right="1.5pt solid #000000" fo:border-top="1.5pt solid #000000" fo:border-bottom="0.75pt solid #ffffff" />
+      </style:style>
+      <style:style style:name="Table1.2" style:family="table-row">
+         <style:table-row-properties style:min-row-height="0.818cm" fo:keep-together="auto" />
+      </style:style>
+      <style:style style:name="Table1.C2" style:family="table-cell">
+         <style:table-cell-properties fo:padding-left="0.088cm" fo:padding-right="0.088cm" fo:padding-top="0.053cm" fo:padding-bottom="0.053cm" fo:border="0.75pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table1.D2" style:family="table-cell">
+         <style:table-cell-properties fo:padding-left="0.088cm" fo:padding-right="0.088cm" fo:padding-top="0.053cm" fo:padding-bottom="0.053cm" fo:border-left="0.75pt solid #000000" fo:border-right="1.5pt solid #000000" fo:border-top="0.75pt solid #ffffff" fo:border-bottom="0.75pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table1.A3" style:family="table-cell">
+         <style:table-cell-properties fo:padding-left="0.088cm" fo:padding-right="0.088cm" fo:padding-top="0.053cm" fo:padding-bottom="0.053cm" fo:border-left="1.5pt solid #000000" fo:border-right="0.75pt solid #000000" fo:border-top="0.75pt solid #ffffff" fo:border-bottom="1.5pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table1.A4" style:family="table-cell">
+         <style:table-cell-properties fo:padding-left="0.088cm" fo:padding-right="0.088cm" fo:padding-top="0.053cm" fo:padding-bottom="0.053cm" fo:border-left="1.5pt solid #000000" fo:border-right="0.75pt solid #000000" fo:border-top="1.5pt solid #000000" fo:border-bottom="0.75pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table1.C4" style:family="table-cell">
+         <style:table-cell-properties fo:padding-left="0.088cm" fo:padding-right="0.088cm" fo:padding-top="0.053cm" fo:padding-bottom="0.053cm" fo:border-left="0.75pt solid #000000" fo:border-right="0.75pt solid #000000" fo:border-top="1.5pt solid #000000" fo:border-bottom="1.5pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table1.D4" style:family="table-cell">
+         <style:table-cell-properties fo:padding-left="0.088cm" fo:padding-right="0.088cm" fo:padding-top="0.053cm" fo:padding-bottom="0.053cm" fo:border-left="0.75pt solid #000000" fo:border-right="1.5pt solid #000000" fo:border-top="1.5pt solid #000000" fo:border-bottom="1.5pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table1.A5" style:family="table-cell">
+         <style:table-cell-properties fo:padding-left="0.088cm" fo:padding-right="0.088cm" fo:padding-top="0.053cm" fo:padding-bottom="0.053cm" fo:border-left="1.5pt solid #000000" fo:border-right="0.75pt solid #000000" fo:border-top="0.75pt solid #000000" fo:border-bottom="0.75pt solid #ffffff" />
+      </style:style>
+      <style:style style:name="Table2" style:family="table">
+         <style:table-properties style:width="17.859cm" fo:margin-left="0cm" fo:margin-top="0cm" fo:margin-bottom="0cm" table:align="left" style:writing-mode="lr-tb" />
+      </style:style>
+      <style:style style:name="Table2.A" style:family="table-column">
+         <style:table-column-properties style:column-width="17.859cm" />
+      </style:style>
+      <style:style style:name="Table2.1" style:family="table-row">
+         <style:table-row-properties style:min-row-height="1.235cm" fo:keep-together="auto" />
+      </style:style>
+      <style:style style:name="Table2.A1" style:family="table-cell">
+         <style:table-cell-properties style:vertical-align="middle" fo:padding-left="0.018cm" fo:padding-right="0.018cm" fo:padding-top="0cm" fo:padding-bottom="0cm" fo:border-left="0.75pt solid #ffffff" fo:border-right="0.75pt solid #ffffff" fo:border-top="0.75pt solid #ffffff" fo:border-bottom="1.5pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table3" style:family="table">
+         <style:table-properties style:width="17.824cm" fo:margin-left="0cm" fo:margin-top="0cm" fo:margin-bottom="0cm" table:align="left" style:writing-mode="lr-tb" />
+      </style:style>
+      <style:style style:name="Table3.A" style:family="table-column">
+         <style:table-column-properties style:column-width="3cm" />
+      </style:style>
+      <style:style style:name="Table3.B" style:family="table-column">
+         <style:table-column-properties style:column-width="15.184cm" />
+      </style:style>
+      <style:style style:name="Table3.1" style:family="table-row">
+         <style:table-row-properties fo:keep-together="auto" />
+      </style:style>
+      <style:style style:name="Table3.A1" style:family="table-cell">
+         <style:table-cell-properties fo:padding-left="0.012cm" fo:padding-right="0.012cm" fo:padding-top="0.176cm" fo:padding-bottom="0cm" fo:border="0.75pt solid #ffffff" />
+      </style:style>
+      <style:style style:name="Table4" style:family="table">
+         <style:table-properties style:width="18cm" fo:margin-left="0cm" fo:margin-top="0cm" fo:margin-bottom="0cm" table:align="left" style:writing-mode="lr-tb" />
+      </style:style>
+      <style:style style:name="Table4.A" style:family="table-column">
+         <style:table-column-properties style:column-width="0.878cm" />
+      </style:style>
+      <style:style style:name="Table4.B" style:family="table-column">
+         <style:table-column-properties style:column-width="9.072cm" />
+      </style:style>
+      <style:style style:name="Table4.C" style:family="table-column">
+         <style:table-column-properties style:column-width="1.752cm" />
+      </style:style>
+      <style:style style:name="Table4.D" style:family="table-column">
+         <style:table-column-properties style:column-width="1.399cm" />
+      </style:style>
+      <style:style style:name="Table4.E" style:family="table-column">
+         <style:table-column-properties style:column-width="2.447cm" />
+      </style:style>
+      <style:style style:name="Table4.F" style:family="table-column">
+         <style:table-column-properties style:column-width="2.454cm" />
+      </style:style>
+      <style:style style:name="Table4.1" style:family="table-row">
+         <style:table-row-properties style:min-row-height="0.706cm" fo:keep-together="auto" />
+      </style:style>
+      <style:style style:name="Table4.A1" style:family="table-cell">
+         <style:table-cell-properties style:vertical-align="middle" fo:padding="0.088cm" fo:border-left="1.5pt solid #000000" fo:border-right="0.75pt solid #000000" fo:border-top="1.5pt solid #000000" fo:border-bottom="0.75pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table4.B1" style:family="table-cell">
+         <style:table-cell-properties style:vertical-align="middle" fo:padding="0.088cm" fo:border-left="0.75pt solid #000000" fo:border-right="0.75pt solid #000000" fo:border-top="1.5pt solid #000000" fo:border-bottom="0.75pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table4.F1" style:family="table-cell">
+         <style:table-cell-properties style:vertical-align="middle" fo:padding="0.088cm" fo:border-left="0.75pt solid #000000" fo:border-right="1.5pt solid #000000" fo:border-top="1.5pt solid #000000" fo:border-bottom="0.75pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table4.2" style:family="table-row">
+         <style:table-row-properties fo:keep-together="auto" />
+      </style:style>
+      <style:style style:name="Table4.A2" style:family="table-cell">
+         <style:table-cell-properties fo:padding="0.088cm" fo:border-left="1.5pt solid #000000" fo:border-right="0.75pt solid #000000" fo:border-top="0.75pt solid #000000" fo:border-bottom="1.5pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table4.B2" style:family="table-cell">
+         <style:table-cell-properties fo:padding="0.088cm" fo:border-left="0.75pt solid #000000" fo:border-right="0.75pt solid #000000" fo:border-top="0.75pt solid #000000" fo:border-bottom="1.5pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table4.C2" style:family="table-cell">
+         <style:table-cell-properties fo:padding="0.088cm" fo:border-left="0.75pt solid #000000" fo:border-right="0.75pt solid #000000" fo:border-top="0.75pt solid #000000" fo:border-bottom="1.5pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table4.D2" style:family="table-cell">
+         <style:table-cell-properties fo:padding="0.088cm" fo:border-left="0.75pt solid #000000" fo:border-right="0.75pt solid #000000" fo:border-top="0.75pt solid #000000" fo:border-bottom="1.5pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table4.E2" style:family="table-cell">
+         <style:table-cell-properties fo:padding="0.088cm" fo:border-left="0.75pt solid #000000" fo:border-right="0.75pt solid #000000" fo:border-top="0.75pt solid #000000" fo:border-bottom="1.5pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table4.F2" style:family="table-cell">
+         <style:table-cell-properties fo:padding="0.088cm" fo:border-left="0.75pt solid #000000" fo:border-right="1.5pt solid #000000" fo:border-top="0.75pt solid #000000" fo:border-bottom="1.5pt solid #000000" />
+      </style:style>
+      <style:style style:name="Table5" style:family="table">
+         <style:table-properties style:width="18cm" fo:margin-left="0cm" fo:margin-top="0cm" fo:margin-bottom="0cm" table:align="left" style:writing-mode="lr-tb" />
+      </style:style>
+      <style:style style:name="Table5.A" style:family="table-column">
+         <style:table-column-properties style:column-width="15.556cm" />
+      </style:style>
+      <style:style style:name="Table5.B" style:family="table-column">
+         <style:table-column-properties style:column-width="2.445cm" />
+      </style:style>
+      <style:style style:name="Table5.1" style:family="table-row">
+         <style:table-row-properties style:min-row-height="0.353cm" fo:keep-together="auto" />
+      </style:style>
+      <style:style style:name="Table5.A1" style:family="table-cell">
+         <style:table-cell-properties fo:padding-left="0.088cm" fo:padding-right="0.088cm" fo:padding-top="0cm" fo:padding-bottom="0.018cm" fo:border="0.75pt solid #ffffff" />
+      </style:style>
+      <style:style style:name="Table5.A5" style:family="table-cell">
+         <style:table-cell-properties fo:padding-left="0.088cm" fo:padding-right="0.088cm" fo:padding-top="0cm" fo:padding-bottom="0.018cm" fo:border-left="0.75pt solid #ffffff" fo:border-right="0.75pt solid #ffffff" fo:border-top="0.75pt solid #ffffff" fo:border-bottom="1.5pt solid #000000" />
+      </style:style>
+      <style:style style:name="P1" style:family="paragraph" style:parent-style-name="Standard">
+         <style:text-properties fo:language="ru" fo:country="RU" />
+      </style:style>
+      <style:style style:name="P2" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" />
+      </style:style>
+      <style:style style:name="P3" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" fo:text-align="center" style:justify-single-word="false" />
+      </style:style>
+      <style:style style:name="P4" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" fo:text-align="end" style:justify-single-word="false" />
+      </style:style>
+      <style:style style:name="P5" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" />
+         <style:text-properties fo:font-size="1pt" style:font-size-asian="1pt" style:font-size-complex="1pt" />
+      </style:style>
+      <style:style style:name="P6" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" />
+         <style:text-properties fo:language="ru" fo:country="RU" />
+      </style:style>
+      <style:style style:name="P7" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" />
+         <style:text-properties fo:language="ru" fo:country="RU" fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold" />
+      </style:style>
+      <style:style style:name="P8" style:family="paragraph" style:parent-style-name="Standard" style:master-page-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" style:page-number="auto" />
+      </style:style>
+      <style:style style:name="P9" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" fo:text-align="center" style:justify-single-word="false" />
+         <style:text-properties fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold" />
+      </style:style>
+      <style:style style:name="P10" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" fo:text-align="end" style:justify-single-word="false" />
+         <style:text-properties fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold" />
+      </style:style>
+      <style:style style:name="P11" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" />
+         <style:text-properties fo:language="ru" fo:country="RU" />
+      </style:style>
+      <style:style style:name="P12" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" />
+         <style:text-properties fo:language="ru" fo:country="RU" fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold" />
+      </style:style>
+      <style:style style:name="P13" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" />
+         <style:text-properties fo:language="ru" fo:country="RU" style:font-weight-complex="bold" />
+      </style:style>
+      <style:style style:name="P14" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" />
+         <style:text-properties fo:language="ru" fo:country="RU" officeooo:rsid="00163f6a" officeooo:paragraph-rsid="00163f6a" />
+      </style:style>
+      <style:style style:name="P15" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" fo:text-align="end" style:justify-single-word="false" />
+         <style:text-properties officeooo:rsid="00163f6a" officeooo:paragraph-rsid="00163f6a" />
+      </style:style>
+      <style:style style:name="P16" style:family="paragraph" style:parent-style-name="Standard">
+         <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" loext:contextual-spacing="false" fo:line-height="100%" fo:text-align="center" style:justify-single-word="false" />
+      </style:style>
+      <style:style style:name="P17" style:family="paragraph" style:parent-style-name="Standard">
+         <style:text-properties fo:language="ru" fo:country="RU" />
+      </style:style>
+      <style:style style:name="T1" style:family="text">
+         <style:text-properties fo:font-size="14pt" fo:font-weight="bold" style:font-size-asian="14pt" style:font-weight-asian="bold" style:font-size-complex="14pt" style:font-weight-complex="bold" />
+      </style:style>
+      <style:style style:name="T2" style:family="text">
+         <style:text-properties fo:font-size="14pt" fo:language="ru" fo:country="RU" fo:font-weight="bold" style:font-size-asian="14pt" style:font-weight-asian="bold" style:font-size-complex="14pt" style:font-weight-complex="bold" />
+      </style:style>
+      <style:style style:name="T3" style:family="text">
+         <style:text-properties fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold" />
+      </style:style>
+      <style:style style:name="T4" style:family="text">
+         <style:text-properties fo:language="ru" fo:country="RU" fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold" />
+      </style:style>
+      <style:style style:name="T5" style:family="text">
+         <style:text-properties officeooo:rsid="00163f6a" />
+      </style:style>
+   </office:automatic-styles>
+   <office:body>
+      <office:text>
+         <text:sequence-decls>
+            <text:sequence-decl text:display-outline-level="0" text:name="Illustration" />
+            <text:sequence-decl text:display-outline-level="0" text:name="Table" />
+            <text:sequence-decl text:display-outline-level="0" text:name="Text" />
+            <text:sequence-decl text:display-outline-level="0" text:name="Drawing" />
+            <text:sequence-decl text:display-outline-level="0" text:name="Figure" />
+         </text:sequence-decls>
+         <text:p text:style-name="P8" />
+         <table:table table:name="Table1" table:style-name="Table1">
+            <table:table-column table:style-name="Table1.A" />
+            <table:table-column table:style-name="Table1.B" />
+            <table:table-column table:style-name="Table1.C" />
+            <table:table-column table:style-name="Table1.D" />
+            <table:table-row table:style-name="Table1.1">
+               <table:table-cell table:style-name="Table1.A1" table:number-rows-spanned="2" table:number-columns-spanned="2" office:value-type="string">
+                  <text:p text:style-name="P2">
+                     ТОЧКА ПАО БАНКА "ФК ОТКРЫТИЕ"
+                     <text:s />
+                     г. Москва
+                  </text:p>
+               </table:table-cell>
+               <table:covered-table-cell />
+               <table:table-cell table:style-name="Table1.C1" office:value-type="string">
+                  <text:p text:style-name="P2">БИК</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table1.D1" office:value-type="string">
+                  <text:p text:style-name="P2">044525999</text:p>
+               </table:table-cell>
+            </table:table-row>
+            <table:table-row table:style-name="Table1.2">
+               <table:covered-table-cell />
+               <table:covered-table-cell />
+               <table:table-cell table:style-name="Table1.C2" table:number-rows-spanned="2" office:value-type="string">
+                  <text:p text:style-name="P2">Сч. №</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table1.D2" table:number-rows-spanned="2" office:value-type="string">
+                  <text:p text:style-name="P2">30101810845250000999</text:p>
+               </table:table-cell>
+            </table:table-row>
+            <table:table-row table:style-name="Table1.1">
+               <table:table-cell table:style-name="Table1.A3" table:number-columns-spanned="2" office:value-type="string">
+                  <text:p text:style-name="P2">Банк получателя</text:p>
+               </table:table-cell>
+               <table:covered-table-cell />
+               <table:covered-table-cell />
+               <table:covered-table-cell />
+            </table:table-row>
+            <table:table-row table:style-name="Table1.1">
+               <table:table-cell table:style-name="Table1.A4" office:value-type="string">
+                  <text:p text:style-name="P2">ИНН 5029258192</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table1.C1" office:value-type="string">
+                  <text:p text:style-name="P2">КПП 502901001</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table1.C4" table:number-rows-spanned="4" office:value-type="string">
+                  <text:p text:style-name="P2">Сч. №</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table1.D4" table:number-rows-spanned="4" office:value-type="string">
+                  <text:p text:style-name="P2">40702810402500077321</text:p>
+               </table:table-cell>
+            </table:table-row>
+            <table:table-row table:style-name="Table1.1">
+               <table:table-cell table:style-name="Table1.A5" table:number-rows-spanned="2" table:number-columns-spanned="2" office:value-type="string">
+                  <text:p text:style-name="P2">ООО «ГЕТТАСК»</text:p>
+               </table:table-cell>
+               <table:covered-table-cell />
+               <table:covered-table-cell />
+               <table:covered-table-cell />
+            </table:table-row>
+            <table:table-row table:style-name="Table1.2">
+               <table:covered-table-cell />
+               <table:covered-table-cell />
+               <table:covered-table-cell />
+               <table:covered-table-cell />
+            </table:table-row>
+            <table:table-row table:style-name="Table1.1">
+               <table:table-cell table:style-name="Table1.A3" table:number-columns-spanned="2" office:value-type="string">
+                  <text:p text:style-name="P2">Получатель</text:p>
+               </table:table-cell>
+               <table:covered-table-cell />
+               <table:covered-table-cell />
+               <table:covered-table-cell />
+            </table:table-row>
+         </table:table>
+         <text:p text:style-name="P5" />
+         <table:table table:name="Table2" table:style-name="Table2">
+            <table:table-column table:style-name="Table2.A" />
+            <table:table-row table:style-name="Table2.1">
+               <table:table-cell table:style-name="Table2.A1" office:value-type="string">
+                  <text:p text:style-name="P3">
+                     <text:span text:style-name="T1">Счет № </text:span>
+                     <text:span text:style-name="T2" id="number"></text:span>
+                     <text:span text:style-name="T1"> от </text:span>
+                     <text:span text:style-name="T2" id="day"></text:span>
+                     <text:span text:style-name="T1"> </text:span>
+                     <text:span text:style-name="T2" id="month"></text:span>
+                     <text:span text:style-name="T1" id="year"></text:span>
+                     <text:span text:style-name="T2"> </text:span>
+                     <text:span text:style-name="T1">г.</text:span>
+                  </text:p>
+               </table:table-cell>
+            </table:table-row>
+         </table:table>
+         <text:p text:style-name="P2" />
+         <table:table table:name="Table3" table:style-name="Table3">
+            <table:table-column table:style-name="Table3.A" />
+            <table:table-column table:style-name="Table3.B" />
+            <table:table-row table:style-name="Table3.1">
+               <table:table-cell table:style-name="Table3.A1" office:value-type="string">
+                  <text:p text:style-name="P2">Поставщик (Исполнитель):</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table3.A1" office:value-type="string">
+                  <text:p text:style-name="P6">ООО «ГЕТТАСК»</text:p>
+               </table:table-cell>
+            </table:table-row>
+            <table:table-row table:style-name="Table3.1">
+               <table:table-cell table:style-name="Table3.A1" office:value-type="string">
+                  <text:p text:style-name="P2">Покупатель (Заказчик):</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table3.A1" office:value-type="string">
+                  <text:p text:style-name="P6" id="legal_entity"/>
+               </table:table-cell>
+            </table:table-row>
+            <table:table-row table:style-name="Table3.1">
+               <table:table-cell table:style-name="Table3.A1" office:value-type="string">
+                  <text:p text:style-name="P2" />
+               </table:table-cell>
+               <table:table-cell table:style-name="Table3.A1" office:value-type="string">
+                  <text:p text:style-name="P2" />
+               </table:table-cell>
+            </table:table-row>
+         </table:table>
+         <text:p text:style-name="P2" />
+         <table:table table:name="Table4" table:style-name="Table4">
+            <table:table-column table:style-name="Table4.A" />
+            <table:table-column table:style-name="Table4.B" />
+            <table:table-column table:style-name="Table4.C" />
+            <table:table-column table:style-name="Table4.D" />
+            <table:table-column table:style-name="Table4.E" />
+            <table:table-column table:style-name="Table4.F" />
+            <table:table-row table:style-name="Table4.1">
+               <table:table-cell table:style-name="Table4.A1" office:value-type="string">
+                  <text:p text:style-name="P9">№</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table4.B1" office:value-type="string">
+                  <text:p text:style-name="P9">Наименование работ, услуг</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table4.B1" office:value-type="string">
+                  <text:p text:style-name="P9">Кол-вo</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table4.B1" office:value-type="string">
+                  <text:p text:style-name="P9">Ед</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table4.B1" office:value-type="string">
+                  <text:p text:style-name="P9">Цена</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table4.F1" office:value-type="string">
+                  <text:p text:style-name="P9">Сумма</text:p>
+               </table:table-cell>
+            </table:table-row>
+            <table:table-row table:style-name="Table4.2">
+               <table:table-cell table:style-name="Table4.A2" office:value-type="string">
+                  <text:p text:style-name="P3">1</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table4.B2" office:value-type="string">
+                  <text:p text:style-name="P14">Предварительная оплата за ПРР</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table4.C2" office:value-type="string">
+                  <text:p text:style-name="P15">1</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table4.D2" office:value-type="string">
+                  <text:p text:style-name="P3">-</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table4.E2" office:value-type="string">
+                  <text:p text:style-name="P4" id="amount_without_vat_1"/>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table4.F2" office:value-type="string">
+                  <text:p text:style-name="P4" id="amount_without_vat_2"/>
+               </table:table-cell>
+            </table:table-row>
+         </table:table>
+         <text:p text:style-name="P5" />
+         <table:table table:name="Table5" table:style-name="Table5">
+            <table:table-column table:style-name="Table5.A" />
+            <table:table-column table:style-name="Table5.B" />
+            <table:table-row table:style-name="Table5.1">
+               <table:table-cell table:style-name="Table5.A1" office:value-type="string">
+                  <text:p text:style-name="P10">Итого:</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table5.A1" office:value-type="string">
+                  <text:p text:style-name="P4" id="amount_without_vat_3"/>
+               </table:table-cell>
+            </table:table-row>
+            <table:table-row table:style-name="Table5.1">
+               <table:table-cell table:style-name="Table5.A1" office:value-type="string">
+                  <text:p text:style-name="P4">
+                     <text:span text:style-name="T4">В том числе НДС: </text:span>
+                  </text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table5.A1" office:value-type="string">
+                  <text:p text:style-name="P4" id="vat"/>
+               </table:table-cell>
+            </table:table-row>
+            <table:table-row table:style-name="Table5.1">
+               <table:table-cell table:style-name="Table5.A1" office:value-type="string">
+                  <text:p text:style-name="P10">Всего к оплате:</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="Table5.A1" office:value-type="string">
+                  <text:p text:style-name="P4" id="total_amount_1"/>
+               </table:table-cell>
+            </table:table-row>
+            <table:table-row table:style-name="Table5.1">
+               <table:table-cell table:style-name="Table5.A1" table:number-columns-spanned="2" office:value-type="string">
+                  <text:p text:style-name="P6" />
+                  <text:p text:style-name="P6">
+                     <text:span text:style-name="T5">Всего наименований: 1, на сумму </text:span>
+                     <text:span text:style-name="T5" id="total_amount_2" />
+                     <text:span text:style-name="T5"> руб.</text:span>
+                  </text:p>
+               </table:table-cell>
+               <table:covered-table-cell />
+            </table:table-row>
+            <table:table-row table:style-name="Table5.1">
+               <table:table-cell table:style-name="Table5.A5" table:number-columns-spanned="2" office:value-type="string">
+                  <text:p text:style-name="P7" />
+                  <text:p text:style-name="P7" />
+                  <text:p text:style-name="P13">Внимание!</text:p>
+                  <text:p text:style-name="P13">Оплата данного счета означает согласие с условиями поставки товара.</text:p>
+                  <text:p text:style-name="P13">Уведомление об оплате обязательно, в противном случае не гарантируется наличие товара на складе.</text:p>
+                  <text:p text:style-name="P13">Товар отпускается по факту прихода денег на р/с Поставщика, самовывозом, при наличии доверенности и паспорта.</text:p>
+                  <text:p text:style-name="P6" />
+               </table:table-cell>
+               <table:covered-table-cell />
+            </table:table-row>
+         </table:table>
+         <text:p text:style-name="P6" />
+         <text:p text:style-name="P1" />
+         <text:p text:style-name="P1">Руководитель ________________________________ Бухгалтер __________________________________</text:p>
+      </office:text>
+   </office:body>
+</office:document-content>

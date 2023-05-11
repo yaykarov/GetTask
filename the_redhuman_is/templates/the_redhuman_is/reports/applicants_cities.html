@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<h4>Города соискателей</h4>
+{% endblock %}
+
+{% block obj-data %}
+<form method="GET">
+    <div class="form-row pb-0 mb-1">
+        <div class="form-group col col-auto input-group-sm pb-0 mb-0">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Дата занесения</span>
+            </div>
+        </div>
+        <div class="form-group col col-auto pb-0 mb-0">
+            {{ filter_form.first_day }}
+        </div>
+        <div class="form-group col col-auto pb-0 mb-0">
+            {{ filter_form.last_day }}
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+                Показать
+            </button>
+        </div>
+    </div>
+</form>
+<table>
+    <thead>
+        <th>Город</th>
+        <th>Кол-во заявок</th>
+    </thead>
+    {% for item in items %}
+        <tr>
+            <td>{{ item.city_lc }}</td>
+            <td>{{ item.city_count }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{% endblock %}
+
+{% block scripts %}
+{{ filter_form.media }}
+{% endblock %}

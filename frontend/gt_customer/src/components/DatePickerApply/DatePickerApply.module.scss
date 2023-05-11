@@ -1,0 +1,87 @@
+@import "src/styles/const/media";
+
+.datePickerContainer {
+  position: relative;
+}
+
+.datePicker {
+  width: 240px;
+  height: 40px;
+  flex-shrink: 0;
+  background: #f2f2f2;
+  border-radius: 6px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.datePicker:hover {
+  background: #ebebeb;
+  transition: 0.1s;
+}
+
+.datePicker div {
+  margin-top: 1px;
+}
+
+.datePicker img {
+  margin-left: 16px;
+  margin-right: 20px;
+  margin-bottom: 1px;
+  flex-shrink: 2;
+}
+
+.datePickerDash {
+  background-color: #b3b3b3;
+  width: 7px;
+  height: 1px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.buttonApply {
+  font-family: Roboto, sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: 0.1s;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.buttonApply:hover {
+  background-color: #f2f2f2;
+}
+
+.arrow {
+  &__Left {
+    position: absolute;
+    cursor: pointer;
+    top: 50%;
+    left: -8px;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+  }
+  &__Right {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    right: -8px;
+    transform: translateY(-50%) rotate(180deg);
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block buttons %}
+<label>Рабочие</label>
+<p><form action="" method="post">
+  {% csrf_token %}
+  <table>
+    {{ wform.as_table }}
+  </table>
+  <button type="submit">Создать договоры</button>
+</form></p>
+<label>Договоры</label>
+
+<form method="post" enctype="multipart/form-data" action="">
+  {% csrf_token %}
+
+      <table>
+        <tr>
+          <th>Дата заключения</th>
+          <th>Рабочий</th>
+          <th>Тип</th>
+          <th>+</th>
+          <th>Стр. 1</th>
+          <th>Стр. 2</th>
+          <th>Стр. 3</th>
+        </tr>
+        {% for form in formset %}
+        <tr>
+          <td>{{ form.begin_date }}</td>
+          <td>{{ form.c_worker }}</td>
+          <td>{{ form.cont_type }}</td>
+          <td>{{ form.is_actual }}</td>
+          <td>{{ form.image }}</td>
+          <td>{{ form.image2 }}</td>
+          <td>{{ form.image3 }}</td>
+          {% for hidden in form.hidden_fields %}
+            {{ hidden }}
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </table>
+    <button type="submit">Сохранить</button>
+    {{ formset.management_form }}
+</form>
+{% endblock %}
+
+{% block obj-data %}
+  <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+  <link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+  <link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+  <script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+  <script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+  <script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+  <script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+  <script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+{% endblock %}

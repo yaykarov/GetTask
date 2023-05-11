@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load redhuman_tags %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" href="{% static 'css/magnific_popup.css' %}"/>
+
+<link rel="stylesheet" href="{% static 'autocomplete_light/select2.css' %}" />
+<link rel="stylesheet" href="{% static 'vendor/select2/dist/css/select2.css' %}" />
+{% endblock %}
+
+{% block buttons %}
+<h4>Невыходы</h4>
+{% endblock %}
+
+{% block obj-data %}
+<form method="GET">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            <label for="id_manager">{{ form.manager.label }}</label>
+            {{ form.manager }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ form.first_day }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ form.last_day }}
+        </div>
+        <div class="form-group col col-auto">
+            <button type="submit" class="btn btn-sm btn-primary">Показать</button>
+        </div>
+    </div>
+</form>
+
+<table class="table rh-table table-hover">
+    <thead>
+        <tr>
+            <th rowspan="2">Клиент</th>
+            {% for day in days %}
+                <th>{{ day|date:"d.m" }}</th>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for day in days %}
+                <th><center>{{ day|date:"D" }}<center></th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for location, row in data %}
+            <tr>
+                <td>{{ location.customer_id }} - {{ location.location_name }}</td>
+                {% for cell in row %}
+                    <td>
+                        <center><a class="popup" href="{% url 'the_redhuman_is:report_absent_details' location.pk days|get_value:forloop.counter0|date:'d.m.Y' %}">{{ cell }}</a></center>
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+{{ form.media }}
+<script type="text/javascript" src="{% static 'js/magnific_popup/magnific_popup.min.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+
+<script>
+$(document).ready(function() {
+    $('.popup').magnificPopup({
+        type: 'ajax'
+    });
+});
+</script>
+{% endblock %}

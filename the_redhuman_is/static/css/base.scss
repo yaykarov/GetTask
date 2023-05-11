@@ -1,0 +1,200 @@
+form {
+  font-size: $small-font-size;
+  .rh-table {
+    font-size: inherit;
+  }
+}
+h6 {
+  font-weight: bold;
+  font-size:   small;
+}
+.navbar {
+  .navbar-brand {
+    font-size: $font-size-base;
+  }
+  @include media-breakpoint-down(lg) {
+    font-size:      0.7rem;
+    padding-top:    0;
+    padding-bottom: 0;
+    margin-bottom:  0.25rem !important;
+    .dropdown-menu {
+      font-size: 0.7rem;
+    }
+    .navbar-brand {
+      font-size: 0.8rem;
+    }
+  }
+}
+.rh-no-wrap {
+  white-space: nowrap;
+}
+.rh-form-sm {
+  .button {
+    padding-top:    0.125rem;
+    padding-bottom: 0.125rem;
+  }
+  .form-group {
+    > label {
+      padding-bottom: 0.125rem;
+      padding-top:    0.125rem;
+      padding-right:  0.5rem;
+      white-space:    nowrap;
+    }
+    > div {
+      padding-right: 0;
+      padding-left:  0;
+    }
+  }
+  .form-control-sm {
+    padding-top:    0.125rem;
+    padding-bottom: 0.125rem;
+  }
+  .input-group-text {
+    font-size:      0.85rem;
+    padding-top:    0.125rem;
+    padding-bottom: 0.125rem;
+  }
+}
+.rh-table {
+  @extend .table-sm;
+  width:       auto;
+  //@extend .pr-3;
+  font-size:   $small-font-size;
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: 1;
+  button:not(.btn-link):not(.btn-primary):not(.btn-danger):not(.btn-outline-danger) {
+    @extend .btn;
+    @extend .btn-outline-primary;
+  }
+  caption {
+    @extend h6;
+    caption-side: top;
+    //color: $black;
+    text-align:   center;
+    //font-size: large;
+    label {
+      margin: 0;
+    }
+  }
+  form {
+    font-size: inherit;
+  }
+  select {
+    font-size: inherit;
+  }
+  thead {
+    tr {
+      th {
+        @extend .align-middle;
+        border-color:        $gray-600;
+        border-bottom-width: 1px;
+        border-top-width:    0;
+        padding:             4px;
+      }
+      &:first-child th {
+        border-top-width: 1px;
+      }
+    }
+  }
+  tr {
+    &:first-child > td {
+      border-top: none;
+    }
+    &:last-child > td {
+      border-bottom: 1px solid $table-border-color;
+    }
+    td {
+      @extend .align-middle;
+      padding: 4px !important;
+    }
+  }
+  .btn {
+    font-size:   13px;
+    padding:     3px 6px;
+    line-height: 1.1;
+  }
+}
+.select2-results__options {
+  font-size: $small-font-size;
+}
+.rh-fine-flex-row {
+  display: flex;
+  input {
+    margin-right: 2px;
+  }
+}
+.rh-table-inline-form {
+  .mb-2px {
+    margin-bottom: 2px;
+  }
+}
+.rh-table-documents {
+  @extend .rh-table;
+  thead {
+    tr {
+      th {
+        font-weight: normal;
+      }
+    }
+  }
+}
+.rh-table-full-width {
+  @extend .rh-table;
+  width: 100%;
+}
+#dataTable_wrapper, .dataTables_wrapper {
+  @extend .rh-table;
+  table.dataTable {
+    font-size:  inherit;
+    margin-top: 0 !important;
+    caption {
+      padding-top: 0;
+    }
+    .sorting, .sorting_asc, .sorting_desc {
+      &:before, &:after {
+        bottom: 42% !important;
+      }
+    }
+  }
+  table.table-bordered{
+    tr:first-child{
+      th:first-child {
+        border-left: 1px solid $gray-600;
+      }
+      th:last-child {
+        border-right: 1px solid $gray-600;
+      }
+    }
+  }
+  table.DTFC_Cloned {
+    td, th {
+      background: $gray-100;
+    }
+    td:last-child, th:last-child {
+      border-right: 1px solid $gray-400;
+    }
+    td:first-child, th:first-child {
+      border-left: 1px solid $gray-400;
+    }
+    caption {
+      label {
+        opacity: 0;
+      }
+    }
+  }
+  .dataTables_length, .dataTables_filter {
+    label {
+      margin: 4px;
+    }
+  }
+}
+#workersStatementForm {
+  label{
+    @extend .mr-2;
+  }
+  .select2-container {
+    @extend .form-control;
+    border-width: 0 !important;
+    padding: 0 !important;
+  }
+}

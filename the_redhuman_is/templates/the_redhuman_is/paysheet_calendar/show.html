@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block extra_html_head %}
+{{ filter_form.media }}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+{% endblock %}
+
+{% block buttons %}
+<h4>Календарь ведомостей</h4>
+{% endblock %}
+
+{% block obj-data %}
+{% include 'the_redhuman_is/core/modal.include' with link_class='cell' modal_id='dialog' modal_body_id='dialog_body' title='Подробности' %}
+<form method="GET">
+    {% csrf_token %}
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            <a href="{% url 'the_redhuman_is:paysheet_import_calendar' %}">
+                <button form="none" class="btn btn-sm btn-outline-primary">
+                    Импорт календаря
+                </button>
+            </a>
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-outline-primary" type="submit" formmethod="POST" formaction="{% url 'the_redhuman_is:paysheet_create_yesterday_paysheets' %}" formtarget="_blank">
+                Создать вчерашние ведомости и авансы
+            </button>
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.first_day }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.last_day }}
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+                Показать
+            </button>
+        </div>
+    </div>
+</form>
+
+<div class="row">
+    <div class="col-auto">
+        <table id="main-table" class="table rh-table table-hover">
+            <thead>
+                <tr>
+                <th rowspan="2">Клиент</th>
+                {% for day in days %}
+                    <th>{{ day|date:"d.m" }}</th>
+                {% endfor %}
+                </tr>
+                <tr>
+                {% for day in days %}
+                    <th>{{ day|date:"D" }}</th>
+                {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer, row in data %}
+                <tr>
+                    <td>{{ customer }}</td>
+                    {% for cell in row %}
+                    <td>
+                        {% if cell %}
+                        <center>
+                        <a class="cell" href="{{ cell.1|safe }}">
+                            {{ cell.0|safe }}
+                        </a>
+                        </center>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script>
+$(document).ready(
+    function () {
+        $('#main-table').DataTable(
+            {
+                "fixedColumns": {
+                    "leftColumns": 1,
+                },
+                "processing": true,
+                "pageLength": 100,
+                "stateSave": true,
+                "order": [[0, "asc"]],
+                "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+                "oLanguage": {
+                    "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                    "sSearch": "Поиск:",
+                    "sZeroRecords": "Ничего не найдено - извините",
+                    "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                    "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                    "sInfoFiltered": "(filtered from _MAX_ total records)",
+                    "oPaginate": {
+                        "sFirst": "Первая",
+                        "sNext": ">",
+                        "sPrevious": "<",
+                        "sLast": "Последняя",
+                    },
+                },
+                "columnDefs": [
+                    {
+                        "width": "200px",
+                        targets: 0
+                    }
+                ],
+            }
+        );
+    }
+);
+</script>
+{% endblock %}

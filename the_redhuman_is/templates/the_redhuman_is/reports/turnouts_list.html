@@ -1,0 +1,17 @@
+<div class="card">
+    {% if location and day or title %}
+    <div class="card-header">
+        {% if title %}{{ title }} {% endif %}{% if location and day %}{{ location.customer_id }}-{{ location }}, {{day|date:"d.m"}}{% endif %}
+    </div>
+    {% endif %}
+    <div class="list-group list-group-flush">
+        {% for turnout in turnouts %}
+            <li class="list-group-item">
+                {{ turnout.worker.tel_number }} <a href="{% url 'the_redhuman_is:worker_detail' turnout.worker.pk %}">{{ turnout.worker }}</a> 
+                №{{ turnout.pk }} {{ turnout.assignedworkerturnout.assigned_worker.request.pk }} 
+                {{ turnout.assignedworkerturnout.assigned_worker.request.customer }} 
+                {{ turnout.assignedworkerturnout.assigned_worker.request.location }} 
+            </li>
+        {% endfor %}
+    </div>
+</div>

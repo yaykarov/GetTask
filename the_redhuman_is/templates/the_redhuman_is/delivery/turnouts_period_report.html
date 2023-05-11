@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"></script>
+{% endblock %}
+
+{% block buttons %}
+<h5>Выходы с расхождениями с {{ first_day|date:'d.m.Y' }} по {{ last_day|date:'d.m.Y' }}</h5>
+{% endblock %}
+
+{% block obj-data %}
+<form method="GET">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+          <div class='input-group input-group-sm date' id='first_day' data-target-input="nearest">
+              <div class="input-group-prepend">
+                  <label class="input-group-text datepicker-prepend" for="first_day">С</label>
+              </div>
+              <input
+                      type="text"
+                      name="first_day"
+                      class="form-control form-control-sm datetimepicker-input"
+                      data-target="#first_day"
+                      id="first_day_input"
+                      value="{{ first_day|date:'d.m.Y' }}"
+              >
+              <div class="input-group-append" data-target="#first_day" data-toggle="datetimepicker">
+                  <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+              </div>
+          </div>
+
+        </div>
+        <div class="form-group col col-auto">
+          <div class='input-group input-group-sm date' id='last_day' data-target-input="nearest">
+              <div class="input-group-prepend">
+                  <label class="input-group-text datepicker-prepend" for="last_day">По</label>
+              </div>
+              <input
+                      type="text"
+                      name="last_day"
+                      class="form-control form-control-sm datetimepicker-input"
+                      data-target="#last_day"
+                      id="last_day_input"
+                      value="{{ last_day|date:'d.m.Y' }}"
+              >
+              <div class="input-group-append" data-target="#last_day" data-toggle="datetimepicker">
+                  <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+              </div>
+          </div>
+        </div>
+        <div class="form-group col col-auto">
+          <div class='input-group input-group-sm date' id='distance_input' data-target-input="nearest">
+            <div class="input-group-prepend">
+                <label class="input-group-text datepicker-prepend" for="distance_input">Дистанция</label>
+            </div>
+              <input class="form-control form-control-sm"  name="filter_distance" value="{{filter_distance}}"/>
+          </div>
+        </div>
+        <div class="form-group col col-auto">
+          <div class='input-group input-group-sm date' id='is_checked_input' data-target-input="is_checked">
+            <div class="input-group-prepend">
+                <label class="input-group-text datepicker-prepend" for="is_checked_input">Статус</label>
+            </div>
+              <select id="checked_status" name="checked_status">
+                <option value="all">Все</option>
+                <option value="not_checked">Не проверен</option>
+                <option value="ok">Подтвержден</option>
+                <option value="suspicious">Отклонен</option>
+              </select>
+          </div>
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+                Показать
+            </button>
+        </div>
+    </div>
+</form>
+<table class="table rh-table table-hover" id="main-table" style="width: 100%;">
+  <thead>
+      <tr>
+          <th>№</th>
+          <th>Дата</th>
+          <th>Рабочий</th>
+          <th>Отв-й</th>
+          <th>Номер заявки</th>
+          <th>Водитель</th>
+          <th>Филиал</th>
+          <th>Статус заявки</th>
+          <th>Индекс</th>
+          <th>Адрес</th>
+          <th>Проверка</th>
+          <th>Комментарий диспетчера</th>
+          <th>Комментарий к карте</th>
+          <th>Статус</th>
+          <th>Фото</th>
+      </tr>
+  </thead>
+<tbody>
+    {% for arrival in arrivals %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ arrival.request.date|date:"d.m.y"}}</td>
+        <td><a href="{% url 'the_redhuman_is:worker_detail' arrival.worker.id %}" target="_blank">{{ arrival.worker.name }}</a></td>
+        <td>{{ arrival.request.operator|default_if_none:"-" }}</td>
+        <td class="text-center">
+            <form action="{% url 'the_redhuman_is:backoffice_delivery_worker_map_data' %}" method="GET">
+                <input type="hidden" name="worker" value="{{ arrival.worker.id }}"/>
+                <input type="hidden" name="date" value="{{ arrival.request.date|date:"d.m.Y" }}"/>
+                <button class="hop" type="submit">{{ arrival.request.id }}</button>
+            </form>
+        </td>
+        <td>{{ arrival.request.driver_name }}</td>
+        <td>{{ arrival.request.location|default_if_none:"-"}}</td>
+        <td>{{ arrival.request.status }}</td>
+        <td>{{ arrival.item.code }}</td>
+        <td style="word-break: break-word; min-width: 240px;">{{ arrival.item.address }}</td>
+        <td>{{ arrival.discrepancy.is_ok|yesno:"Подтвержден,Отклонен,Не проверен" }}</td>
+        <td>{{ arrival.request.comment }}</td>
+        <td>
+
+            <form
+                method="POST"
+                enctype="multipart/form-data"
+                action="{% url 'the_redhuman_is:backoffice_delivery_item_worker_start_resolve_discrepancy' %}"
+                class="d-flex justify-content-around align-items-center discrepancy"
+            >
+                {% csrf_token %}
+                <input type="hidden" name="request" value="{{ arrival.request.id }}"/>
+                <input type="hidden" name="item" value="{{ arrival.item.id }}"/>
+                <input type="hidden" name="worker" value="{{ arrival.worker.id }}"/>
+                <textarea name="comment" style='height: 58px;width: 240px;' >{{ arrival.discrepancy.comment }}</textarea>
+                <button type="submit" class="btn btn-sm btn-outline-success btn_confirm" name='is_ok' value=true>
+                    &#10003;
+                </button>
+                <button type="submit" class="btn btn-sm btn-outline-success btn_deny" name='is_ok' value=false>
+                    &#10005;
+                </button>
+            </form>
+        </td>
+        <td>
+            <span class="ellipsis">...</span>
+            <form
+                method="POST"
+                enctype="multipart/form-data"
+                action="{% url 'the_redhuman_is:backoffice_delivery_request_add_extra_photos' %}"
+            >
+                {% csrf_token %}
+                <input
+                    class="image_input"
+                    type="file"
+                    id="photo-{{ arrival.request.id }}-{{ arrival.item.id }}"
+                    name="images"
+                    multiple
+                    hidden
+                />
+                <input
+                    type="text"
+                    name="request"
+                    value="{{ arrival.request.id }}"
+                    hidden
+                />
+                <label
+                    class="btn btn-sm btn-outline-success"
+                    for="photo-{{ arrival.request.id }}-{{ arrival.item.id }}"
+                    style="margin-top: 8px;"
+                >+</label>
+            </form>
+        </td>
+        <td>
+            <a
+                href="{% url 'the_redhuman_is:delivery_delivery_request_extra_photos' arrival.request.id %}"
+                target="_blank"
+            >{{ arrival.request.extra_photo_count }} фото</a>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/3.2.6/js/dataTables.fixedColumns.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+
+<script>
+$(document).ready(
+    function () {
+        $(".ellipsis").hide();
+
+        $("#first_day, #last_day").datetimepicker({
+            locale: "ru",
+            format: "DD.MM.YYYY"
+        });
+        let url = new URL(document.location);
+        let params = url.searchParams;
+        let status = params.get("checked_status");
+        if (status === null) {
+            status = 'all';
+        }
+        $("#checked_status").val(status);
+
+        $.fn.dataTable.moment('DD.MM.YYYY');
+        let main_table = $('#main-table').DataTable({
+            "pageLength": 50,
+            "order": [],
+            "lengthMenu": [[100, 20, -1], [100, 20, "Все"]],
+            "stateSave": true,
+            "searching": true,
+            "info": true,
+            "oLanguage": {
+                "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                "sSearch": "Поиск:",
+                "sZeroRecords": "Ничего не найдено - извините",
+                "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                "sInfoFiltered": "(filtered from _MAX_ total records)",
+                "oPaginate": {
+                    "sFirst": "Первая",
+                    "sNext": ">",
+                    "sPrevious": "<",
+                    "sLast": "Последняя",
+                },
+            },
+            "columnDefs": [
+                { "orderable": false, "targets": [0, 8, 13, 14] }
+            ],
+            "orderCellsTop": true,
+        });
+        main_table.on(
+            "order.dt search.dt",
+            function () {
+                main_table.column(
+                    0,
+                    { search: "applied", order: "applied" }
+                ).nodes().each(
+                    function (cell, i) {
+                        cell.innerHTML = i + 1;
+                    }
+                );
+            }
+        ).draw();
+
+        $(".image_input").change(
+            async function () {
+                let form = $(this).parents('form:first');
+                let ellipsis = $(this).parents().siblings('span:first');
+
+                ellipsis.show();
+                form.hide();
+
+                let response = await fetch(
+                    form.attr('action'),
+                    {
+                        method: 'POST',
+                        body: new FormData(form[0])
+                    }
+                );
+
+                ellipsis.hide();
+                form.show();
+            }
+        );
+
+        $("button.hop").click(function (e) {
+            e.preventDefault();
+            let button = $(this);
+            let form = button.parents('form');
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function (r) {
+                    const form = document.createElement('form');
+                    form.method = 'post'
+                    form.action = "{% url 'the_redhuman_is:delivery_map' %}"
+                    form.target = "_blank"
+                    for (const key in r) {
+                        if (r.hasOwnProperty(key)) {
+                            const hiddenField = document.createElement('input');
+                            hiddenField.type = 'hidden';
+                            hiddenField.name = key;
+                            hiddenField.value = r[key];
+                            form.appendChild(hiddenField);
+                        }
+                    }
+                    document.body.appendChild(form);
+                    form.submit();
+                    document.body.removeChild(form);
+                },
+            })
+        });
+
+        const postDiscrepancyCheck = async (form, is_ok) => {
+            const data = new FormData(form[0]);
+            data.append('is_ok', is_ok);
+            let response = await fetch(
+                form.attr('action'),
+                {
+                    method: 'POST',
+                    body: data
+                }
+            );
+
+            window.location.reload();
+        };
+
+        $('.btn_confirm').click((e) => {
+            e.preventDefault();
+            postDiscrepancyCheck($(e.target).parent(), true);
+        });
+        $('.btn_deny').click((e) => {
+            e.preventDefault();
+            postDiscrepancyCheck($(e.target).parent(), false);
+        });
+    }
+);
+
+</script>
+
+{% endblock %}

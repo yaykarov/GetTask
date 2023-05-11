@@ -1,0 +1,138 @@
+{% load static %}
+{% load redhuman_tags %}
+{% load menu %}
+
+{% spaceless %}
+
+{% if void_menu %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMainMenu" aria-controls="navbarMainMenu" aria-expanded="false">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarMainMenu">
+        <span class="navbar-brand">Добро пожаловать, {{ user.first_name }}</span>
+        <ul class="navbar-nav mr-auto ml-auto">
+        </ul>
+        <ul class="navbar-nav">
+            <li class="nav-item float-right">
+                <a class="nav-link" href="{% url 'the_redhuman_is:logout' %}">Выйти</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+{% else %}
+
+<style>
+.bg-light {
+    background-color: #fff !important;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.navbar-light .navbar-nav .nav-link:hover, .navbar-light .navbar-nav .nav-link:focus {
+    color: #1890ff;
+}
+
+.navbar-nav {
+    min-height: 46px;
+    font-size: 14px;
+    align-items: center;
+}
+
+.nav-item {
+    margin-right: 1rem;
+    border-bottom: 2px solid transparent;
+    transition: color .3s cubic-bezier(.645,.045,.355,1),border-color .3s cubic-bezier(.645,.045,.355,1),background .3s cubic-bezier(.645,.045,.355,1);
+}
+
+.nav-item:hover {
+    color: #1890ff;
+    border-bottom: 2px solid #1890ff;
+}
+
+.navbar {
+    padding: 0 1rem;
+}
+
+.dropdown-toggle::after {
+    display: none;
+}
+
+.dropdown-menu {
+    padding: 0 0;
+    border-radius: 2px;
+    transition: background .3s cubic-bezier(.645,.045,.355,1),padding .3s cubic-bezier(.645,.045,.355,1);
+    box-shadow: 0 3px 6px -4px rgba(0,0,0,.12), 0 6px 16px 0 rgba(0,0,0,.08), 0 9px 28px 8px rgba(0,0,0,.05);
+}
+
+.dropdown-item {
+    color: rgba(0,0,0,.85);
+    font-size: 14px;
+    padding: .3rem 1.5rem;
+}
+
+.dropdown-item.active {
+    background-color: #e6f7ff;
+    color: #1890ff;
+}
+
+.dropdown-item:hover {
+    color: #1890ff;
+    background-color: #fff;
+}
+
+.navbar-light .navbar-nav .nav-link {
+    color: rgba(0,0,0,.85);
+    min-height: 43px;
+}
+
+.navbar-nav:last-child {
+    margin-right: 0;
+}
+</style>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+<ul class="navbar-nav mr-auto">
+{% for top_menu_item in request|menu %}
+    {% if top_menu_item.url %}
+        <li class="nav-item">
+            <a class="nav-link" href="{{ top_menu_item.url }}">{{ top_menu_item.label }}</a>
+        </li>
+    {% else %}
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {{ top_menu_item.label }}
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            {% for menu_item in top_menu_item.items %}
+                <a class="dropdown-item" href="{{ menu_item.url }}">{{ menu_item.label }}</a>
+            {% endfor %}
+            </div>
+        </li>
+    {% endif %}
+{% endfor %}
+</ul>
+</nav>
+
+{% endif %}
+
+{% if not disable_unassigned_alerts %}
+<div id="warning-box">
+{% for warning in warnings %}
+    <div class="alert alert-warning" role="alert">
+        {{ warning }}
+        <button class="close" type="button" data-dismiss="alert" aria-label="close"><span aria-hidden="true">&times;</span></button>
+    </div>
+{% endfor %}
+</div>
+
+<div class="alert alert-danger" id="generalMenuWarning" style="display: none;"></div>
+
+<script type="text/javascript" src="{% static 'js/general_menu/unassigned_alert.js' %}"></script>
+<script>
+//startPolling("{% url 'applicants:unassigned_count' %}");
+</script>
+{% endif %}
+
+{% endspaceless %}

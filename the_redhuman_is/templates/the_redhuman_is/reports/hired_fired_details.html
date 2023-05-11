@@ -1,0 +1,15 @@
+{% for worker in hired %}
+<a href="{% url 'the_redhuman_is:worker_detail' worker.pk %}" class="list-group-item list-group-item-success list-group-item-action applicant-assign-link" title="входящий поток">
+    {{ worker }}
+</a>
+{% endfor %}
+{% for worker in fired %}
+<a href="{% url 'the_redhuman_is:worker_detail' worker.pk %}" class="list-group-item list-group-item-primary list-group-item-action applicant-assign-link" title="убытие">
+    {{ worker }}
+</a>
+{% endfor %}
+{% for worker in hired_fired %}
+<a href="{% url 'the_redhuman_is:worker_detail' worker.pk %}" class="list-group-item list-group-item-danger list-group-item-action applicant-assign-link" title="первый и последний раз работал в этом месяце">
+    {{ worker }}
+</a>
+{% endfor %}

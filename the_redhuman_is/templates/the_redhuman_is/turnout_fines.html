@@ -1,0 +1,24 @@
+<div class="row no-gutters align-items-end rh-table-inline-form">
+    <div class="col-auto">
+        <div id="container_{{ id_suffix }}">
+            <div class="in">
+                {% for item in items %}
+                    <div id="id_div_{{ id_suffix }}_id_{{ forloop.counter }}" class="rh-fine-flex-row mb-1">
+                        <span class="t_input">
+                            <input placeholder="Сумма" id="id_val_{{ id_suffix }}_id_{{ forloop.counter }}" type="text" value="{{ item.operation.amount }}" name="val_{{ id_suffix }}_id_{{ forloop.counter }}">
+                        </span>
+                        <input placeholder="Комментарий" id="id_comment_{{ id_suffix }}_id_{{ forloop.counter }}" type="text" value="{{ item.operation.comment }}" name="comment_{{ id_suffix }}_id_{{ forloop.counter }}">
+                        <button class="remove_button btn btn-link" id="id_remove_button_{{ id_suffix }}_{{ forloop.counter }}" onclick="return onRemove('id_div_{{ id_suffix }}_id_{{ forloop.counter }}')"><i class="far fa-minus-square fa-lg"></i></button>
+                    </div>
+                    <div>
+                        <input id="id_id_{{ id_suffix }}_id_{{ forloop.counter }}" type="hidden" value="{{ item.id }}" name="id_{{ id_suffix }}_id_{{ forloop.counter }}">
+                        <input id="id_operation_{{ id_suffix }}_id_{{ forloop.counter }}" type="hidden" value="{{ item.operation.id }}" name="operation_{{ id_suffix }}_id_{{ forloop.counter }}">
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-auto my-1">
+        <button id="id_add_button_{{ id_suffix }}" type="submit" onClick="return onAdd('{{ id_suffix }}')" class="col btn btn-link mb-2px"><i class="far fa-plus-square fa-lg"></i></button>
+    </div>
+</div>

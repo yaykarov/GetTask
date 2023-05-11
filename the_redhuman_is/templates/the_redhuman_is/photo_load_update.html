@@ -1,0 +1,65 @@
+{% extends 'the_redhuman_is/photo_load_add.html' %}
+{% load static %}
+{% block extra_html_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "css/blueimp-gallery.min.css" %}">
+{% endblock %}
+{% block current_photo %}
+    <ul class="nav nav-tabs mb-2" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" href="#images" role="tab" data-toggle="tab">Фотографии</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#comments" role="tab" data-toggle="tab">Комментарии</a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane fade show active" id="images">
+            <div class="row mb-3" id="galery">
+                {% for item in pictures %}
+                    <div class="col-auto px-1 mb-2 align-items-stretch {% if forloop.counter > 3 %}d-none{% else %}d-flex{% endif %}">
+                        <a href="{{ item.image.url }}" title="Фотография № {{ forloop.counter }}">
+                            <img src="{{ item.image.url }}" class="img-thumbnail">
+                        </a>
+                        {% if forloop.counter == 3 and pictures.count > 3 %}
+                            <div class="rh-card-img-overlay d-flex rounded">
+                                <span class="mx-auto align-self-center">+{{ pictures.count|add:"-3" }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div role="tabpanel" class="tab-pane fade mb-3" id="comments">
+            {% include 'the_redhuman_is/photo_load_messages_list.html' %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col"><h5>{{ title2 }}</h5></div>
+    </div>
+    <div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls">
+        <div class="slides"></div>
+        <h3 class="title"></h3>
+        <a class="prev">‹</a>
+        <a class="next">›</a>
+        <a class="close">×</a>
+        <a class="play-pause"></a>
+        <ol class="indicator"></ol>
+    </div>
+{% endblock %}
+{% block scripts %}
+    {{ block.super }}
+    <script src="{% static 'js/blueimp-gallery.min.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            document.getElementById('galery').onclick = function (event) {
+                event = event || window.event;
+                var target = event.target || event.srcElement,
+                    link = target.src ? target.parentNode : target,
+                    options = {index: link, event: event},
+                    links = this.getElementsByTagName('a');
+                blueimp.Gallery(links, options);
+            };
+        });
+    </script>
+{% endblock %}

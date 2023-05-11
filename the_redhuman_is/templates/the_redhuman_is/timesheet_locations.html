@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block table-data %}
+<style>
+
+table, tr, th, td, div table, table tr, table th, table td, table tr, thead tr, tbody tr, tr th {
+    line-height: 1;
+    border: 0;
+    border-bottom: 0;
+    border-top: 0;
+    border-collapse: collapse;
+	border-spacing: 0;
+    border-width: thin;
+    border-left: 0;
+    border-right: 0;
+}
+  .container {
+    width: 60%;
+    margin: auto;
+  }
+
+</style>
+<div class="container">
+  </div>
+  <table id="locations" class="row-border compact">
+    <thead>
+      <tr>
+        <th>Клиент</th>
+        <th>Объект</th>
+      </tr>
+    </thead>
+    <tbody>
+  {% for location in locations %}
+      <tr>
+        <td><a href="{% url 'the_redhuman_is:customer_detail' pk=location.customer_id.pk %}">{{ location.customer_id.cust_name }}</a></td>
+        <td>{{ location.location_name }}</td>
+      </tr>
+  {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!--<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>-->
+
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.css"/>
+<link rel="stylesheet" src="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"/>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.js"></script>
+<script>
+  $(document).ready(function(){
+      $("#locations").DataTable({"lengthMenu": [[100, 50, 20, -1], [100, 50, 20, "All"]]});
+                        /*{
+                            "fixedHeader": {
+                                header: true,
+                                footer: true
+                            },
+                            "processing": true,
+                            "jQueryUI": true,
+                            "lengthMenu": [[100, 50, 20, -1], [100, 50, 20, "All"]],
+                            "sPaginationType": "full_numbers",
+                            "oLanguage": {
+                                "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                                "sSearch": "Поиск:",
+                                "sZeroRecords": "Ничего не найдено - извините",
+                                "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                                "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                                "sInfoFiltered": "(filtered from _MAX_ total records)",
+                                "oPaginate": {
+                                    "sFirst": "Первая",
+                                    "sNext": ">",
+                                    "sPrevious": "<",
+                                    "sLast": "Последняя",
+                                }
+                            },
+                            "orderCellsTop": true
+                        }
+                    );*/
+  })
+  function timesheetsCommaTargets() {
+    var targets = [];
+    {% for day in days %}
+        targets.push(2 + {{ forloop.counter0 }});
+    {% endfor %}
+    {% if show_average_performance %}
+        targets[targets.length] = targets[targets.length - 1] + 1;
+    {% endif %}
+    return targets;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+  {% block buttons %}
+    <h4>{{ page_title }}</h4>
+  {% endblock %}
+
+  {% block obj-data %}
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <table>
+          {{ form.as_table }}
+      </table>
+      <button type="submit" name="submit" value="1">Сохранить</button>
+      <button type="button" onclick="history.back();">Отмена</button>
+    </form>
+  {% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load mathfilters %}
+{% block buttons %}
+    <div class="row">
+        <div class="col">
+            <a href="{% url 'the_redhuman_is:accs_to_all' %}" class="btn btn-sm btn-outline-primary">Всем счета</a>
+            <a href="{% url 'the_redhuman_is:export_deeds_xls' %}" class="btn btn-sm btn-outline-primary">Экспорт актов ЗУП</a>
+            <a href="{% url 'the_redhuman_is:export_rkos_xls' %}" class="btn btn-sm btn-outline-primary">Экспорт РКО ЗУП</a>
+            <a href="{% url 'the_redhuman_is:make_payroll' %}" class="btn btn-sm btn-outline-primary">Начислить з/п</a>
+            <a href="{% url 'the_redhuman_is:acts' %}" class="btn btn-sm btn-outline-primary">Акты</a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block obj-data %}
+{% endblock %}
+
+{% block table-data %}
+    <div class="row">
+        <div class="col-auto">
+            <table class="table rh-table">
+                <caption>Оборотно-сальдовая ведомость</caption>
+                <tr>
+                    <th>Наименование счета</th>
+                    <th>Оборот по дебету</th>
+                    <th>Оборот по кредиту</th>
+                    <th>Сальдо дебет</th>
+                    <th>Сальдо кредит</th>
+                </tr>
+                {% for acc in accs %}
+                    <tr>
+                        {% if acc.turnover_saldo >= 0 %}
+                            <td><a href="{% url 'the_redhuman_is:operating_account_detail' pk=acc.pk %}">{{ acc }}</a></td>
+                            <td>{{ acc.turnover_debet|intcomma }}</td>
+                            <td>{{ acc.turnover_credit|intcomma }}</td>
+                            <td>{{ acc.turnover_saldo|intcomma }}</td>
+                            <td>0</td>
+                        {% elif acc.turnover_saldo < 0 %}
+                            <td><a href="{% url 'the_redhuman_is:operating_account_detail' pk=acc.pk %}">{{ acc }}</a></td>
+                            <td>{{ acc.turnover_debet|intcomma }}</td>
+                            <td>{{ acc.turnover_credit|intcomma }}</td>
+                            <td>0</td>
+                            <td>{{ acc.turnover_saldo|abs|intcomma }}</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                <tr>
+                    {% if saldo >= 0 %}
+                        <td><a href="{% url 'the_redhuman_is:detalisation_70' %}">70 Расчеты по зарплате</a></td>
+                        <td>{{ debet|intcomma }}</td>
+                        <td>{{ credit|intcomma }}</td>
+                        <td>{{ saldo|intcomma}}</td>
+                        <td>0</td>
+                    {% elif saldo < 0 %}
+                        <td><a href="{% url 'the_redhuman_is:detalisation_70' %}">70 Расчеты по зарплате</a></td>
+                        <td>{{ debet|intcomma }}</td>
+                        <td>{{ credit|intcomma }}</td>
+                        <td>0</td>
+                        <td>{{ saldo|abs|intcomma}}</td>
+                    {% endif %}
+                </tr>
+            </table>
+        </div>
+    </div>
+{% endblock %}

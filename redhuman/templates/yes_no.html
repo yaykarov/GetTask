@@ -1,0 +1,7 @@
+{% if value is None %}
+    <i class="fas fa-question-circle text-secondary"></i>
+{% elif value %}
+    <i class="fas fa-check-circle text-success"></i>
+{% else %}
+    <i class="fas fa-times-circle text-danger"></i>
+{% endif %}

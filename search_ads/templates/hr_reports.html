@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+  {% block buttons %}
+    <a href="{% url 'search_ads:new_hr_report' %}"><button>Создать отчет</button></a>
+  {% endblock %}
+  {% block table-data %}
+    <h1>Отчеты</h1>
+    <table id="catalog-table" class="table cell-border compact">
+        <thead>
+            <tr>
+                <th>Номер отчета</th>
+                <th>Дата создания отчета</th>
+                <th>Сайты</th>
+                <th>Менеджеры</th>
+                <th>Число позиций поиска</th>
+                <th>Тег</th>
+                <th>Имя менеджера</th>
+                <th>Сайт</th>
+                <th>Телефон</th>
+                <th>Дата создания объявления</th>
+                <th>Заголовок</th>
+                <th>Ссылка</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ad in ads %}
+                <tr>
+                    <td>{{ ad.report.pk }}</td>
+                    <td>{{ ad.report.create_time }}</td>
+                    <td>{{ ad.report.sites }}</td>
+                    <td>{{ ad.report.managers }}</td>
+                    <td>{{ ad.report.positionCount }}</td>
+                    <td>{{ ad.keyword }}</td>
+                    <td>{{ ad.account.name }}</td>
+                    <td>{{ ad.site }}</td>
+                    <td>{{ ad.account.phone}}</td>
+                    <td>{% if ad.date_time_str %}{{ ad.date_time_str }}{%else%}-{%endif%}</td>
+                    <td>{{ ad.title }}</td>
+                    <td>{% if ad.ref %}<a href="{{ ad.ref }}">Ссылка</a>{%else%}-{% endif%}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

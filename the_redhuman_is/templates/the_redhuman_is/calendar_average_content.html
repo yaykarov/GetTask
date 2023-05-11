@@ -1,0 +1,147 @@
+{% load redhuman_tags %}
+{% load human_readable_values %}
+
+<div class="font-weight-bold">Основные показатели</div>
+<table id="average" class="table rh-table-full-width">
+<thead>
+    <tr>
+        <th rowspan="2">№</th>
+        <th rowspan="2"></th>
+        {% for day in days %}
+            <th class="date">{{ day }}</th>
+        {% endfor %}
+        <th rowspan="2">Среднее</th>
+        <th rowspan="2">Итого</th>
+    </tr>
+    <tr>
+        {% for day in week_days %}
+            <th class="date">{{ day }}</th>
+        {% endfor %}
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td>1</td>
+        <td>Количество объектов</td>
+        {% for val in day_locations %}
+            <td class="dt-center clickable timesheet_locations">{{ val|floatformat:1|separate }}</td>
+        {% endfor %}
+        <td class="dt-center">{{ avg_locations|floatformat:1|separate }}</td>
+        <td class="dt-center">{{ sum_locations|floatformat:1|separate }}</td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>Заявка</td>
+        {% for val in day_ordered %}
+            <td class="dt-center clickable timesheet_locations">{{ val|floatformat:1|separate }}</td>
+        {% endfor %}
+        <td class="dt-center">{{ avg_ordered|floatformat:1|separate }}</td>
+        <td class="dt-center">{{ sum_ordered|floatformat:1|separate }}</td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>Выходов за день</td>
+        {% for val in day_turnouts %}
+            <td class="dt-center clickable timesheets" data-display="turns">{{ val|floatformat:1 }}</td>
+        {% endfor %}
+        <td class="dt-center">{{ avg_turnouts|floatformat:1|separate }}</td>
+        <td class="dt-center">{{ sum_turnouts|floatformat:1|separate }}</td>
+    </tr>
+    <tr>
+        <td>4</td>
+        <td>Отработано часов</td>
+        {% for val in day_hours %}
+            <td class="dt-center clickable timesheets" data-display="hour_worked">{{ val|floatformat:1|separate }}</td>
+        {% endfor %}
+        <td class="dt-center">{{ avg_hours|floatformat:1|separate }}</td>
+        <td class="dt-center">{{ sum_hours|floatformat:1|separate }}</td>
+    </tr>
+    <tr>
+        <td>5</td>
+        <td>Не выведено, чел-к</td>
+        {% for val in day_noderived %}
+            <td class="dt-center clickable timesheets" data-display="noderived">{{ val|floatformat:1|separate }}</td>
+        {% endfor %}
+        <td class="dt-center">{{ avg_noderived|floatformat:1|separate }}</td>
+        <td class="dt-center">{{ sum_noderived|floatformat:1|separate }}</td>
+    </tr>
+    <tr>
+        <td>6</td>
+        <td>Выработка за день</td>
+        {% for val in day_performance %}
+            <td class="dt-center clickable timesheets" data-display="perfs">{{ val|floatformat:1|separate }}</td>
+        {% endfor %}
+        <td class="dt-center">{{ avg_performance|floatformat:1|separate }}</td>
+        <td class="dt-center">{{ sum_performance|floatformat:1|separate }}</td>
+    </tr>
+    <tr>
+        <td>7</td>
+        <td>Начисления за день</td>
+        {% for val in day_credit %}
+            <td class="dt-center clickable operating_account" data-display="credit">{{ val|floatformat:1|separate }}</td>
+        {% endfor %}
+        <td class="dt-center">{{ avg_credit|floatformat:1|separate }}</td>
+        <td class="dt-center">{{ sum_credit|floatformat:1|separate }}</td>
+    </tr>
+    <tr>
+        <td>8</td>
+        <td>Неоплаченные выходы</td>
+        {% for val in day_to_pay %}
+            <td class="dt-center clickable operating_account" data-display="to_pay">{{ val|floatformat:1|separate }}</td>
+        {% endfor %}
+        <td class="dt-center">{{ avg_to_pay|floatformat:1|separate }}</td>
+        <td class="dt-center">{{ sum_to_pay|floatformat:1|separate }}</td>
+    </tr>
+    <tr>
+        <td>9</td>
+        <td>Оплаченные выходы</td>
+        {% for val in day_payed %}
+            <td class="dt-center clickable operating_account" data-display="payed">{{ val|floatformat:1|separate }}</td>
+        {% endfor %}
+        <td class="dt-center">{{ avg_payed|floatformat:1|separate }}</td>
+        <td class="dt-center">{{ sum_payed|floatformat:1|separate }}</td>
+    </tr>
+    {% if not request.user|has_group:"Менеджеры" %}
+    <tr>
+        <td>10</td>
+        <td>Выплаты за день</td>
+        {% for val in day_debet %}
+            <td class="dt-center clickable operating_account" data-display="debet">{{ val|floatformat:1|separate }}</td>
+        {% endfor %}
+        <td class="dt-center">{{ avg_debet|floatformat:1|separate }}</td>
+        <td class="dt-center">{{ sum_debet|floatformat:1|separate }}</td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td>11</td>
+        <td>Вычеты за день</td>
+        {% for val in day_deduct %}
+            <td class="dt-center clickable operating_account" data-display="deduct">{{ val|floatformat:1|separate }}</td>
+        {% endfor %}
+        <td class="dt-center">{{ avg_deduct|floatformat:1|separate }}</td>
+        <td class="dt-center">{{ sum_deduct|floatformat:1|separate }}</td>
+    </tr>
+</tbody>
+</table>
+<br>
+<style>
+    .clickable {
+        cursor: pointer;
+    }
+    .clickable:hover {
+        background-color: beige;
+    }
+</style>
+<script>
+function calendarCommaTargets() {
+    var targets = [];
+    {% for day in days %}
+        targets.push(2 + {{ forloop.counter0 }});
+    {% endfor %}
+    {% if show_average_performance %}
+        targets[targets.length] = targets[targets.length - 1] + 1;
+    {% endif %}
+    return targets;
+}
+
+</script>

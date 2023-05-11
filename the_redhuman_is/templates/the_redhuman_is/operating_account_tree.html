@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<style>
+.child {
+    position:    relative;
+    margin-left: 10px;
+}
+.float {
+    float: right;
+}
+.clearfix {
+    overflow: hidden;
+}
+#root {
+    font-size:   10pt;
+}
+.node {
+}
+.nodes-list {
+    margin-left: 10px;
+}
+.hidden {
+    display: none;
+}
+.saldo {
+    margin-left:  7px;
+    margin-right: 7px;
+}
+.node-opener {
+    margin-right: 7px;
+    cursor:       pointer;
+}
+.field {
+    width: 100%;
+}
+i {
+    margin: 0;
+    color:  #007bff;
+}
+.node-opener:hover i {
+    color: white;
+}
+.btn-group {
+    padding: 2px;
+}
+.btn-group .btn {
+    margin:         0px;
+    padding-right:  8px;
+    padding-left:   8px;
+    padding-top:    0;
+    padding-bottom: 0;
+}
+</style>
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block obj-data %}
+<div id="vue-app">
+    <div class="row mb-2">
+        <div class="col-auto p-1">
+            <form id="search_form" method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:to_pay_salary_proxy' %}" class="form-inline">
+                {% csrf_token %}
+                {{ form.as_table }}
+                <button type="submit" class="btn btn-sm btn-primary ml-1">Поиск</button>
+            </form>
+        </div>
+        <div class="col-auto p-1 pl-4">
+            <a href="{% url 'import1c:upload-1c-file' %}" class="btn btn-sm btn-outline-primary">Загрузить банковскую выписку</a>
+        </div>
+        <div class="col-auto p-1">
+            <a href="{% url 'import1c:import-operation' %}" class="btn btn-sm btn-outline-primary">Импортировать проводку из банк-клиента (операций: {{unimported_operations_count}})</a>
+        </div>
+        {% if request.user.is_superuser %}
+          <div class="col-auto p-1">
+              <a href="{% url 'the_redhuman_is:operating_account_cache_clear' %}" class="btn btn-sm btn-outline-primary">Сбросить кэш</a>
+          </div>
+        {% endif %}
+    </div>
+    <div class="row mb-2">
+        <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Скрывать счета с нулевым сальдо</span>
+            </div>
+            <div class="input-group-append">
+                <div class="input-group-text">
+                    <input id="hide_zero_saldo_checkbox" type="checkbox">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div id="root" class="col">
+            <account-node account-title="Корневые счета"
+                          v-on:debet-select="debet=$event"
+                          v-on:credit-select="credit=$event"
+                          v-bind:selected-debet="debet != -1 ? debet.id : -1"
+                          v-bind:selected-credit="credit != -1 ? credit.id: -1"
+                          v-bind:last-operation="last_operation"></account-node>
+        </div>
+        <div class="col-5 ml-auto">
+            <form id="operation_form" method="POST" action="{% url 'the_redhuman_is:operating_account_add_operation' %}" enctype="multipart/form-data" v-on:submit.prevent="save_operation()">
+                {% csrf_token %}
+                <table class="table rh-table">
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_expense">Расход:</label></th>
+                        <td style='width: 100%;'>{{ expense_form.expense }}</td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_reconciliation">Сверка:</label></th>
+                        <td style='width: 100%;'>{{ reconciliation_form.reconciliation }}</td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_date">Дата:</label></th>
+                        <td>
+                            <input type="text" name="date" id="id_date" class="field" value="{{ now|date:'d.m.Y' }}" style='width: 100%;'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_time">Время:</label></th>
+                        <td>
+                            <input type="text" name="time" id="id_time" class="field" value="{{ now|date:'H:i' }}" style='width: 100%;'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_debet_account_name">Дебет:</label>
+                        </th>
+                        <td>
+                            {% if debet %}
+                            <input type="text" name="debet_account_name" id="id_debet_account_name" class="field" value="{{ debet.name }}" readonly style='width: 100%;'>
+                            {% else %}
+                            <input type="text" name="debet_account_name" id="id_debet_account_name" class="field" v-bind:value="debet != null ? debet.name : ''" readonly style='width: 100%;'>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_credit_account_name">Кредит:</label>
+                        </th>
+                        <td>
+                            {% if credit %}
+                            <input type="text" name="credit_account_name" id="id_credit_account_name" value="{{ credit.name }}" class="field" readonly style='width: 100%;'>
+                            {% else %}
+                            <input type="text" name="credit_account_name" id="id_credit_account_name" v-bind:value="credit != null ? credit.name : ''" class="field" readonly style='width: 100%;'>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_amount">Сумма:</label></th>
+                        <td>
+                            <input type="text" name="amount" class="field" id="id_amount" style='width: 100%;'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold">
+                            <label for="id_comment">Комментарий:</label></td>
+                        <td>
+                            <textarea cols="48" rows="4" name="comment" id="id_comment" style='width: 100%;'></textarea>
+                        </td>
+                    </tr>
+                </table>
+                {% if debet %}
+                <input type="hidden" name="debet" id="id_debet" value="{{ debet.id }}"/>
+                {% else %}
+                <input type="hidden" name="debet" id="id_debet" v-bind:value="debet?debet.id:null"/>
+                {% endif %}
+                {% if credit %}
+                <input type="hidden" name="credit" id="id_credit" value="{{ credit.id }}"/>
+                {% else %}
+                <input type="hidden" name="credit" id="id_credit" v-bind:value="credit?credit.id:null"/>
+                {% endif %}
+                <span id="id_message"></span>
+                <div class="row">
+                    <div class="col-5 ml-auto">
+                        <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <h6>Все проводки за вчера и сегодня</h6>
+            <table id="operations" class="table rh-table-full-width">
+                <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Дебет-Счет</th>
+                    <th>Кредит-Счет</th>
+                    <th>Комментарий</th>
+                    <th>Сумма</th>
+                    <th>Закрыт</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ form.media }}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+<script type="text/javascript" src="{% static 'js/vue-dev.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/vue_components.js' %}"></script>
+
+<!-- Todo: extract this into "finance" module? -->
+<script>
+let operations = [
+    {% for operation in operations %}
+    {
+        timepoint: '{{ operation.timepoint|date:"d.m.Y H:i" }}',
+        debet: {name: "{{ operation.debet }}".replace(/&gt;/g,">")},
+        credit: {name: "{{ operation.credit }}".replace(/&gt;/g,">")},
+        {% autoescape off %}
+        comment: "{{ operation.comment|escapejs }}",
+        {% endautoescape %}
+        amount: "{{ operation.amount|intcomma }}",
+        closed: {% if operation.is_closed %}true{% else %}false{% endif %}
+    },
+    {% endfor %}
+];
+
+let app = new Vue({
+    el: "#vue-app",
+    delimiters: ["[[","]]"],
+    data: {
+        debet: -1,
+        credit: -1,
+        last_operation: null,
+        operations: operations,
+        sort_key: 'timepoint',
+        sort_dir: true
+    },
+    methods: {
+        save_operation() {
+            if (this.debet == null || this.credit == null)
+                _setMessage('Не выбран дебет-счет или кредит счет');
+            else {
+                let form = $("#operation_form");
+                let url = form.attr('action');
+                let data = form.serializeArray();
+                let method = form.attr('method');
+                $.ajax({url: url, method: method, data: data, success: this.show_new_operation, error: this.show_operation_error})
+            }
+        },
+        show_new_operation(data) {
+            _setMessage(JSON.stringify(data));
+            if (data.status == 'ok') {
+                this.last_operation = data.operation;
+                $("#operations").DataTable().row.add(data.operation);
+                _setMessage("Операция сделана успешно");
+                this.operations.push(data.operation);
+                _clearSaveForm();
+            }
+            else {
+                _setMessage(data.error_text);
+            }
+        },
+        show_operation_error(data) {
+            _setMessage("Что-то пошло не так. Проблемы с сервером?");
+        },
+        set_zero_saldo_accounts_visibility(visible) {
+            this.$children[0].areZeroSaldoAccountsVisible = visible;
+        }
+    },
+    computed: {
+    },
+    mounted: function() {
+        this.$children[0].opened = true;
+    }
+});
+
+function _setMessage(text) {
+    document.getElementById("id_message").innerHTML = text;
+}
+
+function _clearSaveForm() {
+    document.getElementById("id_debet_account_name").value = null;
+    document.getElementById("id_debet").value = null;
+    document.getElementById("id_credit_account_name").value = null;
+    document.getElementById("id_credit").value = null;
+    document.getElementById("id_amount").value = null;
+    document.getElementById("id_comment").value = null;
+
+    $("#id_expense").val("").change();
+    $("#id_reconciliation").val("").change();
+}
+
+$(document).ready(
+    function () {
+        $.fn.dataTable.moment("DD.MM.YYYY");
+        $("#operations").DataTable(
+            {
+                "oLanguage": {
+                    "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                    "sSearch": "Поиск:",
+                    "sZeroRecords": "Ничего не найдено - извините",
+                    "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                    "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                    "sInfoFiltered": "(filtered from _MAX_ total records)",
+                    "oPaginate": {
+                        "sFirst": "Первая",
+                        "sNext": ">",
+                        "sPrevious": "<",
+                        "sLast": "Последняя",
+                    }
+                },
+                data: operations,
+                columns: [{data: 'timepoint' }, {data: 'debet.name' }, {data: 'credit.name' }, {data: 'comment' }, {data: 'amount' }, {data: 'closed'}],
+            }
+        );
+
+        $("#hide_zero_saldo_checkbox").on(
+            'click',
+            function() {
+                app.set_zero_saldo_accounts_visibility(!$("#hide_zero_saldo_checkbox").prop('checked'));
+            }
+        );
+    }
+);
+
+</script>
+{% endblock %}

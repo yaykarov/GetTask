@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<h4>Кари: список сохраненных файлов</h4>
+{% endblock %}
+
+
+{% block obj-data %}
+<table class="rh-table table table-hover">
+    <thead>
+        <tr>
+            <th>Время импорта</th>
+            <th>Автор</th>
+            <th>Файл</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for file in files %}
+        <tr>
+            <td>{{ file.timestamp|date:'d.m.Y H:i:s' }}</td>
+            <td>{{ file.author.username }}</td>
+            <td><a href="{{ file.data_file.url }}">{{ file.short_filename }}</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

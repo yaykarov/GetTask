@@ -1,0 +1,34 @@
+<form name="{{ id_suffix }}" id="id_form_{{ id_suffix }}" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="input-group input-group-sm col col-3">
+        <div class="input-group-prepend" style="width: 75%;">
+            <span class="input-group-text" style="width: 100%;">Фикс. бонус</span>
+        </div>
+        <input id="id_fixed_bonus_{{ id_suffix }}" type="text" class="form-control" value="{{ fixed_bonus }}">
+    </div>
+  
+    <div class="input-group input-group-sm col col-3">
+        <div class="input-group-prepend" style="width: 75%;">
+            <span class="input-group-text" style="width: 100%;">Бонус новичку</span>
+        </div>
+        <input id="id_bonus_{{ id_suffix }}" type="checkbox" class="form-control"{% if bonus_enabled %} checked{% endif %}>
+    </div>
+  
+    <div class="input-group input-group-sm col col-3">
+        <div class="input-group-prepend" style="width: 75%;">
+            <span class="input-group-text" style="width: 100%;">Подработка</span>
+        </div>
+        <input id="id_is_side_job_{{ id_suffix }}" type="checkbox" class="form-control"{% if is_side_job %} checked{% endif %}>
+    </div>
+
+    {% for info in box_infos %}
+        <div class="input-group input-group-sm col col-3">
+            <div class="input-group-prepend" style="width: 75%;">
+                <span class="input-group-text" style="width: 100%;">{{ info.name }}</span>
+            </div>
+            <input id="id_price_{{ id_suffix }}_{{ forloop.counter0 }}" type="text" class="form-control" value="{{ info.price }}">
+            <input id="id_pk_{{ id_suffix }}_{{ forloop.counter0 }}" type="hidden" value="{{ info.box_type_pk }}">
+        </div>
+    {% endfor %}
+</form>

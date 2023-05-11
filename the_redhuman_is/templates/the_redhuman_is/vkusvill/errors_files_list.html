@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<h4>Список сохраненных файлов с ошибками (пересортом)</h4>
+{% endblock %}
+
+{% block obj-data %}
+<table class="rh-table table table-hover">
+    <thead>
+        <tr>
+            <th>Время импорта</th>
+            <th>Автор</th>
+            <th>С</th>
+            <th>По</th>
+            <th>Импортирован</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for file in files %}
+        <tr>
+            <td>{{ file.timestamp|date:'d.m.Y H:i:s' }}</td>
+            <td>{{ file.author.username }}</td>
+            <td>{{ file.first_day|date:'d.m.Y' }}</td>
+            <td>{{ file.last_day|date:'d.m.Y' }}</td>
+            <td class="text-center">
+                {% if file.import_timestamp %}
+                    {{ file.import_timestamp|date:'d.m.Y H:i:s' }}    
+                {% else %}
+                    Нет
+                {% endif %}
+            </td>
+            <td><a href="{{ file.data_file.url }}">скачать</a></td>
+            <td><a href="{% url 'the_redhuman_is:vkusvill_errors_file_report' file.pk %}">посмотреть отчет</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

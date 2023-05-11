@@ -1,0 +1,70 @@
+{% load static humanize %}
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<link rel="icon" href="/static/img/favicon.ico" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="HandheldFriendly" content="true">
+<link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Cabin|Pragati+Narrow|Lato|Roboto"
+/>
+<link
+    rel="stylesheet"
+    href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+    integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf"
+    crossorigin="anonymous"
+/>
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/antd@3.25.2/dist/antd.min.css"
+    crossorigin="anonymous"
+/>
+
+<link rel="stylesheet" href="{% static 'css/base.css' %}"/>
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+<script>
+
+const urls = {
+    data_url: "{% url 'the_redhuman_is:delivery_new_customers_report_data' %}",
+    confirmation_url: "{% url 'the_redhuman_is:delivery_confirm_legal_entity' %}",
+};
+
+window.getPageProps = () => {
+    return {
+        urls: {...urls},
+    };
+};
+</script>
+
+<script
+    src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+    crossorigin="anonymous">
+</script>
+<title>{{ head_title|default:'Cerebro' }}</title>
+</head>
+<body>
+{% include 'the_redhuman_is/_include/general_menu.html' with disable_unassigned_alerts=1 %}
+
+<div class="container">
+    <div id="root"></div>
+</div>
+
+<div class="scripts" hidden="hidden">
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"
+    integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ"
+    crossorigin="anonymous">
+</script>
+<script
+    src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"
+    integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
+    crossorigin="anonymous">
+</script>
+</div>
+
+</body>
+</html>

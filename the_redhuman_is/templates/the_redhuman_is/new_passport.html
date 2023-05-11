@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<label>Добавить паспорт</label>
+{% endblock %}
+
+{% block obj-data %}
+<form method="POST">
+    {% csrf_token %}
+    <table>
+        {{ npform.as_table  }}
+    </table>
+    <button type="submit">Сохранить</button>
+</form>
+{% endblock %}

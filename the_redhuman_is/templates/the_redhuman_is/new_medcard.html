@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block buttons %}
+<label>Добавить медкнижку</label>
+{% endblock %}
+
+{% block obj-data %}
+<form method="POST" enctype='multipart/form-data'>
+    {% csrf_token %}
+    <table>
+        {{ form.as_table  }}
+    </table>
+    <button type="submit">Сохранить</button>
+</form>
+
+{% endblock %}
+

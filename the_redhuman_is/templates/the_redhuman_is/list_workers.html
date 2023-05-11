@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block extra_html_head %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+{% endblock %}
+
+{% block buttons %}
+    <div class="row">
+        <div class="col">
+            <a href="{% url 'the_redhuman_is:new_worker' %}" target="_blank" class="btn btn-sm btn-outline-primary">Добавить рабочего</a>
+
+            <a href="{% url 'the_redhuman_is:list_workers' %}?show_last_turnouts=true" class="btn btn-sm btn-outline-primary">Показать информацию о последних выходах</a>
+            <a href="{% url 'the_redhuman_is:list_workers' %}" class="btn btn-sm btn-outline-primary">Скрыть информацию о последних выходах</a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block obj-data %}
+    <div class="row">
+        <div class="col">
+            <table id="main_table" class="table rh-table-full-width table-hover">
+                <thead>
+                <tr>
+                    <th class="rh-no-wrap">Дата<br>занесения</th>
+                    <th class="rh-no-wrap"></th>
+                    <th class="rh-no-wrap">Рабочий</th>
+                    <th class="rh-no-wrap">Дата<br>окончания МК</th>
+                    <th class="rh-no-wrap">Гражданство</th>
+                    <th class="rh-no-wrap">МК, серия</th>
+                    <th class="rh-no-wrap">МК, номер</th>
+                    <th class="rh-no-wrap">Должность</th>
+                    {% if show_last_turnouts %}
+                    <th class="rh-no-wrap">Дата<br>посл.<br>выхода</th>
+                    <th class="rh-no-wrap">Посл.<br>выход<br>на</th>
+                    {% endif %}
+                    <th class="rh-no-wrap">Кол-во<br>выходов</th>
+                    <th class="rh-no-wrap">Кол-во<br>договоров</th>
+                    <th class="rh-no-wrap">Телефон</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for worker in workers %}
+                    <tr>
+                        <td class="rh-no-wrap">{{ worker.input_date|date:"d.m.Y" }}</td>
+                        <td>
+                            <a href="{% url 'the_redhuman_is:worker_edit' pk=worker.pk %}" target="_blank">
+                                <i class="far fa-edit"></i>
+                            </a>
+                        </td>
+                        <td class="rh-no-wrap">
+                            <a href="{% url 'the_redhuman_is:worker_detail' pk=worker.pk %}">{{ worker }}</a>
+                        </td>
+                        <td>{{ worker.m_date_of_exp|date:"d.m.Y" }}</td>
+                        <td>{{ worker.citizenship|default_if_none:"" }}</td>
+                        <td>{{ worker.mig_series|default_if_none:"" }}</td>
+                        <td>{{ worker.mig_number|default_if_none:"" }}</td>
+                        <td>{{ worker.position|default_if_none:"" }}</td>
+                        {% if show_last_turnouts %}
+                        <td>{{ worker.last_turnout_date|date:"d.m.Y" }}</td>
+                        <td>{{ worker.last_turnout_customer }}</td>
+                        {% endif %}
+                        <td>{{ worker.worker_turnouts__count|default_if_none:"" }}</td>
+                        <td>{{ worker.contract__count|default_if_none:"" }}</td>
+                        <td>{{ worker.tel_number|default_if_none:"" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/3.2.6/js/dataTables.fixedColumns.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $.fn.dataTable.moment( 'DD.MM.YYYY' );
+            $('#main_table').DataTable({
+                //"scrollX": true,
+                //"scrollCollapse": true,
+                //"fixedColumns": {
+                //    //"leftColumns": 2,
+                //},
+                "order": [[ 0, 'desc' ], ],
+                "processing": true,
+                "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+                "sPaginationType": "full_numbers",
+                //"sWrapper": "dataTables_wrapper form-inline",
+                "oLanguage": {
+                    "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                    "sSearch": "Поиск:",
+                    "sZeroRecords": "Ничего не найдено - извините",
+                    "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                    "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                    "sInfoFiltered": "(filtered from _MAX_ total records)",
+                    "oPaginate": {
+                        "sFirst": "Первая",
+                        "sNext": ">",
+                        "sPrevious": "<",
+                        "sLast": "Последняя",
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

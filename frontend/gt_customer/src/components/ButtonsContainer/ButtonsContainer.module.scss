@@ -1,0 +1,50 @@
+@import "src/styles/const/media";
+@import "src/styles/const/size";
+
+.buttonsContainer {
+    width: calc(100% - 80px);
+    margin-left: 40px;
+    margin-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.buttonsContainerLeft {
+    display: flex;
+    flex-grow: 1;
+    margin-right: 10px;
+    margin-bottom: $size-4x;
+    flex-direction: column;
+
+    & > * {
+        margin-left: 0;
+        margin-bottom: $size-2x;
+    }
+
+    @include for-tablet-lg {
+        flex-direction: row;
+
+        & > * {
+            margin-left: $size-4x;
+            margin-bottom: 0;
+
+            &:first-child {
+                    margin-left: 0;
+            }
+        }
+    }
+
+    @include for-desktop {
+        margin-bottom: 0;
+    }
+}
+
+.buttonsContainerRight {
+    width: max-content;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Клиент</title>
+  </head>
+
+  {% block buttons %}
+  <label>Новый комментарий</label>
+  {% endblock %}
+
+  {% block table-data %}
+    <form method="POST">
+      {% csrf_token %}
+      <table>
+        {{ form.as_p }}
+      </table>
+        <button type="submit">Сохранить</button>
+    </form>
+
+  {% endblock %}
+</html>

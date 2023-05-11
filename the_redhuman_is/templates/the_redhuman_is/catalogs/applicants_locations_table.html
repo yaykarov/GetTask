@@ -1,0 +1,34 @@
+{% extends 'the_redhuman_is/catalogs/index.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block catalog-table %}
+    <div class="row">
+        <div class="col ml-2">
+            <h1>{{ title }}</h1>
+            <table id="catalog-table" class="table rh-table-full-width">
+                <thead>
+                <tr>
+                    <th>{{ table_row_title }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td width="250">{{ item }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div class="row ">
+                <div class="col-6 ml-2">
+                    <h6>Добавить объекты</h6>
+                    <form action="{% url 'the_redhuman_is:catalog_applicant_locations_manage' %}" method="post">
+                        {% crispy form %}
+                        <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

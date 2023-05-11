@@ -1,0 +1,472 @@
+{% extends 'base.html' %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.css"/>
+<script src="//cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.js"></script>
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.min.css" />
+{% endblock %}
+
+{% block buttons %}
+<h4>Продолжительность жизни {{ total_workers_count }} рабочих на интервале в {{ days_count }} сут. </h4>
+{% endblock %}
+
+{% block obj-data %}
+<form method="GET">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            {{ filter_form.first_day }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.last_day }}
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+                Показать
+            </button>
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-outline-primary" onclick="return onLabelClick(this, null);">Сбросить выделение</button>
+        </div>
+    </div>
+</form>
+
+<div>
+<div id="graphdiv" style="width: 78%;height: 600px; float: left;"></div>
+<div id="labelsdiv" style="width: 20%;height: 600px; float: right; margin-top: -60px;"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ filter_form.media }}
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.js"></script>
+
+<script>
+
+/**
+ * A class to parse color values
+ *
+ * NOTE: modified by danvk. I removed the "getHelpXML" function to reduce the
+ * file size, added "use strict" and a few "var" declarations where needed.
+ *
+ * Modifications by adilh:
+ * Original "RGBColor" function name collides with:
+ *   http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-RGBColor
+ * so renamed to "RGBColorParser"
+ *
+ * @author Stoyan Stefanov <sstoo@gmail.com>
+ * @link   http://www.phpied.com/rgb-color-parser-in-javascript/
+ * @license Use it if you like it
+ */
+"use strict";
+
+function RGBColorParser(color_string)
+{
+    this.ok = false;
+
+    // strip any leading #
+    if (color_string.charAt(0) == '#') { // remove # if any
+        color_string = color_string.substr(1,6);
+    }
+
+    color_string = color_string.replace(/ /g,'');
+    color_string = color_string.toLowerCase();
+
+    // before getting into regexps, try simple matches
+    // and overwrite the input
+    var simple_colors = {
+        aliceblue: 'f0f8ff',
+        antiquewhite: 'faebd7',
+        aqua: '00ffff',
+        aquamarine: '7fffd4',
+        azure: 'f0ffff',
+        beige: 'f5f5dc',
+        bisque: 'ffe4c4',
+        black: '000000',
+        blanchedalmond: 'ffebcd',
+        blue: '0000ff',
+        blueviolet: '8a2be2',
+        brown: 'a52a2a',
+        burlywood: 'deb887',
+        cadetblue: '5f9ea0',
+        chartreuse: '7fff00',
+        chocolate: 'd2691e',
+        coral: 'ff7f50',
+        cornflowerblue: '6495ed',
+        cornsilk: 'fff8dc',
+        crimson: 'dc143c',
+        cyan: '00ffff',
+        darkblue: '00008b',
+        darkcyan: '008b8b',
+        darkgoldenrod: 'b8860b',
+        darkgray: 'a9a9a9',
+        darkgreen: '006400',
+        darkkhaki: 'bdb76b',
+        darkmagenta: '8b008b',
+        darkolivegreen: '556b2f',
+        darkorange: 'ff8c00',
+        darkorchid: '9932cc',
+        darkred: '8b0000',
+        darksalmon: 'e9967a',
+        darkseagreen: '8fbc8f',
+        darkslateblue: '483d8b',
+        darkslategray: '2f4f4f',
+        darkturquoise: '00ced1',
+        darkviolet: '9400d3',
+        deeppink: 'ff1493',
+        deepskyblue: '00bfff',
+        dimgray: '696969',
+        dodgerblue: '1e90ff',
+        feldspar: 'd19275',
+        firebrick: 'b22222',
+        floralwhite: 'fffaf0',
+        forestgreen: '228b22',
+        fuchsia: 'ff00ff',
+        gainsboro: 'dcdcdc',
+        ghostwhite: 'f8f8ff',
+        gold: 'ffd700',
+        goldenrod: 'daa520',
+        gray: '808080',
+        green: '008000',
+        greenyellow: 'adff2f',
+        honeydew: 'f0fff0',
+        hotpink: 'ff69b4',
+        indianred : 'cd5c5c',
+        indigo : '4b0082',
+        ivory: 'fffff0',
+        khaki: 'f0e68c',
+        lavender: 'e6e6fa',
+        lavenderblush: 'fff0f5',
+        lawngreen: '7cfc00',
+        lemonchiffon: 'fffacd',
+        lightblue: 'add8e6',
+        lightcoral: 'f08080',
+        lightcyan: 'e0ffff',
+        lightgoldenrodyellow: 'fafad2',
+        lightgrey: 'd3d3d3',
+        lightgreen: '90ee90',
+        lightpink: 'ffb6c1',
+        lightsalmon: 'ffa07a',
+        lightseagreen: '20b2aa',
+        lightskyblue: '87cefa',
+        lightslateblue: '8470ff',
+        lightslategray: '778899',
+        lightsteelblue: 'b0c4de',
+        lightyellow: 'ffffe0',
+        lime: '00ff00',
+        limegreen: '32cd32',
+        linen: 'faf0e6',
+        magenta: 'ff00ff',
+        maroon: '800000',
+        mediumaquamarine: '66cdaa',
+        mediumblue: '0000cd',
+        mediumorchid: 'ba55d3',
+        mediumpurple: '9370d8',
+        mediumseagreen: '3cb371',
+        mediumslateblue: '7b68ee',
+        mediumspringgreen: '00fa9a',
+        mediumturquoise: '48d1cc',
+        mediumvioletred: 'c71585',
+        midnightblue: '191970',
+        mintcream: 'f5fffa',
+        mistyrose: 'ffe4e1',
+        moccasin: 'ffe4b5',
+        navajowhite: 'ffdead',
+        navy: '000080',
+        oldlace: 'fdf5e6',
+        olive: '808000',
+        olivedrab: '6b8e23',
+        orange: 'ffa500',
+        orangered: 'ff4500',
+        orchid: 'da70d6',
+        palegoldenrod: 'eee8aa',
+        palegreen: '98fb98',
+        paleturquoise: 'afeeee',
+        palevioletred: 'd87093',
+        papayawhip: 'ffefd5',
+        peachpuff: 'ffdab9',
+        peru: 'cd853f',
+        pink: 'ffc0cb',
+        plum: 'dda0dd',
+        powderblue: 'b0e0e6',
+        purple: '800080',
+        red: 'ff0000',
+        rosybrown: 'bc8f8f',
+        royalblue: '4169e1',
+        saddlebrown: '8b4513',
+        salmon: 'fa8072',
+        sandybrown: 'f4a460',
+        seagreen: '2e8b57',
+        seashell: 'fff5ee',
+        sienna: 'a0522d',
+        silver: 'c0c0c0',
+        skyblue: '87ceeb',
+        slateblue: '6a5acd',
+        slategray: '708090',
+        snow: 'fffafa',
+        springgreen: '00ff7f',
+        steelblue: '4682b4',
+        tan: 'd2b48c',
+        teal: '008080',
+        thistle: 'd8bfd8',
+        tomato: 'ff6347',
+        turquoise: '40e0d0',
+        violet: 'ee82ee',
+        violetred: 'd02090',
+        wheat: 'f5deb3',
+        white: 'ffffff',
+        whitesmoke: 'f5f5f5',
+        yellow: 'ffff00',
+        yellowgreen: '9acd32'
+    };
+    for (var key in simple_colors) {
+        if (color_string == key) {
+            color_string = simple_colors[key];
+        }
+    }
+    // emd of simple type-in colors
+
+    // array of color definition objects
+    var color_defs = [
+        {
+            re: /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/,
+            example: ['rgb(123, 234, 45)', 'rgb(255,234,245)'],
+            process: function (bits){
+                return [
+                    parseInt(bits[1]),
+                    parseInt(bits[2]),
+                    parseInt(bits[3])
+                ];
+            }
+        },
+        {
+            re: /^(\w{2})(\w{2})(\w{2})$/,
+            example: ['#00ff00', '336699'],
+            process: function (bits){
+                return [
+                    parseInt(bits[1], 16),
+                    parseInt(bits[2], 16),
+                    parseInt(bits[3], 16)
+                ];
+            }
+        },
+        {
+            re: /^(\w{1})(\w{1})(\w{1})$/,
+            example: ['#fb0', 'f0f'],
+            process: function (bits){
+                return [
+                    parseInt(bits[1] + bits[1], 16),
+                    parseInt(bits[2] + bits[2], 16),
+                    parseInt(bits[3] + bits[3], 16)
+                ];
+            }
+        }
+    ];
+
+    // search through the definitions to find a match
+    for (var i = 0; i < color_defs.length; i++) {
+        var re = color_defs[i].re;
+        var processor = color_defs[i].process;
+        var bits = re.exec(color_string);
+        if (bits) {
+            var channels = processor(bits);
+            this.r = channels[0];
+            this.g = channels[1];
+            this.b = channels[2];
+            this.ok = true;
+        }
+
+    }
+
+    // validate/cleanup values
+    this.r = (this.r < 0 || isNaN(this.r)) ? 0 : ((this.r > 255) ? 255 : this.r);
+    this.g = (this.g < 0 || isNaN(this.g)) ? 0 : ((this.g > 255) ? 255 : this.g);
+    this.b = (this.b < 0 || isNaN(this.b)) ? 0 : ((this.b > 255) ? 255 : this.b);
+
+    // some getters
+    this.toRGB = function () {
+        return 'rgb(' + this.r + ', ' + this.g + ', ' + this.b + ')';
+    }
+    this.toHex = function () {
+        var r = this.r.toString(16);
+        var g = this.g.toString(16);
+        var b = this.b.toString(16);
+        if (r.length == 1) r = '0' + r;
+        if (g.length == 1) g = '0' + g;
+        if (b.length == 1) b = '0' + b;
+        return '#' + r + g + b;
+    }
+}
+
+function barChartPlotter(e) {
+    var ctx = e.drawingContext;
+    var points = e.points;
+    var y_bottom = e.dygraph.toDomYCoord(0);
+
+    // The RGBColorParser class is provided by rgbcolor.js, which is
+    // packed in with dygraphs.
+    var color = new RGBColorParser(e.color);
+    color.r = Math.floor((255 + color.r) / 2);
+    color.g = Math.floor((255 + color.g) / 2);
+    color.b = Math.floor((255 + color.b) / 2);
+    ctx.fillStyle = color.toRGB();
+
+    // Find the minimum separation between x-values.
+    // This determines the bar width.
+    var min_sep = Infinity;
+    for (var i = 1; i < points.length; i++) {
+        var sep = points[i].canvasx - points[i - 1].canvasx;
+        if (sep < min_sep) min_sep = sep;
+    }
+    var bar_width = Math.floor(2.0 / 3 * min_sep);
+
+    // Do the actual plotting.
+    for (var i = 0; i < points.length; i++) {
+        var p = points[i];
+        var center_x = p.canvasx;
+
+        // find y
+        var y = p.canvasy;
+        if (p.yval > 0) {
+            y = y_bottom;
+            for (var k = 0; k < e.seriesCount; k++) {
+                if (k != e.seriesIndex) {
+                    let point = e.allSeriesPoints[k][i];
+                    if (point.canvasy > p.canvasy) {
+                        if (y > point.canvasy) {
+                            y = point.canvasy;
+                        }
+                    }
+                }
+            }
+        } 
+
+        ctx.fillRect(
+            center_x - bar_width / 2,
+            p.canvasy,
+            bar_width,
+            y - p.canvasy
+        );
+
+        ctx.strokeRect(
+            center_x - bar_width / 2,
+            p.canvasy,
+            bar_width,
+            y - p.canvasy
+        );
+    }
+}
+
+var g;
+
+function onLabelClick(obj, i) {
+    var v = g.visibility();
+    for (var k = 0; k < v.length; k++) {
+        v[k] = (i == k) || (i == null);
+    }
+    g.setVisibility(v);
+    return false;
+}
+
+function onLabelHover(obj, name) {
+    g.setSelection(0, name);
+    return false;
+}
+
+function legendFormatter(data) {
+    var html = this.getLabels()[0];
+    var x = '-';
+    if (data.x != null && data.x != undefined) {
+        x = data.xHTML;
+    }
+
+    html += '<div style="font-size: small;"><b>';
+    html += 'Х: ' + x + ', ';
+    html += '</b></div>';
+
+    var workersCount = '-';
+    data.series.forEach(
+        function(item, i) {
+            if (item.isHighlighted) {
+                workersCount = 0;
+                let d = data.dygraph.rawData_;
+                for (var k = 0; k < d.length; ++k) {
+                    workersCount += d[k][i+1];
+                }
+            }
+        }
+    );
+
+    html += '<div style="font-size: small;"><b>';
+    html += 'Выбрано рабочих: ' + workersCount;
+    html += '</b></div>';
+
+    data.series.forEach(
+        function(item, i) {
+
+            var labeledData = item.labelHTML;
+            if (item.y != null && item.y != undefined) {
+                labeledData += ': ' + item.yHTML;
+            }
+            if (item.isHighlighted) {
+                labeledData = '<b>' + labeledData + '</b>';
+            }
+            html += '<div style="font-size: small; color: ' + item.color + ';" ' +
+                'onclick="return onLabelClick(this, ' + i + ');" ' +
+                'onmouseover="return onLabelHover(this, \'' + item.label + '\'); ">';
+            html += labeledData;
+            html += '</div>';
+        }
+    );
+    return html;
+}
+
+$(document).ready(function () {
+    $('#main-table').DataTable({
+        "pageLength": 50,
+        "order": [],
+        "lengthMenu": [[100, 20, -1], [100, 20, "Все"]],
+        "stateSave": true,
+        "oLanguage": {
+            "sLengthMenu": "Отображено _MENU_ записей на страницу",
+            "sSearch": "Поиск:",
+            "sZeroRecords": "Ничего не найдено - извините",
+            "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+            "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+            "sInfoFiltered": "(filtered from _MAX_ total records)",
+            "oPaginate": {
+                "sFirst": "Первая",
+                "sNext": ">",
+                "sPrevious": "<",
+                "sLast": "Последняя",
+            },
+        },
+    });
+
+    g = new Dygraph(
+        document.getElementById("graphdiv"),
+        '{{ graph_data|safe }}',
+        {
+            stackedGraph: true,
+
+            highlightCircleSize: 2,
+            strokeWidth: 1,
+            strokeBorderWidth: null,
+
+            highlightSeriesOpts: {
+                strokeWidth: 3,
+                strokeBorderWidth: 1,
+                highlightCircleSize: 5
+            },
+
+            plotter: barChartPlotter,
+
+            labelsSeparateLines: true,
+            labelsDiv: 'labelsdiv',
+
+            legend: 'always',
+            legendFormatter: legendFormatter,
+        }
+    );
+});
+</script>
+{% endblock %}

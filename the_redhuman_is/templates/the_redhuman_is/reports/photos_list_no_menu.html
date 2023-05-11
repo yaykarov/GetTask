@@ -1,0 +1,22 @@
+{% load human_readable_values %}
+
+<style>
+img {
+    max-width: 85%;
+}
+</style>
+
+<div class="container">
+{% if amount %}
+<h5>Сумма сверки: {{ amount|separate }}</h5>
+{% endif %}
+{% for photo in photos %}
+<div class="row">
+    <div class="col">
+        <a href="{{ photo.image.url }}" target="_blank">
+            <img src="{{ photo.image.url }}"/>
+        </a>
+    </div>
+</div>
+{% endfor %}
+</div>

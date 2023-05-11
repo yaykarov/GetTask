@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block cform1 %}
+    {% if workers %}
+    <table class="table rh-table">
+    <thead>
+    <tr>
+        <th>Рабочий</th>
+        <th>Ошибки</th>
+    </tr>
+
+    </thead>
+        {% for worker in workers %}
+            <tr>
+                <td>{{ worker.name }}</td>
+                <td>
+                    {% for error in worker.errors %}
+                        <a href="{{ error.url }}" target="_blank">{{ error.name }}</a>
+                        <br>
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p>Ошибок нет.</p>
+    {% endif %}
+{% endblock %}

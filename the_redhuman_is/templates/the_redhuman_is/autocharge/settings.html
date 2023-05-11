@@ -1,0 +1,650 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_html_head %}
+{{ interval_form.media }}
+    <link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+    <link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+{% endblock %}
+
+{% block body %}
+<ul class="nav nav-tabs" role="tablist" id="id1">
+    <li class="nav-item">
+        <a class="nav-link active" id="regular-calculators-tab" data-toggle="tab" href="#regular-calculators" role="tab" aria-controls="regular-calculators" aria-selected="true">Услуги</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="position-calculators-tab" data-toggle="tab" href="#position-calculators" role="tab" aria-controls="position-calculators" aria-selected="false">Должности</a>
+    </li>
+</ul>
+
+<div class="tab-content" id="id2">
+
+<div class="tab-pane fade show active" id="regular-calculators" role="tabpanel" aria-labelledby="regular-calculators">
+<form name="root_customer_form" method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="form-row mb-0">
+    <div class="form-group col col-auto mb-0">
+    <div class="input-group input-group-sm">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="id_customer">Клиент</label>
+        </div>
+        {{ calculator_form.customer }}
+    </div>
+</div>
+</div>
+<div class="form-row mb-0 pb-0">
+    <div class="form-group col col-auto mb-0">
+    <div class="input-group input-group-sm">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="id_service">Услуга</label>
+        </div>
+        {{ calculator_form.service }}
+    </div>
+</div>
+</div>
+<div class="form-row mb-0 pb-0">
+    <div class="form-group col col-auto mb-0">
+    <div class="input-group input-group-sm">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="id_interval">Интервал</label>
+        </div>
+        {{ calculator_form.interval }}
+    </div>
+    </div>
+</div>
+<div id="id_new_interval">
+<div class="form-row mb-0 pb-0">
+    <div class="form-group col col-auto mb-0">
+        <h5>Завести новый интервал:</h5>
+    </div>
+</div>
+<div class="form-row mb-0 pb-0">
+    <div class="form-group col col-auto mb-0">
+        {{ interval_form.first_day }}
+    </div>
+    <div class="form-group col col-auto">
+        {{ interval_form.last_day }}
+    </div>
+</div>
+</div>
+</form>
+
+<div class="row">
+    <div class="col">
+        <div id="calculator_content">
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col">
+        <div>
+            <table id="calculators" class="table table-hover rh-table-full-width">
+                <thead>
+                <tr>
+                    <th>Клиент</th>
+                    <th>Услуга</th>
+                    <th>Калькулятор клиента</th>
+                    <th>Калькулятор бригадира</th>
+                    <th>Калькулятор рабочего</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for service_calc in calculators %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'the_redhuman_is:autocharge_specific_setting' pk=service_calc.calculator.pk %}{% if single_customer %}?service_pk={{ service_calc.customer_service.pk }}{% endif %}">
+                                {{ service_calc.customer_service.customer }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'the_redhuman_is:autocharge_specific_setting' pk=service_calc.calculator.pk %}{% if single_customer %}?service_pk={{ service_calc.customer_service.pk }}{% endif %}">
+                                {{ service_calc.customer_service.service }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'the_redhuman_is:autocharge_specific_setting' pk=service_calc.calculator.pk %}{% if single_customer %}?service_pk={{ service_calc.customer_service.pk }}{% endif %}">
+                                {{ service_calc.calculator.customer_calculator_name|safe }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'the_redhuman_is:autocharge_specific_setting' pk=service_calc.calculator.pk %}{% if single_customer %}?service_pk={{ service_calc.customer_service.pk }}{% endif %}">
+                                {{ service_calc.calculator.foreman_calculator_name|safe }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'the_redhuman_is:autocharge_specific_setting' pk=service_calc.calculator.pk %}{% if single_customer %}?service_pk={{ service_calc.customer_service.pk }}{% endif %}">
+                                {{ service_calc.calculator.worker_calculator_name|safe }}
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="tab-pane fade" id="position-calculators" role="tabpanel" aria-labelledby="position-calculators">
+<form name="position_calculator_form" method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="form-row mb-0">
+    <div class="form-group col col-auto mb-0">
+    <div class="input-group input-group-sm">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="id_p_ustomer">Клиент</label>
+        </div>
+        {{ position_calculator_form.p_customer }}
+    </div>
+</div>
+</div>
+<div class="form-row mb-0 pb-0">
+    <div class="form-group col col-auto mb-0">
+    <div class="input-group input-group-sm">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="id_position">Должность</label>
+        </div>
+        {{ position_calculator_form.position }}
+    </div>
+</div>
+</div>
+<div class="form-row mb-0 pb-0">
+    <div class="form-group col col-auto mb-0">
+    <div class="input-group input-group-sm">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="id_p_interval">Интервал</label>
+        </div>
+        {{ position_calculator_form.p_interval }}
+    </div>
+    </div>
+</div>
+<div id="id_p_new_interval">
+<div class="form-row mb-0 pb-0">
+    <div class="form-group col col-auto mb-0">
+        <h5>Завести новый интервал:</h5>
+    </div>
+</div>
+<div class="form-row mb-0 pb-0">
+    <div class="form-group col col-auto mb-0">
+        {{ position_interval_form.position_first_day }}
+    </div>
+    <div class="form-group col col-auto">
+        {{ position_interval_form.position_last_day }}
+    </div>
+</div>
+</div>
+</form>
+<div class="row">
+    <div class="col">
+        <div id="position_calculator_content">
+        </div>
+    </div>
+</div>
+</div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ calculator_form.media }}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+
+<script>
+
+var __last_id = 0;
+
+function nextId() {
+    __last_id++;
+    return "_id_" + __last_id;
+}
+
+/* Calculator container */
+
+function setupCalculatorForm(subformId) {
+    let selectId = "#" + subformId + "_calculator_type";
+    let rootId = "#" + subformId + "_calc_container";
+    $(selectId).change(
+        function () {
+            var request = new XMLHttpRequest();
+            request.onreadystatechange = function () {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        $(rootId).html(request.response);
+                    } else {
+                        $(rootId).html("Что-то пошло не так");
+                    }
+                }
+            }
+
+            let interval = $("#id_interval").val();
+
+            let calculator_type = $(selectId).val();
+            if (!calculator_type) {
+                return;
+            }
+
+            let service = $("#id_service").val();
+            if (!service) {
+                return;
+            }
+
+            var url = "{% url 'the_redhuman_is:autocharge_calculator_subform' %}";
+            url = url + "?interval=" + interval +
+                "&subform_id=" + subformId.replace('_turnouts_l', '').replace('_turnouts_g', '') +
+                "&calculator_type=" + calculator_type + '&service=' + service;
+
+            request.open("GET", url, true);
+            request.send();
+        }
+    );
+}
+
+function setupPositionCalculatorForm(subformId) {
+    let selectId = "#" + subformId + "_calculator_type";
+    let rootId = "#" + subformId + "_calc_container";
+    $(selectId).change(
+        function () {
+            var request = new XMLHttpRequest();
+            request.onreadystatechange = function () {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        $(rootId).html(request.response);
+                    } else {
+                        $(rootId).html("Что-то пошло не так");
+                    }
+                }
+            }
+
+            let interval = $("#id_p_interval").val();
+
+            let calculator_type = $(selectId).val();
+            if (!calculator_type) {
+                return;
+            }
+
+            var url = "{% url 'the_redhuman_is:autocharge_position_calculator_subform' %}";
+            url = url + "?interval=" + interval +
+                "&subform_id=" + subformId.replace('_turnouts_l', '').replace('_turnouts_g', '') +
+                "&calculator_type=" + calculator_type;
+
+            request.open("GET", url, true);
+            request.send();
+        }
+    );
+}
+
+function setupSubmitButton(buttonId) {
+    $(buttonId).click(
+        function () {
+            var request = new XMLHttpRequest();
+            request.onreadystatechange = function () {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        $("#id_save_settings_result").html("Сохранено.");
+                        updateCalculatorForm();
+                    } else {
+                        $("#id_save_settings_result").html("Что-то пошло не так.");
+                    }
+                }
+            }
+
+            let rootFormData = new FormData(document.forms.root_customer_form);
+
+            var formData = new FormData();
+            formData.append(
+                "csrfmiddlewaretoken",
+                rootFormData.get("csrfmiddlewaretoken")
+            );
+            formData.append("service", $("#id_service").val());
+            formData.append("interval", $("#id_interval").val());
+            formData.append("first_day", $("#id_first_day").val());
+            formData.append("last_day", $("#id_last_day").val());
+
+            formData.append("customer_calculator_type", $("#customer_calculator_type").val());
+            formData.append("foreman_calculator_type", $("#foreman_calculator_type").val());
+            formData.append("worker_calculator_type", $("#worker_calculator_type").val());
+
+            var inputs = $('#calculator_content').find('input[type="text"]').add(
+                $('#calculator_content').find('input[type="hidden"]')
+            ).add(
+                $('.parameter-type')
+            );
+            $.each(inputs, function (key, input) {
+                formData.append($(input).attr('id'), $(input).val().replace(",", "."));
+            });
+
+            let checkboxes = $('#calculator_content').find('input[type="checkbox"]');
+            $.each(checkboxes, function (key, input) {
+                formData.append($(input).attr('id'), $(input).prop("checked"));
+            });
+
+            request.open("POST", "{% url 'the_redhuman_is:autocharge_save_settings' %}", true);
+            request.send(formData);
+        }
+    );
+}
+
+function setupPositionSubmitButton(buttonId) {
+    $(buttonId).click(
+        function () {
+            var request = new XMLHttpRequest();
+            request.onreadystatechange = function () {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        $("#id_save_position_calculator_result").html("Сохранено.");
+                        updateCalculatorForm();
+                    } else {
+                        $("#id_save_position_calculator_result").html("Что-то пошло не так.");
+                    }
+                }
+            }
+
+            let rootFormData = new FormData(document.forms.position_calculator_form);
+
+            var formData = new FormData();
+            formData.append(
+                "csrfmiddlewaretoken",
+                rootFormData.get("csrfmiddlewaretoken")
+            );
+            formData.append("interval", $("#id_p_interval").val());
+            formData.append("customer", $("#id_p_customer").val());
+            formData.append("position", $("#id_position").val());
+            formData.append("first_day", $("#id_position_first_day").val());
+            formData.append("last_day", $("#id_position_last_day").val());
+
+            formData.append("position_calculator_type", $("#position_calculator_type").val());
+
+            var inputs = $('#position_calculator_content').find('input[type="text"]').add(
+                $('#position_calculator_content').find('input[type="hidden"]')
+            ).add(
+                $('.parameter-type')
+            );
+            $.each(inputs, function (key, input) {
+                formData.append($(input).attr('id'), $(input).val().replace(",", "."));
+            });
+
+            let checkboxes = $('#position_calculator_content').find('input[type="checkbox"]');
+            $.each(checkboxes, function (key, input) {
+                formData.append($(input).attr('id'), $(input).prop("checked"));
+            });
+
+            request.open("POST", "{% url 'the_redhuman_is:autocharge_save_position_calculator' %}", true);
+            request.send(formData);
+        }
+    );
+}
+
+function onRemove(id) {
+    document.getElementById(id).remove();
+    return false;
+}
+
+/* Boxes calculator */
+
+function onAdd(id_suffix) {
+    let form_id = "container_" + id_suffix;
+    let button_id = "id_add_button_" + id_suffix;
+    addField(form_id, button_id, id_suffix + nextId(), "", "");
+    return false;
+}
+
+function addField(form_id, button_id, id_suffix, key, value) {
+    let div = document.createElement("div");
+    div.id = "id_div_" + id_suffix;
+    div.innerHTML = "<label for=\"id_key_" + id_suffix + "\">Граница</label>\n" +
+        "<input id=\"id_key_" + id_suffix + "\" type=\"text\" value=\"" + key + "\"" +
+        "name=\"key_" + id_suffix + "\"/>\n" +
+        "<label for=\"id_value_" + id_suffix + "\">Сумма</label>\n" +
+        "<input id=\"id_value_" + id_suffix + "\" type=\"text\" value=\"" + value + "\"" +
+        "name=\"value_" + id_suffix + "\"/>\n" +
+        "<button class=\"btn btn-sm btn-outline-danger\" type=\"submit\" onClick=\"return onRemove('id_div_" + id_suffix +
+        "')\">&times;</button>";
+
+    $('#' + form_id + ' .in').append(div);
+}
+
+/* Piecewise linear */
+
+function onIntervalAdd(id_suffix) {
+    let container_id = "container_" + id_suffix;
+    let button_id = "id_add_button_" + id_suffix;
+    addInterval(
+        container_id,
+        button_id,
+        id_suffix + nextId(),
+        "",
+        "",
+        "",
+        $('#id_parameter1_' + id_suffix + ' option:selected').text(),
+        $('#id_parameter2_' + id_suffix + ' option:selected').text(),
+    );
+    return false;
+}
+
+function addInterval(container_id, button_id, id_suffix, begin, k, b, p1, p2) {
+    let div = document.createElement("div");
+    div.id = "id_div_" + id_suffix;
+    div.innerHTML =
+        "<div class=\"input-group input-group-sm\">" +
+        "<div class=\"input-group-prepend\"><span class=\"input-group-text\">" +
+        "Если " + p1 + " >=" +
+        "</span></div>" +
+        "<input id=\"id_begin_" + id_suffix + "\" style=\"max-width: 50px;\" type=\"text\" name=\"begin_" +
+        id_suffix + "\" value=\"" + begin + "\"> </input>" +
+        "<div class=\"input-group-prepend\"><span class=\"input-group-text\">" +
+        ", оплата =" +
+        "</span></div>" +
+        "<input id=\"id_k_" + id_suffix + "\" style=\"max-width: 50px;\" type=\"text\" " +
+        "name=\"k_" + id_suffix + "\" value=\"" + k + "\"></input> " +
+        "<div class=\"input-group-prepend\"><span class=\"input-group-text\">" +
+        "руб. * " + p2 + " +" +
+        "</span></div>" +
+        "<input id=\"id_b_" + id_suffix + "\" style=\"max-width: 50px;\" type=\"text\" " +
+        "name=\"b_" + id_suffix + "\" value=\"" + b + "\"></input>" +
+        "<div class=\"input-group-append\"><span class=\"input-group-text\">" +
+        "руб." +
+        "</span></div>" +
+        "<button class=\"btn btn-sm btn-outline-danger ml-1\" " +
+        "type=\"submit\" onClick=\"return onRemove('id_div_" + id_suffix +
+        "')\">&times;</button>" +
+        "</div>";
+    $('#' + container_id + ' .in').append(div);
+}
+
+/* General */
+
+function setVisibility(id, visible, force_update=false) {
+    let is_visible = $(id).parent().parent().is(":visible");
+    if (visible == is_visible && !force_update) {
+        return;
+    }
+
+    if (visible) {
+        $(id).parent().parent().show();
+    } else {
+        $(id).parent().parent().hide();
+        $(id).val(null).trigger("change");
+    }
+}
+
+function updateDependantFields() {
+    setVisibility("#id_service", $("#id_customer").val());
+    setVisibility("#id_interval", $("#id_service").val());
+    let is_new_interval_visible = $("#id_service").val() && !$("#id_interval").val();
+    if (is_new_interval_visible) {
+        $("#id_new_interval").show();
+    } else {
+        $("#id_new_interval").hide();
+    }
+}
+
+function updatePositionDependantFields(force_update=false) {
+    let position = $("#id_position");
+    let position_is_visible = position.is(":visible");
+    let position_should_be_visible = !(!$("#id_p_customer").val());
+    if (position_is_visible != position_should_be_visible || force_update) {
+        if (position_should_be_visible) {
+            position.parent().show();
+        } else {
+            position.parent().hide();
+            position.val(null).trigger("change");
+        }
+    }
+
+    setVisibility("#id_p_interval", $("#id_position").val(), force_update);
+    let is_new_interval_visible = $("#id_position").val() && !$("#id_p_interval").val();
+    if (is_new_interval_visible) {
+        $("#id_p_new_interval").show();
+    } else {
+        $("#id_p_new_interval").hide();
+    }
+}
+
+var _LAST_REQUEST_ID = 0;
+
+function updateCalculatorForm() {
+    let interval = $("#id_interval").val();
+    if (!interval) {
+        $("#calculator_content").html("");
+    }
+    let service = $("#id_service").val()
+    if (!service) {
+        return;
+    }
+
+    $("#calculator_content").html("Загрузка...");
+    var request = new XMLHttpRequest();
+    ++_LAST_REQUEST_ID;
+    request.requestId = _LAST_REQUEST_ID;
+    request.onreadystatechange = function () {
+        if (this.requestId == _LAST_REQUEST_ID && this.readyState == 4) {
+            if (this.status == 200) {
+                $("#calculator_content").html(request.response);
+            } else {
+                $("#calculator_content").html("Что-то пошло не так");
+            }
+        }
+    }
+
+    var url = "{% url 'the_redhuman_is:autocharge_calculator_form' %}";
+    url = url + "?service=" + service;
+    if (interval) {
+        url = url + "&interval=" + interval;
+    }
+
+    request.open("GET", url, true);
+    request.send();
+}
+
+function updatePositionCalculatorForm() {
+    let interval = $("#id_p_interval").val();
+    if (!interval) {
+        $("#position_calculator_content").html("");
+    }
+    if (!$("#id_position").val()) {
+        return;
+    }
+
+    $("#position_calculator_content").html("Загрузка...");
+    var request = new XMLHttpRequest();
+    ++_LAST_REQUEST_ID;
+    request.requestId = _LAST_REQUEST_ID;
+    request.onreadystatechange = function () {
+        if (this.requestId == _LAST_REQUEST_ID && this.readyState == 4) {
+            if (this.status == 200) {
+                $("#position_calculator_content").html(request.response);
+            } else {
+                $("#position_calculator_content").html("Что-то пошло не так");
+            }
+        }
+    }
+
+    var url = "{% url 'the_redhuman_is:autocharge_position_calculator_form' %}";
+    if (interval) {
+        url = url + "?interval=" + interval;
+    }
+
+    request.open("GET", url, true);
+    request.send();
+}
+
+function setupRegularCalculatorTab() {
+    $("#id_new_interval").hide();
+    updateDependantFields();
+    updateCalculatorForm();
+
+    $("#id_customer").change(updateDependantFields);
+    $("#id_service").change(
+        function() {
+            updateDependantFields();
+            updateCalculatorForm();
+        }
+    );
+    $("#id_interval").change(
+        function() {
+            updateDependantFields();
+            updateCalculatorForm();
+        }
+    );
+}
+
+function setupPositionCalculatorTab() {
+    $("#id_p_new_interval").hide();
+    updatePositionDependantFields(true);
+    updatePositionCalculatorForm();
+
+    $("#id_p_customer").change(updatePositionDependantFields);
+    $("#id_position").change(
+        function() {
+            updatePositionDependantFields();
+            updatePositionCalculatorForm();
+        }
+    );
+    $("#id_p_interval").change(
+        function() {
+            updatePositionDependantFields();
+            updatePositionCalculatorForm();
+        }
+    );
+}
+
+$(document).ready(
+    function () {
+        setupRegularCalculatorTab();
+        setupPositionCalculatorTab();
+
+        $("#calculators").DataTable(
+            {
+                "fixedHeader": {
+                    header: true,
+                    footer: true
+                },
+                "processing": true,
+                "jQueryUI": true,
+                "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+                "sPaginationType": "full_numbers",
+                "oLanguage": {
+                    "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                    "sSearch": "Поиск:",
+                    "sZeroRecords": "Ничего не найдено - извините",
+                    "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                    "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                    "sInfoFiltered": "(filtered from _MAX_ total records)",
+                    "oPaginate": {
+                        "sFirst": "Первая",
+                        "sNext": ">",
+                        "sPrevious": "<",
+                        "sLast": "Последняя",
+                    }
+                },
+                "orderCellsTop": true
+            }
+        );
+    }
+);
+
+</script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block buttons %}
+<a href=""><button class="btn">Недавние операции</button></a>
+{% endblock %}
+
+{% block table-data %}
+<style>
+
+    table, tr, th, td, div table, table tr, table th, table td, table tr, thead tr, tbody tr, tr th {
+        line-height: 1;
+        border: 0;
+        border-bottom: 0;
+        border-top: 0;
+        border-collapse: collapse;
+        border-spacing: 0;
+        border-width: thin;
+        border-left: 0;
+        border-right: 0;
+    }
+
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.css"/>
+<link rel="stylesheet" src="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"/>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.js"></script>
+<script>
+  $(document).ready(function(){
+
+  });
+</script>
+{% endblock %}

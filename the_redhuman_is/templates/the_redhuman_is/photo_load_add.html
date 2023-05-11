@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_html_head %}
+    <link rel="stylesheet" href="{% static 'css/dropzone.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/basic.min.css' %}"/>
+{% endblock %}
+{% block body %}
+    <div class="row">
+        <div class="col">
+            <div id="alert" class="alert alert-danger" role="alert" hidden>
+                Что-то пошло не так и фотографии не были сохранены!
+            </div>
+            <h4>{{ title }}</h4>
+        </div>
+    </div>
+    <div class="row rh-photo-load">
+        <div class="col-xl-4 col-md-6 col-sm-12 col-xs-12">
+            <div class="row">
+                <div class="col">
+                    {% block current_photo %}
+                    {% endblock %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <form action="." enctype="multipart/form-data" method="POST">
+                        <div class="dropzone mb-3 bg-light" id="formDropzone">
+                            <div class="dz-message" data-dz-message>
+                                <span class="h5">Нажмите или перетащите файлы сюда.</span>
+                            </div>
+                        </div>
+                        {% load crispy_forms_tags %}
+                        {% crispy form %}
+                        <div class="row">
+                            <div class="col-auto mx-auto">
+                                <button type="submit" id="submitForm" class="btn btn-sm btn-primary">Сохранить</button>
+                                <a href="{% url 'the_redhuman_is:photo_load_session_list' %}" class="btn btn-sm btn-secondary">Отмена</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'js/dropzone.min.js' %}"></script>
+    <script>
+
+        Dropzone.autoDiscover = false;
+        $(document).ready(function () {
+            $("#formDropzone").dropzone({
+                url: '{{ request.path }}',
+                paramName: "file",
+                autoProcessQueue: false,
+                uploadMultiple: true,
+                parallelUploads: 100,
+                maxFiles: 100,
+                resizeSize: 1280,
+                previewsContainer: "#formDropzone",
+                init: function () {
+                    var myDropzone = this;
+                    document.getElementById("submitForm").addEventListener("click", function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        myDropzone.processQueue();
+                    });
+                    this.on("sendingmultiple", function (file, xhr, formData) {
+                        formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+                        formData.append("comment", document.getElementById("id_comment").value);
+                    });
+                    this.on("successmultiple", function (files, response) {
+                        window.location.href = response.url;
+                    });
+                    this.on("errormultiple", function (files, response) {
+                        document.getElementById("alert").hidden = false;
+                    });
+                },
+                transformFile: function (file, done) {
+                    if (this.options.resizeSize && file.type.match(/image.*/)) {
+                        if (file.width > file.height) {
+                            return this.resizeImage(file, this.options.resizeSize, null, this.options.resizeMethod, done);
+                        } else {
+                            return this.resizeImage(file, null, this.options.resizeSize, this.options.resizeMethod, done);
+                        }
+                    } else if ((this.options.resizeWidth || this.options.resizeHeight) && file.type.match(/image.*/)) {
+                        return this.resizeImage(file, this.options.resizeWidth, this.options.resizeHeight, this.options.resizeMethod, done);
+                    } else {
+                        return done(file);
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_html_head %}
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<style>
+.modal {
+    overflow: auto !important;
+}
+</style>
+{% endblock %}
+
+{% block buttons %}
+<h4>Производительность подбора</h4>
+{% endblock %}
+
+{% block obj-data %}
+{% include 'the_redhuman_is/core/modal.include' with link_class='cell' modal_id='list_dialog' modal_body_id='list_dialog_body' on_success='registerClickPopup' %}
+{% include 'the_redhuman_is/core/modal.include' with link_class='details_cell' modal_id='details_dialog' modal_body_id='details_dialog_body'%}
+
+{% include 'applicants/base_filter_form.include'%}
+
+<table class="table rh-table table-hover" id="main-table">
+<thead>
+    <tr>
+        <th rowspan="2">Статус</th>
+        {% for day in days %}
+            <th><center>{{ day|date:"d.m" }}</center></th>
+        {% endfor %}
+        <th rowspan="2">Итого</th>
+    </tr>
+    <tr>
+        {% for day in days %}
+            <th><center>{{ day|date:"D" }}</center></th>
+        {% endfor %}
+    </tr>
+</thead>
+<tbody>
+{% for status, row, row_sum in data %}
+<tr>
+    <td>{{ status }}</td>
+    {% for cell_value, details_url in row %}
+        <td>
+            <a class="cell" href="{{ details_url|safe }}">
+                <center>{{ cell_value }}</center>
+            </a>
+        </td>
+    {% endfor %}
+    <td>{{ row_sum }}</td>
+</tr>
+{% endfor %}
+</tbody>
+<tbody>
+
+</tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+{{ filter_form.media }}
+<script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+<script>
+function registerClickPopup() {
+    register_on_click_popup('.details_cell', '#details_dialog', '#details_dialog_body');
+}
+</script>
+{% endblock %}

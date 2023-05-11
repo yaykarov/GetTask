@@ -1,0 +1,127 @@
+{% extends 'the_redhuman_is/photo_load_sort.html' %}
+{% load crispy_forms_tags %}
+{% block forms %}
+    <div class="row border-bottom pb-xl-2 pb-1">
+        <div class="col-auto">
+            <label>Тип табеля</label>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="photoTypeOptions" id="photoType1" value="before" checked>
+                <label class="form-check-label" for="photoType1">До</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="photoTypeOptions" id="photoType2" value="after">
+                <label class="form-check-label" for="photoType2">После</label>
+            </div>
+        </div>
+    </div>
+    <div class="row border-bottom pb-xl-2 pb-1">
+        <div class="col pt-1 pt-xl-2">
+            <div id="before" class="panel">
+                <fieldset>
+                    {{ worker_search.management_form }}
+                    <div class="font-weight-bold">Добавление табеля</div>
+                    <div class="rh-vertical-form">
+                        {% crispy timesheet_form %}
+                        <div class="font-weight-bold">Рабочие:</div>
+                        <div id="worker0">
+                            {% crispy worker_search.0 %}
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary mt-1 add-row" title="Добавить еще поле">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <div id="workerInit" style="display:none">
+                            <div id="div_id_form-__prefix__-worker" class="form-group mt-1">
+                                {{ worker_search.empty_form }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-auto ml-auto">
+                            <button class="btn btn-sm btn-primary" type="submit" name="action" value="before">Сохранить</button>
+                            <button class="btn btn-sm btn-secondary" type="reset">Сбросить</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            <div id="after" class="panel" style="display:none">
+                <fieldset>
+                    <div class="font-weight-bold">Выберите табель:</div>
+                    <div class="rh-vertical-form">
+                        {% crispy timesheet_select_form %}
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-auto ml-auto">
+                            <button class="btn btn-sm btn-primary" type="submit" name="action" value="after">Продолжить</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+    <div class="row pt-xl-2 pt-1 border-bottom">
+        <div class="col">
+            <div class="font-weight-bold">Комментарии</div>
+            {% include 'the_redhuman_is/photo_load_messages_list.html' %}
+            <div class="row my-xl-2 my-1">
+                <div class="col-auto ml-auto">
+                    <button class="btn btn-sm btn-outline-primary ml-auto" data-toggle="modal" data-target="#commentModal" type="button">Добавить комментарий</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row pt-xl-2 pt-1 pb-2">
+        <div class="col-auto ml-auto">
+            <a href="{% url 'the_redhuman_is:photo_load_close_session' object.pk %}" class="btn btn-sm btn-danger">Закрыть сессию</a>
+        </div>
+    </div>
+    {{ worker_search.media }}
+    <script>
+        function ToggleTab() {
+            let tab_id = '#' + $('input[name=photoTypeOptions]:checked').val();
+            $('.panel').hide();
+            $('fieldset').prop('disabled', true);
+            $(tab_id).show();
+            $('fieldset', tab_id).prop('disabled', false);
+        }
+
+        let form_num = 0;
+        $(document).ready(function () {
+            ToggleTab();
+            $('input[name="photoTypeOptions"]').change(function () {
+                ToggleTab();
+            });
+            $('.add-row').click(function () {
+                ++form_num;
+                $('#worker0').append($('#workerInit').html().replace(/__prefix__/g, form_num));
+                $('#id_form-TOTAL_FORMS').val(form_num + 1);
+            });
+            $('#id_worker').change(function () {
+                $.ajax({
+                    type: "GET",
+                    url: "{% url 'the_redhuman_is:ajax_worker' %}?q=" + $(this).val(),
+                    success: function (response) {
+                        $('#worker_id').val(response.id);
+                        $('#id_worker-last_name').val(response.last_name);
+                        $('#id_worker-name').val(response.name);
+                        $('#id_worker-patronymic').val(response.patronymic);
+                        $('#id_worker-sex').val(response.sex);
+                        $('#id_worker-tel_number').val(response.tel_number);
+                        $('#id_worker-birth_date').val(reformatDate(response.birth_date));
+                        $('#id_worker-place_of_birth_name').val(response.place_of_birth_name);
+                        $('#id_worker-citizenship_name').val(response.citizenship_name);
+                        $('#id_worker-position_name').val(response.position_name);
+                    }
+                });
+                $.ajax({
+                    type: "GET",
+                    url: "{% url 'the_redhuman_is:ajax_worker_contract' %}?q=" + $(this).val(),
+                    success: function (response) {
+                        $('#id_contract-c_worker_id').val(response.c_worker);
+                        $('#id_contract-begin_date').val(reformatDate(response.begin_date));
+                        $('#id_contract-cont_type').val(response.cont_type);
+                    }
+                });
+            });
+        })
+    </script>
+{% endblock %}

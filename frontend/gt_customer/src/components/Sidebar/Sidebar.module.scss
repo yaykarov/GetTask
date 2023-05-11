@@ -1,0 +1,117 @@
+.wrapper {
+  position: relative;
+  flex-shrink: 0;
+  width: 260px;
+  min-height: 1080px;
+  background-color: black;
+  color: white;
+}
+
+.logo {
+  height: 40px;
+  background-image: url("/logo.svg");
+  background-repeat: no-repeat;
+  margin-left: 40px;
+  margin-top: 40px;
+}
+
+.menu {
+  margin-top: 93px;
+  top: 174px;
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.menuItem {
+  position: relative;
+  width: 100%;
+  padding: 11px 40px 11px 40px;
+  display: flex;
+  align-items: center;
+  font-family: Roboto, sans-serif;
+  font-style: normal;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 19px;
+}
+
+.text {
+  position: relative;
+  margin-left: 11px;
+  display: flex;
+}
+.text img {
+  margin-left: 8px;
+}
+.active {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.paymentInfo {
+  position: absolute;
+  padding-right: 20px;
+  left: 40px;
+  bottom: 174px;
+
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 17px;
+  text-wrap: normal;
+}
+
+.price {
+  margin-top: 3px;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.socials {
+  position: absolute;
+  height: 32px;
+  left: 39px;
+  bottom: 111px;
+}
+.socials img:last-child {
+  margin-left: 10px;
+}
+
+.copyright {
+  position: absolute;
+  width: 87px;
+  height: 14px;
+  left: 40px;
+  bottom: 64px;
+  font-style: normal;
+  font-weight: 200;
+  font-size: 12px;
+  line-height: 14px;
+  opacity: 0.5;
+}
+
+.menu a {
+  color: white !important;
+  text-decoration: none;
+}
+
+.disabled {
+  opacity: 0.5;
+}
+
+.reportsCount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 14px;
+  background: #ffffff;
+  color: #000;
+  margin-left: 12px;
+}

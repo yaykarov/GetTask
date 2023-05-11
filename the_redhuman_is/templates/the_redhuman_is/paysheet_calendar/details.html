@@ -1,0 +1,28 @@
+<form id="details-form" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+</form>
+<div class="card">
+    <div class="list-group list-group-flush">
+        {% for paysheet in paysheets %}
+            <li class="list-group-item">
+                <a href="{% url 'the_redhuman_is:paysheet_v2_show' paysheet.pk %}">
+                {{ paysheet }}
+                </a>
+            </li>
+        {% endfor %}
+        {% for prepayment in prepayments %}
+            <li class="list-group-item">
+                <a href="{% url 'the_redhuman_is:prepayment_show' prepayment.pk %}">
+                {{ prepayment }}
+                </a>
+            </li>
+        {% endfor %}
+        {% for param in params %}
+            <li class="list-group-item">
+                {{ param }}
+                <button class="float-right btn btn-outline-danger btn-sm mr-2" form="details-form" formaction="{% url 'the_redhuman_is:paysheet_calendar_remove_params' param.pk %}">удалить</button>
+                <button class="float-right btn btn-outline-primary btn-sm mr-2" form="details-form" formaction="{% url 'the_redhuman_is:paysheet_create_by_params' param.pk %}" formtarget="_blank">Создать</button>
+            </li>
+        {% endfor %}
+    </div>
+</div>

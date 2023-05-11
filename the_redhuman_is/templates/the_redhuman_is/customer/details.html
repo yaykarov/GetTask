@@ -1,0 +1,506 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load redhuman_tags %}
+{% load human_readable_values %}
+
+{% block extra_html_head %}
+    <link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+    <link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+{% endblock %}
+{% block buttons %}
+{% endblock %}
+{% block obj-data %}
+
+<div class="modal fade" id="assortment-form" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ассортимент услуги</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" >
+                <div id="assortment-form-body"></div>
+                <form method="POST" id="add-assortment-form">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Название товара</span>
+                        </div>
+                        <input id="add-assortment-input" type="text" class="form-control" name="name">
+                        <button id="add-assortment-button" class="btn btn-outline-primary" type="submit">
+                            Добавить
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col">
+        <h6 class="mb-0">
+            Клиент: {{ customer.cust_name }}
+            {% if not request.user|has_group:'Менеджеры' %}
+            <a href="{% url 'the_redhuman_is:customer_edit' pk=customer.pk %}" class="btn btn-link"><i class="fas fa-edit"></i></a>
+            {% endif %}
+        </h6>
+        {% if customer.pk == 16 %} <!-- Вкусвилл -->
+        <a href="{% url 'the_redhuman_is:vkusvill_management_page' %}">импорт выработки и пересорта</a>,
+        <a href="{% url 'the_redhuman_is:vkusvill_performance_report' %}">отчет по терминалам, выработке и пересорту</a>
+        {% elif customer.pk == 20 %} <!-- Кари -->
+        <a href="{% url 'the_redhuman_is:kari_management_page' %}">импорт выработки</a>
+        {% elif customer.pk == 40 %}  <!-- Ителла -->
+        <a href="{% url 'the_redhuman_is:itella_management_page' %}">К2К: отчеты КТУ</a>
+        {% elif customer.pk == 45 %}  <!-- Кюне+Нагель -->
+        <a href="{% url 'the_redhuman_is:kuehne_nagel_management_page' %}">Импорт сверки</a>
+        {% endif %}
+    </div>
+</div>
+<ul class="nav nav-tabs" id="customerTab" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="timesheet-tab" data-toggle="tab" href="#timesheets" role="tab" aria-controls="timesheets" aria-selected="false">Табели</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="comment-tab" data-toggle="tab" href="#comments" role="tab" aria-controls="comments" aria-selected="false">Комментарии</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="object-tab" data-toggle="tab" href="#objects" role="tab" aria-controls="objects" aria-selected="false">Список объектов</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contacts" role="tab" aria-controls="contacts" aria-selected="false">Контактные лица</a>
+    </li>
+    {% if not request.user|has_group:'Менеджеры' %}
+    <li class="nav-item">
+        <a class="nav-link" id="manager-tab" data-toggle="tab" href="#managers" role="tab" aria-controls="managers" aria-selected="false">Менеджеры</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="service-tab" data-toggle="tab" href="#services" role="tab" aria-controls="services" aria-selected="false">Услуги</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="deposit-tab" data-toggle="tab" href="#deposit" role="tab" aria-controls="deposit" aria-selected="false">Сумма залога</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="legal-entity-tab" data-toggle="tab" href="#legal-entity" role="tab" aria-controls="legal-entity" aria-selected="false">Юрлица</a>
+    </li>
+    {% endif %}
+</ul>
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="timesheets" role="tabpanel" aria-labelledby="timesheet-tab">
+        <div class="row mt-2">
+            <div class="col">
+                <h6>Табели с {{ d_interval.from_date|date:"d.m.Y" }} по {{ d_interval.to_date|date:"d.m.Y" }}</h6>
+            </div>
+        </div>
+        <div class="row" style="margin-bottom: 12px;">
+            <div class="col-auto">
+                <form method="get" class="form-inline">
+                    {% if form.errors %}
+                        {{ form.errors }}
+                    {% endif %}
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Период</span>
+                        </div>
+                        {{ form.from_date }}
+                        {{ form.to_date }}
+                        <button class="btn btn-sm btn-outline-primary" type="submit" name="html" value="Показать">Показать</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% if timesheets %}
+            <div class="row border-top">
+                <div class="col">
+                    <div class="badge badge-secondary"> Всего ч/ч за искомый период {{ total_hours.worker_turnouts__hours_worked__sum }} </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <table id="main_table" class="table table-hover rh-table">
+                        <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Дата</th>
+                            <th>Смена</th>
+                            <th>Закрыт</th>
+                            <th>Объект</th>
+                            <th>Контактное лицо</th>
+                            <th>Бригадир</th>
+                            <th>Кол-во рабочих по заявке</th>
+                            <th>Кол-во рабочих по табелю</th>
+                            <th>Недопоставка</th>
+                            <th>Выходов сверх заявки</th>
+                            <th>Кол-во часов</th>
+                            <th>Сумма</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for timesheet in timesheets %}
+                            <tr>
+                                <td>{{ timesheet.pk }}</td>
+                                <td>
+                                    <a href="{% url 'the_redhuman_is:timesheet' pk=timesheet.pk %}">{{ timesheet.sheet_date|date:"d.m.Y" }}</a>
+                                </td>
+                                <td>{{ timesheet.sheet_turn }}</td>
+                                <td>{% if timesheet.is_executed %}Да{% else %}Нет{% endif %}</td>
+                                <td>{{ timesheet.cust_location }}</td>
+                                <td>{{ timesheet.customer_repr }}</td>
+                                <td>{{ timesheet.foreman }}</td>
+                                <td class="text-center">{{ timesheet.customerorder.number_of_workers }}</td>
+                                <td class="text-center">{{ timesheet.worker_turnouts__count }}</td>
+                                {% if timesheet.customerorder %}
+                                    {% with timesheet.get_shortfall as shortfall %}
+                                        {% if shortfall > 0 %}
+                                            <td class="text-danger font-weight-bold text-center">
+                                                {{ shortfall }}
+                                            </td>
+                                            <td class="text-center">0</td>
+                                        {% elif shortfall < 0 %}
+                                            <td class="text-center">0</td>
+                                            <td class="text-center">
+                                                {{ shortfall|stringformat:"+d"|slice:"1:" }}
+                                            </td>
+                                        {% else %}
+                                            <td class="text-center">0</td>
+                                            <td class="text-center">0</td>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% else %}
+                                    <td class="text-center">
+                                        Н/д
+                                    </td>
+                                    <td class="text-center">
+                                        Н/д
+                                    </td>
+                                {% endif %}
+                                <td class="text-right">
+                                    {{ timesheet.worker_turnouts__hours_worked__sum | default_if_none:"-"}}
+                                </td>
+                                <td class="text-right">{{ timesheet.customer_sum | default_if_none:"-" | separate }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-secondary py-2 col col-4">Табелей за указанный период нет</div>
+        {% endif %}
+    </div>
+    <div class="tab-pane fade" id="comments" role="tabpanel" aria-labelledby="comment-tab">
+        <div class="row mt-2">
+            <div class="col col-4">
+                {% for comment in comments %}
+                    <p>
+                        {{ comment.date|date:"d.m.Y H:i" }}
+                        <br>
+                        {{ comment.author }}
+                        <br>
+                        {{ comment.text }}
+                        <br>
+                    </p>
+                {% endfor %}
+                {% if not comments %}
+                    <div class="alert alert-secondary py-2">Пока комментариев нет</div>
+                {% endif %}
+            </div>
+        </div>
+        <a href="{% url 'the_redhuman_is:new_comment' pk=customer.pk %}" class="btn btn-sm btn-outline-primary">Добавить</a>
+    </div>
+    <div class="tab-pane fade" id="objects" role="tabpanel" aria-labelledby="object-tab">
+        <div class="row mt-2">
+            <div class="col">
+                {% if customerlocs %}
+                    <table class="table rh-table">
+                        <tr>
+                            <th>Название</th>
+                            <th>Адрес</th>
+                            <th>Как добраться</th>
+                        </tr>
+                        {% for customerloc in customerlocs %}
+                            <tr>
+                                <td>{{ customerloc.location_name }}</td>
+                                <td>{{ customerloc.location_adress }}</td>
+                                <td>{{ customerloc.location_how_to_get }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    <div class="alert alert-secondary py-2">Пока объектов нет</div>
+                {% endif %}
+                <a href="{% url 'the_redhuman_is:new_locations' pk=customer.pk %}" class="btn btn-sm btn-outline-primary">Добавить</a>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="contacts" role="tabpanel" aria-labelledby="contact-tab">
+        <div class="row mt-2">
+            <div class="col">
+                {% if customerreprs %}
+                    <table class="table rh-table">
+                        <tr>
+                            <th>ФИО</th>
+                            <th>Должность</th>
+                            <th>Телефон</th>
+                        </tr>
+                        {% for customerrepr in customerreprs %}
+                            <tr>
+                                <td>{{ customerrepr }}</td>
+                                <td>{{ customerrepr.position }}</td>
+                                <td>{{ customerrepr.tel_number }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    <div class="alert alert-secondary py-2">Пока контактных лиц нет</div>
+                {% endif %}
+                <a href="{% url 'the_redhuman_is:new_representatives' pk=customer.pk %}" class="btn btn-sm btn-outline-primary">Добавить</a>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="managers" role="tabpanel" aria-labelledby="manager-tab">
+        <div class="row mt-2">
+            <div class="col">
+                <table class="table rh-table">
+                    <tr>
+                        <th>Менеджер по ведению</th>
+                        <th>Менеджер по развитию</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <form method="POST" class="manager_form" enctype="multipart/form-data" action="{% url 'the_redhuman_is:customer_add_mmanager' pk=customer.pk %}">
+                                {% csrf_token %}
+                                {{ mmanager_form.worker }}
+                                <div class="result"></div>
+                            </form>
+                        </td>
+                        <td>
+                            <form method="POST" class="manager_form" enctype="multipart/form-data" action="{% url 'the_redhuman_is:customer_add_dmanager' pk=customer.pk %}">
+                                {% csrf_token %}
+                                {{ dmanager_form.worker }}
+                                <div class="result"></div>
+                            </form>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="services" role="tabpanel" aria-labelledby="service-tab">
+        <div class="row" style="margin-top: 12px; margin-bottom: 12px;">
+            <div class="col col-4">
+                <form method="POST" action="{% url 'the_redhuman_is:customer_set_debts_first_day' pk=customer.pk %}">
+                    {% csrf_token %}
+                    <div class="form-row pb-0">
+                        <div class="form-group col col-auto input-group-sm">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Первый день, не закрытый актами</span>
+                            </div>
+                        </div>
+                        <div class="form-group col col-auto pb-0 mb-0">
+                            {{ debts_first_day_form.debts_first_day }}
+                        </div>
+                        <div class="form-group col col-auto">
+                            <button class="btn btn-sm btn-primary" type="submit">
+                                Установить
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <ul class="list-group">
+                    {% if services %}
+                        {% for service in services %}
+                        <li class="list-group-item" >
+                            {{ service.service }}
+                            <button class="float-right btn btn-outline-primary btn-sm assortment-btn" service-id="{{ service.pk }}">ассортимент</button>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="list-group-item">Пока услуг нет</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:customer_add_service' pk=customer.pk %}">
+                    {% csrf_token %}
+                    <div class="form-group col col-auto">
+                        <label for="id_service">{{ service_form.service.label }}</label>
+                        {{ service_form.service }}
+                        <button class="btn btn-sm btn-outline-primary" type="submit">Добавить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="deposit" role="tabpanel" aria-labelledby="deposit-tab">
+        <div class="row mt-2">
+            <div class="col">
+                <form method="POST" enctype="multipart/form-data" class="form-inline rh-form-sm" action="{% url 'the_redhuman_is:customer_set_deposit_amount' pk=customer.pk %}">
+                    {% csrf_token %}
+                    <div class="input-group input-group-sm mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Сумма залога:</span>
+                        </div>
+                        {% if customer.deposit_setting %}
+                            <input type="text" class="form-control" aria-label="" name="amount" value="{{ customer.deposit_setting.amount }}">
+                        {% else %}
+                            <input type="text" class="form-control" aria-label="" name="amount">
+                        {% endif %}
+                        <button class="btn btn-sm btn-outline-primary py-1" type="submit" name="html">Установить размер залога</button>
+                    </div>
+                </form>
+                {% if customer.deposit_setting %}
+                <form method="POST" enctype="multipart/form-data" class="form-inline rh-form-sm" action="{% url 'the_redhuman_is:customer_clear_deposit_setting' pk=customer.pk %}">
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        <button class="btn btn-sm btn-outline-primary py-1" type="submit" name="html">Очистить настройку суммы залога</button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="legal-entity" role="tabpanel" aria-labelledby="legal-entity-tab">
+        <div class="row mt-2">
+            <div class="col">
+                <table class="table rh-table table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Юрлицо</th>
+                            <th class="text-center">С</th>
+                            <th class="text-center">По</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entity in legal_entities %}
+                        <tr>
+                            <td>{{ entity.legal_entity }}</td>
+                            <td>{{ entity.first_day|date:'d.m.Y' }}</td>
+                            <td>{% if entity.last_day %}{{ entity.last_day|date:'d.m.Y' }}{% else %}-{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col">
+                <form method="POST" enctype="multipart/form-data" class="form-inline rh-form-sm" action="{% url 'the_redhuman_is:customer_add_legal_entity' pk=customer.pk %}">
+                    {% csrf_token %}
+                    <div class="input-group input-group-sm mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Новый интервал:</span>
+                        </div>
+                        {{ legal_entity_form.first_day }}
+                        {{ legal_entity_form.last_day }}
+                        {{ legal_entity_form.legal_entity }}
+                        <button class="btn btn-sm btn-outline-primary py-1" type="submit" name="html">Добавить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ debts_first_day_form.media }}
+{{ service_form.media }}
+<script type="text/javascript" src="{% static 'js/scripts.js' %}"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function () {
+    $.fn.dataTable.moment('DD.MM.YYYY');
+    $('#main_table').DataTable({
+        "select": {style: 'os',},
+        "fixedHeader": {
+            header: true,
+            footer: false
+        },
+        "processing": true,
+        "jQueryUI": true,
+        "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+        "sPaginationType": "full_numbers",
+        "sWrapper": "dataTables_wrapper form-inline",
+        "oLanguage": {
+            "sLengthMenu": "Отображено _MENU_ записей на страницу",
+            "sSearch": "Поиск:",
+            "sZeroRecords": "Ничего не найдено - извините",
+            "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+            "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+            "sInfoFiltered": "(filtered from _MAX_ total records)",
+            "oPaginate": {
+                "sFirst": "Первая",
+                "sNext": ">",
+                "sPrevious": "<",
+                "sLast": "Последняя",
+            }
+        }
+    });
+
+    $('.assortment-btn').on(
+        'click',
+        function() {
+            $('#assortment-form').modal();
+            let service_id = $(this).attr('service-id');
+            // Todo: есть проблема с тем, что последовательность завершения запросов
+            // не соответствует последовательности отправки, но тут пренебрегаем этим
+            let update_assortment_list = function() {
+                $.ajax(
+                    {
+                        type: 'GET',
+                        url: "{% url 'the_redhuman_is:customer_service_assortment_list' pk=123456 %}".replace('123456', service_id),
+                        success: function(data) {
+                            $('#assortment-form-body').html(data);
+                            $('#add-assortment-button').prop('disabled', false);
+                        },
+                        error: function(data) {
+                            $('#assortment-form-body').html('Что-то пошло не так.');
+                            $('#add-assortment-button').prop('disabled', false);
+                        }
+                    }
+                );
+            }
+
+            $('#add-assortment-form').on(
+                'submit',
+                function() {
+                    $.ajax(
+                        {
+                            type: 'POST',
+                            url: "{% url 'the_redhuman_is:service_add_assortment' pk=123456 %}".replace('123456', service_id),
+                            data: $(this).serialize(),
+                            context: this,
+                            success: function(data) {
+                                $('#add-assortment-input').val('');
+                                update_assortment_list();
+                            },
+                            error: update_assortment_list
+                        }
+                    );
+
+                    return false;
+                }
+            );
+
+            // on_submit
+            update_assortment_list();
+
+            $('#add-assortment-button').prop('disabled', true);
+        }
+    );
+});
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+<style>
+label {
+  font-weight: 700;
+}
+</style>
+{% load humanize %}
+{% load mathfilters %}
+
+{% block buttons %}
+
+{% endblock %}
+
+{% block cform1 %}
+
+<form action="" method="post">
+  {% csrf_token %}
+  <table>
+    {{ form.as_table }}
+  </table>
+  </br>
+  <button type="submit" style="width:300px;height:75px">Выплатить</button>
+</form>
+
+<form action="" method="post">
+  {% csrf_token %}
+  <table>
+    {{ o_form.as_table }}
+  </table>
+  </br>
+  <button type="submit" style="width:300px;height:75px">Провести</button>
+</form>
+{% endblock %}

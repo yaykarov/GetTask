@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block buttons %}
+<label>Добавить регистрацию</label>
+{% endblock %}
+
+{% block obj-data %}
+<form method="post">
+    {% csrf_token %}
+    <table>
+        {{ nrform.as_table  }}
+    </table>
+    <button type="submit">Сохранить</button>
+</form>
+
+{% endblock %}

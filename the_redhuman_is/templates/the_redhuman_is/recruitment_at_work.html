@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block extra_html_head %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+{% endblock %}
+{% block buttons %}
+<h6>Заявки на подбор</h6>
+{% endblock %}
+{% block obj-data %}
+    <div class="row">
+        <div class="col">
+            <table class="table rh-table">
+                <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Клиент</th>
+                    <th>Филиал</th>
+                    <th>Смена</th>
+                    <th>Время<br>начала</th>
+                    <th>Кол-во<br>человек</th>
+                    <th>Направлено<br>из базы</th>
+                </tr>
+                </thead>
+                {% for order in orders %}
+                    <tr>
+                        <td><a href="{% url 'the_redhuman_is:recruitment_order' pk=order.pk %}">{{ order.customer_order.on_date|date:"d.m.Y" }}</a></td>
+                        <td>{{ order.customer_order.customer }}</td>
+                        <td>{{ order.customer_order.cust_location }}</td>
+                        <td>{{ order.customer_order.bid_turn }}</td>
+                        <td>{{ order.customer_order.on_time|date:"H:i" }}</td>
+                        <td>{{ order.customer_order.number_of_workers }}</td>
+                        <td>{{ order.workersfororder__count }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block table1 %}
+<h6>База персонала</h6>
+  <table id="main_table" class="table rh-table">
+    <thead>
+    <tr>
+      <th>Рабочий</th>
+      <th>Телефон</th>
+      <th>Долж-ть</th>
+      <th>Кол-во<br>вы-<br>ходов</th>
+      <th>Кол-во<br>в день,<br>%</th>
+      <th>Дней с<br>посл.<br>выхода</th>
+      <th>Объект<br>посл.<br>выхода</th>
+      <th>Статус</th>
+      <th>Метро</th>
+      <th>Посл. комментарий</th>
+    </tr>
+    </thead>
+    <tbody>
+  {% for worker in workers %}
+    <tr>
+      <td><a href="{% url 'the_redhuman_is:worker_detail' pk=worker.pk %}">{{ worker }}</a></td>
+      <td>{{ worker.tel_number }}</td>
+      <td>{{ worker.position }}</td>
+      <td>{{ worker.worker_turnouts__count }}</td>
+      <td>{{ worker.rate_of_dayshifts }}</td>
+      <td>{{ worker.days_after_last_turnout }}</td>
+      <td>{{ worker.get_last_turnout }}</td>
+      <td><a href="{% url 'the_redhuman_is:clarify_worker_data' pk=worker.pk %}">{{ worker.status }}</a></td>
+      <td>{{ worker.metro }}</td>
+      <td>{{ worker.get_last_comment }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+  </table>
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $('#main_table').DataTable({
+                    "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+                    "aoColumnDefs": [
+                        { "sWidth": "50px", "aTargets": [ 1 ] },
+                        { "sWidth": "50px", "aTargets": [ 2 ] },
+                        { "sWidth": "30px", "aTargets": [ 3 ] },
+                        { "sWidth": "30px", "aTargets": [ 4 ] },
+                        { "sWidth": "30px", "aTargets": [ 5 ] },
+                        { "sWidth": "30px", "aTargets": [ 6 ] },
+                    ],
+                    "sPaginationType": "full_numbers",
+                    "oLanguage": {
+                        "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                        "sSearch": "Поиск:",
+                        "sZeroRecords": "Ничего не найдено - извините",
+                        "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                        "sInfoFiltered": "(filtered from _MAX_ total records)",
+                        "oPaginate": {
+                            "sFirst": "Первая",
+                            "sLast":"Посл.",
+                            "sNext":"След.",
+                            "sPrevious":"Пред.",
+                        }
+                    }
+                });
+            });
+        </script>
+{% endblock %}

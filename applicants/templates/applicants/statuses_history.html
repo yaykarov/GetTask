@@ -1,0 +1,6 @@
+{% for applicant, color in applicants %}
+<div class="list-group-item" style="display: flex;">
+    <div style="width: 80px; background-color: {{ color|safe }}; display: inline-block; margin-right: 16px; margin-top: -8px; margin-bottom: -8px; margin-left: -10px;"></div>
+    {{ applicant.last_edited|date:"d.m.y H:i" }}, {{ applicant.status }}, {{ applicant.phone }}, {{ applicant.name }}, {{ applicant.author }}
+</div>
+{% endfor %}

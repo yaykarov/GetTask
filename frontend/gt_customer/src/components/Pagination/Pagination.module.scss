@@ -1,0 +1,37 @@
+.bottomNav {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.bottomNavItem {
+  background-color: #fff;
+  width: 39px;
+  height: 39px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.bottomNavItem:hover {
+  background-color: #b3b3b3;
+}
+
+.bottomNavDots {
+  width: 39px;
+  height: 39px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 5px;
+}
+
+.bottomNavActive {
+  filter: invert(100%);
+}

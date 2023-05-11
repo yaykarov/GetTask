@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load thumbnail %}
+{% load mathfilters %}
+
+{% block body %}
+
+<style>
+.center img {
+  display:block;
+  margin: auto;
+  padding: 5px;
+}
+
+.center table {
+    margin-left:auto;
+    margin-right:auto;
+    padding: 10px;
+}
+
+.center {
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 1px solid;
+}
+
+
+</style>
+
+{% for obj in objects %}
+    <div class="center">
+        <p>{{obj.obj}}</p>
+        {% if obj.type == 'med_card' %}
+            <table>
+                <tbody>
+                <tr>
+                <td>Номер</td>
+                <td>Дата выдачи</td>
+                <td>Дата окончания</td>
+                </tr>
+            <tr>
+            <td>{{ obj.obj.number }}</td>
+            <td>{{ obj.obj.card_date_of_issue }}</td>
+            <td>{{ obj.obj.card_date_of_exp }}</td>
+            </tr>
+                </tbody>
+            </table>
+        {% elif obj.type == 'contract' %}
+            <table>
+                <tbody>
+                <tr>
+                <td>№</td>
+                <td>Тип</td>
+                <td>Дата заключения</td>
+                <td>Дата окончания</td>
+                <td>Действует</td>
+                </tr>
+            <tr>
+            <td>{{ obj.obj.id }}</td>
+            <td>{{ obj.obj.cont_type }}</td>
+            <td>{{ obj.obj.begin_date|date:"d.m.Y" }}</td>
+            <td>{{ obj.obj.end_date|date:"d.m.Y" }}</td>
+            <td>{%if obj.obj.is_actual %} да {% else %} нет {%endif %}</td>
+            </tr>
+                </tbody>
+            </table>
+        {% endif %}
+        {% if obj.photos %}
+            {% for p in obj.photos %}
+                <img src="{{p.url}}">
+            {% endfor %}
+
+        {% else %}
+        для этого документа нет ни одного фото
+        {% endif%}
+
+    </div>
+
+{% endfor %}
+{% endblock%}

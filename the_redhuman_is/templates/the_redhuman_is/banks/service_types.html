@@ -1,0 +1,183 @@
+{% extends './layout.html' %}
+{% load static %}
+{% block catalog-table %}
+
+    <link rel="stylesheet" href="{% static './css/main.css' %}"/>
+
+    <a href="{% url 'the_redhuman_is:banks' %}">Банки</a> / Типы услуг
+    <br/><br/>
+
+    <h1>Типы услуг</h1>
+    <table id="catalog-table" class="table rh-table-full-width">
+        <thead>
+             <tr>
+                 <th>Тип</th>
+                 <th>Дебит</th>
+             </tr>
+        </thead>
+
+        <tbody>
+            {% for service in services %}
+                <tr>
+                    <td width="250">{{ service.type }}</td>
+                    <td>{{ service.debit }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <form action="{% url 'the_redhuman_is:manage_bank_service_type' %}" method="post" id="entity_form">
+        {% csrf_token %}
+
+        <input id="id_form-TOTAL_FORMS" name="form-TOTAL_FORMS" type="hidden" value="1">
+        <input id="id_form-INITIAL_FORMS" name="form-INITIAL_FORMS" type="hidden" value="0">
+        <input id="id_form-MIN_NUM_FORMS" name="form-MIN_NUM_FORMS" type="hidden" value="0">
+        <input id="id_form-MAX_NUM_FORMS" name="form-MAX_NUM_FORMS" type="hidden" value="1">
+
+        <table id="entity-table">
+
+        </table>
+
+        <br>
+
+        <button id="add_ajax_row_button" class="btn btn-sm btn-primary">+</button>
+        <button id="save_button" type="submit" class="btn btn-sm btn-primary">Сохранить</button> <span id="result"></span>
+    </form>
+
+{% endblock %}
+
+{% block scripts %}
+    <link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+    <link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+    <script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+    <script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+    <script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+    <script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+    <script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+
+        var n = 0;
+
+        $('#add_ajax_row_button').on("click", function () {
+
+            $('#result').html('Загрузка...')
+
+            $.ajax({
+                url: $('#entity_form').attr('action') + '?n=' + n,
+                data: $(this).serialize(),
+                context: this,
+
+                success: function (data, status) {
+                    $('#entity-table').append(data);
+                    n++;
+                    $('#id_form-TOTAL_FORMS').val(n);
+                    $('#id_form-MAX_NUM_FORMS').val(n);
+
+                    $('#result').html('')
+                },
+                error: function (data, status) {
+                    $('#result').html('')
+                }
+            });
+
+            $('#save_button').show();
+
+            return false;
+        });
+
+        $('#entity-table').on("click", ".remove_row_button", function () {
+            var row = $(this).parent().parent();
+            var prefix = $(row).attr('id');
+            var row_id =  parseInt(prefix.replace('form-', ''));
+
+            var order_id = $("#id_"+prefix+"-id").val();
+
+            if (order_id)
+            {
+                var del_input = '<input id="id_'+prefix+'-DELETE" name="'+prefix+'-DELETE" value="1" type="hidden">';
+                $('#entity-table').append(del_input);
+                row.hide();
+            }
+            else
+            {
+                row.remove();
+
+                for (i=row_id+1; i<n; i++)
+                {
+                    var k = i;
+                    k--;
+
+                    var new_id = $('#form-' + i).attr('id').replace(i, k);
+
+                    $('#form-' + i).attr('id', new_id);
+
+                    $('#id_form-' + i + '-id').attr('id', $('#id_form-' + i + '-id').attr('id').replace(i, k));
+                    $('#id_form-' + k + '-id').attr('name', $('#id_form-' + k + '-id').attr('name').replace(i, k));
+
+                    $('#id_form-' + i + '-name').attr('id', $('#id_form-' + i + '-name').attr('id').replace(i, k));
+                    $('#id_form-' + k + '-name').attr('name', $('#id_form-' + k + '-name').attr('name').replace(i, k));
+                }
+
+                n--;
+
+                $('#id_form-TOTAL_FORMS').val(n);
+                $('#id_form-MAX_NUM_FORMS').val(n);
+            }
+
+            return false;
+        });
+
+        $(document).on('submit', '#entity_form', function () {
+            $.ajax({
+
+                type: $(this).attr('method'),
+                url: this.action,
+                data: $(this).serialize(),
+                context: this,
+                success: function (data, status) {
+
+                    var inputs = $('#entity-table').find('.id');
+
+                    n = data.pks.length
+
+                    $.each(data.pks, function(index, value) {
+                        $(inputs[index]).val(value);
+                    });
+
+                    $('#result').html('Данные сохранены!');
+
+                    $('#id_form-TOTAL_FORMS').val(n);
+                    $('#id_form-MAX_NUM_FORMS').val(n);
+                    $('#id_form-INITIAL_FORMS').val(n);
+                },
+                error: function (data, status) {
+
+                    console.log(data);
+
+                    var errors = '';
+
+                    $.each(data.responseJSON, function(index, value) {
+                        if (value.name)
+                            errors += value.name[0] + '<br>';
+                    });
+                    $('#result').html(errors);
+                }
+            });
+            return false;
+        });
+
+        $(document).ready(function() {
+            $("#catalog-table").DataTable(
+                {
+                    "paging":   false,
+                    "info":     false,
+                    "searching": false,
+                }
+            );
+        });
+    </script>
+{% endblock %}

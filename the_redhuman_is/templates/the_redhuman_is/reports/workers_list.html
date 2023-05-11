@@ -1,0 +1,14 @@
+<div class="card">
+    {% if location and day or title %}
+    <div class="card-header">
+        {% if title %}{{ title }} {% endif %}{% if location and day %}{{ location.customer_id }}-{{ location }}, {{day|date:"d.m"}}{% endif %}
+    </div>
+    {% endif %}
+    <div class="list-group list-group-flush">
+        {% for worker in workers %}
+            <li class="list-group-item">
+                {{ worker.tel_number }} <a href="{% url 'the_redhuman_is:worker_detail' worker.pk %}">{{ worker }}</a>
+            </li>
+        {% endfor %}
+    </div>
+</div>

@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block extra_html_head %}
+{{ interval_form.media }}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+{% endblock %}
+
+{% block buttons %}
+<h4>Загрузить банковскую выписку</h4>
+{% endblock %}
+
+{% block obj-data %}
+<style>
+ul.messages li {
+    max-width: 100%;
+    display: block;
+    background-color: #ccc;
+    padding: 0 10px;
+    margin: 10px;
+}
+</style>
+
+{% if messages %}
+<div>
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form id="upload-1c-file-form" method="POST" enctype="multipart/form-data" class="form-inline">
+    {% csrf_token %}
+    <div class="form-row">
+        <div style="display: none;">
+            {{ form.uploaded_file }}
+        </div>
+        <div class="form-group col col-auto">
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <label id="file_label" class="input-group-text">Файл не выбран</label>
+                </div>
+                <button class="btn btn-sm btn-primary" onClick="$('#id_uploaded_file').click(); return false;">выбрать файл</button>
+            </div>
+        </div>
+        <div class="form-group col col-auto">
+            <div class="input-group input-group-sm">
+                {{ form.comment }}
+            </div>
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">Отправить</button>
+        </div>
+    </div>
+</form>
+
+<h4 class="mt-4">Ранее загруженные выписки</h4>
+<form method="GET" enctype="multipart/form-data" class="form-inline">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            {{ interval_form.first_day }}
+            {{ interval_form.last_day }}
+        </div>
+        <div class="col col-auto">
+            <button class="btn btn-sm btn-outline-primary " type="submit">Показать</button>
+        </div>
+    </div>
+</form>
+
+<table id="statements-table" class="table rh-table table-hover">
+    <thead>
+        <tr>
+            <th>№</th>
+            <th>Дата импорта</th>
+            <th>Имя файла</th>
+            <th>Комментарий</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for import in imports %}
+        <tr>
+            <td>{{ import.pk }}</td>
+            <td>{{ import.created|date:'d.m.Y' }}</td>
+            <td>{{ import.file_name }}</td>
+            <td>{{ import.comment }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+<script>
+$(document).ready(
+    function () {
+        $('#id_uploaded_file').on(
+            'change',
+            function() {
+                let label = $('#id_uploaded_file').val();
+                if (!label) {
+                    label = 'Файл не выбран';
+                }
+
+                $('#file_label').html(label);
+            }
+        );
+
+        $.fn.dataTable.moment('DD.MM.YYYY');
+        $('#statements-table').DataTable({
+            "pageLength": 50,
+            "order": [],
+            "lengthMenu": [[100, 20, -1], [100, 20, "Все"]],
+            "stateSave": true,
+            "searching": false,
+            "info": false,
+            "paging": false,
+            "oLanguage": {
+                "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                "sSearch": "Поиск:",
+                "sZeroRecords": "Ничего не найдено - извините",
+                "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                "sInfoFiltered": "(filtered from _MAX_ total records)",
+                "oPaginate": {
+                    "sFirst": "Первая",
+                    "sNext": ">",
+                    "sPrevious": "<",
+                    "sLast": "Последняя",
+                },
+            },
+        });
+    }
+);
+</script>
+{% endblock %}

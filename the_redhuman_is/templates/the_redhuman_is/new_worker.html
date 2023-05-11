@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_html_head %}
+    <link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+    <link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+{% endblock %}
+
+{% block buttons %}
+    {% if wpform %}
+        <h4>Новый рабочий</h4>
+    {% else %}
+        <h4>{{ worker }}</h4>
+    {% endif %}
+{% endblock %}
+
+{% block obj-data %}
+    <form method="POST" enctype='multipart/form-data'>
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-lg-4">
+                {% if wform %}
+                    <table class="mb-3">
+                        {{ wform.as_table }}
+                    </table>
+                {% endif %}
+            </div>
+            <div class="col-4">
+                {% if wpform %}
+                    <h6>Паспорт</h6>
+                    <table class="mb-3">
+                        {{ wpform.as_table }}
+                    </table>
+                {% endif %}
+                {% if wrform %}
+                    <h6>Регистрация</h6>
+                    <table class="mb-3">
+                        {{ wrform.as_table }}
+                    </table>
+                {% endif %}
+            </div>
+            <div class="col-lg-4">
+                {% if wpaform %}
+                    <h6>Патент</h6>
+                    <table class="mb-3">
+                        {{ wpaform.as_table }}
+                    </table>
+                {% endif %}
+                {% if med_card_form %}
+                    <h6>Мед. книжка</h6>
+                    <table class="mb-3">
+                        {{ med_card_form.as_table }}
+                    </table>
+                {% endif %}
+            </div>
+            <div>
+                {% if photo_del_form %}
+                    {{ photo_del_form.as_table }}
+                {% endif %}
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">Сохранить</button>
+    </form>
+{% endblock %}
+{% block scripts %}
+{% if wform %}
+{{ wform.media }}
+{% endif %}
+
+    <script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+    <script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+    <script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+    <script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+    <script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+
+    <script>
+
+        $(document).ready(
+            function () {
+                $("#id_card_date_of_issue").keyup(
+                    function () {
+                        let dateRx = /(\d+)\.(\d+)\.(\d+)/;
+                        let issue = $("#id_card_date_of_issue").val();
+                        let match = dateRx.exec(issue);
+                        if (match) {
+                            let issueDate = new Date(match[3], match[2] - 1, match[1]);
+                            let expDate = new Date(issueDate.getTime() + (364 * 24 + 3) * 60 * 60000);
+
+                            var date = expDate.getDate();
+                            if (date < 10) {
+                                date = "0" + date;
+                            }
+                            var month = expDate.getMonth() + 1;
+                            if (month < 10) {
+                                month = "0" + month;
+                            }
+
+                            let dateStr = "" + date + "." + month + "." + expDate.getFullYear();
+
+                            $("#id_card_date_of_exp").val(dateStr);
+                        }
+                    }
+                );
+                {% if msg %}
+                    msg = "{{ msg }}";
+                    if (msg == "number")
+                        alert("Заполните номер миграционной карты");
+                    else if (msg == "series")
+                        alert("Заполните серию миграционной карты");
+                    else if (msg == "birth_date")
+                        alert("Заполните дату рождения");
+                    else
+                        alert(msg);
+                {% endif %}
+            }
+        );
+    </script>
+{% endblock %}

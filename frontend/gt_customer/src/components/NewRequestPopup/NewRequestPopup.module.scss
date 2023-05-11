@@ -1,0 +1,170 @@
+.viewPopup {
+  width: 500px;
+  position: relative;
+  padding-top: 40px;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+.viewPopupClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.viewPopupTitle {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 24px;
+  line-height: 28px;
+  margin-bottom: 40px;
+  margin-left: 8px;
+}
+
+.button {
+  margin: 0 0 40px 0;
+  width: 240px;
+  height: 48px;
+  border: 0;
+  background: #000000;
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Roboto';
+  cursor: pointer;
+}
+
+.form_input,
+.form_textarea,
+.form_checkbox input {
+  width: 100%;
+  height: 40px;
+  background: #f2f2f2;
+  border-radius: 6px;
+  border: none;
+  padding: 15px;
+  margin-bottom: 16px;
+  font-family: Roboto, sans-serif;
+
+  &:focus {
+    outline: none;
+  }
+}
+.form_row_3,
+.form_row_4 {
+  display: flex;
+  justify-content: space-between;
+}
+
+.form_row_3 div{
+    flex: 0 0 30%
+}
+
+.form_row_4 div {
+    flex: 0 0 22%;
+}
+
+.form_textarea {
+  max-height: 222px;
+  max-width: 100%;
+}
+
+.label {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 16px;
+  color: #b3b3b3;
+  margin-bottom: 8px;
+}
+
+.label[required]:after {
+  content: " *";
+  color: black;
+  position: relative;
+  right: 0;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.datePicker {
+  height: 40px;
+  flex-shrink: 0;
+  background: #f2f2f2;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 16px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.datePicker:hover {
+  background: #ebebeb;
+  transition: 0.1s;
+}
+
+.datePicker div {
+  margin-top: 1px;
+}
+
+.datePicker img {
+  margin-left: 16px;
+  margin-right: 20px;
+  margin-bottom: 1px;
+  flex-shrink: 2;
+}
+
+.disabled {
+  background: #afafaf !important;
+  cursor: default;
+}
+
+.disabled:hover {
+  background: #afafaf !important;
+}
+
+.addressSuggestions {
+  position: relative;
+}
+
+.addressSuggestions input {
+  width: 100%;
+  height: 40px;
+  background: #f2f2f2;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 16px;
+  outline: none !important;
+  border: none !important;
+}
+
+.addressSuggestions input:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none;
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.textareaTooltip {
+  font-size: 10px;
+  white-space: pre-wrap;
+}

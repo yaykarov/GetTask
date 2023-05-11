@@ -1,0 +1,112 @@
+{% extends 'base.html' %}{% load static %}
+{% load redhuman_tags %}
+{% block extra_html_head %}
+    <style>
+        .t_input input
+        {
+            width: 50px;
+        }
+    </style>
+
+    <link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+    <link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+{% endblock %}
+{% block buttons %}
+    <h4>Выходы</h4>
+    <div class="row">
+        <div class="col-auto">
+            <a href="{% url 'the_redhuman_is:new_contracts' %}" class="btn btn-sm btn-outline-primary">Добавить договоры</a>
+        </div>
+    </div>
+{% endblock %}
+{% block table-data %}
+    <div class="row">
+        <div class="col-auto">
+            <form method="post">
+                {% csrf_token %}
+                {{ formset.management_form }}
+                <input type="hidden" name="customer" value="{{ customer.pk }}"/>
+                <table class="table rh-table">
+                    <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Рабочий</th>
+                        <th>Код</th>
+                        <th>Услуга</th>
+                        <th>Кол-во часов</th>
+                        <th>Выработка</th>
+                        {% if turnout_output %}
+                        {% for data in turnout_output %}
+                        <th>{{ data.box_type.name }}</th>
+                        {% endfor %}
+                        {% endif %}
+                        <th>Штраф</th>
+                        <th>Вычет</th>
+                        <th>Премия</th>
+                    </tr>
+                    </thead>
+                    {% for form in formset %}
+                        {% with turnout_id=forloop.counter0 turnout_id_str=forloop.counter0|stringformat:"s" form_id=form.id.value|default:0 %}
+                            <tr>
+                                <td>{{ form.id }}</td>
+                                <td>{{ form.worker }}</td>
+                                <td>{{ form.worker_code_name }}</td>
+                                <td>{{ form.service }}</td>
+                                <td class="t_input">{{ form.hours_worked }}</td>
+                                <td class="t_input">{{ form.performance }}</td>
+                                {% if turnout_output %}
+                                {% for data in turnout_output %}
+                                    {% with data_item=data.output|get_value:turnout_id %}
+                                    <td class="t_input">
+                                        <input class="output_{{ turnout_id }} output_{{ turnout_id }}_{{ data.box_type.customer_service.pk }}" type="text" name="output_{{ turnout_id}}_{{ timesheet.pk }}_{{ data_item.2 }}_{{ data.box_type.pk }}" value="{{ data_item.1 }}"/>
+                                    </td>
+                                    {% endwith %}
+                                {% endfor %}
+                                {% endif %}
+                                <td class="cfines">{% with id_suffix='cfine_'|add:turnout_id_str items=cfines|get_value_from_dict:form_id %}{% include 'the_redhuman_is/turnout_fines.html' %}{% endwith %}</td>
+                                <td>
+                                    <div id="deductions_{{ turnout_id }}">
+                                        {% for cfine in cfines|get_value_from_dict:form_id %}
+                                            {% if not cfine.operation.fines.all.0.deduction.comment %}
+                                                <div class="row" style="display: none" id="id_parent_deduction_0_id_{{ forloop.counter }}">
+                                                    <div class="col">
+                                                        <span id="id_val_deduction_{{ turnout_id }}_id_{{ forloop.counter }}"></span>
+                                                        <span id="id_comment_deduction_{{ turnout_id }}_id_{{ forloop.counter }}"> - На основании штрафа от {% now "m.d.Y" %} "" <br></span>
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <div class="row" id="id_parent_deduction_0_id_{{ forloop.counter }}">
+                                                    <div class="col">
+                                                        <span id="id_val_deduction_{{ turnout_id }}_id_{{ forloop.counter }}">{{ cfine.operation.fines.all.0.deduction.amount }}</span>
+                                                        <span id="id_comment_deduction_{{ turnout_id }}_id_{{ forloop.counter }}"> - {{ cfine.operation.fines.all.0.deduction.comment }}<br></span>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% with id_suffix='fine_'|add:turnout_id_str items=fines|get_value_from_dict:form_id %}{% include './turnout_fines.html' %}{% endwith %}
+                                </td>
+                                <td>{% with id_suffix='bonus_'|add:turnout_id_str items=bonuses|get_value_from_dict:form_id %}{% include './turnout_fines.html' %}{% endwith %}</td>
+                            </tr>
+                        {% endwith %}
+                    {% endfor %}
+                </table>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </form>
+        </div>
+    </div>
+    <div id="deduction_bonus_init" style="display:none">
+        {% include 'the_redhuman_is/turnout_fines_init.html' %}
+    </div>
+    <div id="deduction_comment_init" style="display:none">
+        {% include "the_redhuman_is/turnout_fine_comment_init.html" %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+{{ formset.media }}
+
+<script type="text/javascript" src="{% static 'js/add_fines_bonus.js' %}"></script>
+
+{% endblock %}

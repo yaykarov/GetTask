@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.css"/>
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block obj-data %}
+{% include 'the_redhuman_is/core/modal.include' with link_class='cell' modal_id='dialog' modal_body_id='dialog_body' %}
+
+{% for row_title, filter_row in filter_items %}
+<div class="row">
+    <div class="col mt-1 mb-1">
+        <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+                <div class="input-group-text" id="btnGroupAddon2">{{ row_title }}</div>
+            </div>
+            {% for item in filter_row %}
+            <a title="{{ item.hint }}" class="btn btn-sm btn-{% if not item.highlighted %}outline-{% endif %}{{ item.style }} ml-2" href="{% url 'the_redhuman_is:contracts_list' %}?display={{ item.key }}">
+                {{ item.title }} ({{ item.filter.count }})
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<div class="row">
+    <div class="col mt-3 mb-1">
+        <div class="btn-group btn-group-sm" role="group">
+            {% if actions.set_contractor %}
+            <button class="btn btn-outline-primary" type="submit" formaction="{% url 'the_redhuman_is:contracts_set_contractor' %}" form="table">
+                Установить подрядчика
+            </button>
+            {% endif %}
+            {{ contractor_form.contractor }}
+            <button class="btn btn-outline-primary" type="submit" formaction="{% url 'the_redhuman_is:export_contracts_csv' %}" formmethod="get" form="table" onclick="return checkContractor();">
+                Скачать договора с подрядчиком
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col mb-1">
+        {% if actions.set_begin_date %}
+        <div class="btn-group btn-group-sm" role="group">
+            <button class="btn btn-outline-primary" type="submit" formaction="{% url 'the_redhuman_is:contracts_set_dates' %}" form="table">
+                Оформить с даты
+            </button>
+            {{ conclusion_form.conclusion_date }}
+        </div>
+        {% endif %}
+        {% if actions.set_end_date %}
+        <div class="btn-group btn-group-sm" role="group">
+            <button class="btn btn-outline-primary" type="submit" formaction="{% url 'the_redhuman_is:contracts_fire' %}" form="table">
+                Расторгнуть с даты
+            </button>
+            {{ termination_form.termination_date }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <div class="btn-group btn-group-sm" role="group">
+            <form id="table" method="post">
+                {% csrf_token %}
+                {{ proxy_form.proxy }}
+            </form>
+            {% if actions.download_contract_notices %}
+            <button class="btn btn-outline-primary" type="submit" formaction="{% url 'the_redhuman_is:download_notices' 'contract' %}" form="table" formmethod="GET">Скачать пакеты для подачи УоЗ</button>
+            {% endif %}
+            {% if actions.download_terminate_notices %}
+            <button class="btn btn-outline-primary" type="submit" formaction="{% url 'the_redhuman_is:download_notices' 'terminate' %}" form="table" formmethod="GET">Скачать пакеты для подачи УоР</button>
+            {% endif %}
+            <button class="btn btn-outline-primary" type="submit" formaction="{% url 'the_redhuman_is:download_images_for_contracts' %}" form="table">Скачать фото документов</button>
+
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+            <table class="table rh-table table-hover" id="dataTable">
+                <thead>
+                <tr>
+                    <th scope="col"><input type="checkbox" id="contract-select-all"></th>
+                    <th scope="col">Договор</th>
+                    <th scope="col"></th>
+                    <th scope="col">Патент</th>
+                    <th scope="col">Подрядчик</th>
+                    <th scope="col">Рабочий</th>
+                    <th scope="col">Выходов</th>
+                    <th scope="col">Последний выход на</th>
+                    <th scope="col">Дата посл. вых.</th>
+                    <th scope="col">Дата начала</th>
+                    <th scope="col">Дата ок-я</th>
+                    <th scope="col">Дата раст-я</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for contract in contracts %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="contract-selection" id="contract{{ contract.pk }}" name="id" value="{{ contract.pk }}" form="table">
+                        </td>
+                        <td>
+                            <a class="font-weight-bold" href="{% url 'the_redhuman_is:edit_contract' pk=contract.pk %}?edit_dates=1" target="_blank">{{ contract.number }} {{ contract.cont_type }}</a>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Скачать
+                                </button>
+                                <div class="dropdown-menu">
+                                    {% if contract.noticeofcontract.photos %}
+                                        <a class="dropdown-item" href="{% url 'the_redhuman_is:notification_of_contract_photos' pk=contract.noticeofcontract.pk %}" target="_blank">Открыть фото договора и справки об УоЗ</a>
+                                    {% endif %}
+                                    {% if contract.noticeoftermination.photos %}
+                                        <a class="dropdown-item" href="{% url 'the_redhuman_is:notification_of_termination_photos' pk=contract.noticeoftermination.pk %}"target="_blank">Открыть фото справки об УоР</a>
+                                    {% endif %}
+                                    <a class="dropdown-item" href="{% url 'the_redhuman_is:download_images_for_contracts' %}?id={{ contract.id }}">Фото</a>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Изменить
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-sm">
+                                    <a class="dropdown-item cell" href="{% url 'the_redhuman_is:worker_snils' worker_pk=contract.c_worker.pk %}">СНИЛС</a>
+                                    <a class="dropdown-item"
+                                            data-toggle="modal" data-target="#addNoticeImage"
+                                            data-type="contract" data-title="УоЗ" data-id="{{ contract.id }}">
+                                        Добавить справку об УоЗ
+                                    </button>
+                                    <a class="dropdown-item"
+                                            data-toggle="modal" data-target="#addNoticeImage"
+                                            data-type="terminate" data-title="УОР" data-id="{{ contract.id }}">
+                                        Добавить справку об УоР
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if contract.c_worker.actual_patent %}Да{% else %}Нет{% endif %}
+                        </td>
+                        <td>
+                            {% if contract.contractor %}{{ contract.contractor }}{% else %}-{% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'the_redhuman_is:worker_detail' pk=contract.c_worker_id %}" target="_blank">{{ contract.c_worker }}</a>
+                        </td>
+                        <td>{{ contract.c_worker.worker_turnouts.count }}</td>
+                        <td>{{ contract.c_worker.get_turnouts.last.timesheet.cust_location }}</td>
+                        <td>{{ contract.c_worker.get_turnouts.last.timesheet.sheet_date|date:'d.m.Y' }}</td>
+                        <td>{{ contract.begin_date|date:'d.m.Y' }}</td>
+                        <td>{{ contract.end_date|date:'d.m.Y' }}</td>
+                        <td>
+                            {% if contract.noticeoftermination %}{{ contract.noticeoftermination.date|date:'d.m.Y'}}{% else %}-{% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+    </div>
+</div>
+
+<div class="modal fade" id="addNoticeImage" tabindex="-1" role="dialog" aria-labelledby="addNoticeImageLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addNoticeImageLabel">Добавить справку к</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'the_redhuman_is:attach_notice_image' %}" id="addNoticeImageForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="text" class="form-control" name="contract_id" id="addNoticeImageModalId" hidden>
+                    <input type="text" class="form-control" name="type" id="addNoticeImageModalType" hidden>
+                    <input type="text" class="form-control" name="next" value="{{ request.get_full_path }}" hidden>
+                    <div class="form-group">
+                        <label for="message-text" class="col-form-label">Справка:</label>
+                        <input type="file" name="images" accept="image/png, image/jpeg" multiple/>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                <button type="submit" class="btn btn-primary" form="addNoticeImageForm">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ conclusion_form.media }}
+{{ termination_form.media }}
+{{ contractor_form.media }}
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+<script>
+function checkContractor() {
+    if($("#id_contractor")[0].selectedIndex == 0) {
+        alert("Выберите, пожалуйста, подрядчика.");
+        return false;
+    }
+    return true;
+}
+
+function checkContractorProxy() {
+    if($("#id_proxy")[0].selectedIndex == 0) {
+        alert("Выберите, пожалуйста, доверенное лицо.");
+        return false;
+    }
+    return true;
+}
+
+$(document).ready(function () {
+    $.fn.dataTable.moment( 'DD.MM.YYYY' );
+    $('#dataTable').DataTable({
+        "pageLength": 50,
+        "order": [],
+        "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+        "stateSave": true,
+        "columnDefs": [
+            {"targets": [0, 2], "orderable": false},
+            {"targets": [0, 2], "searchable": false},
+        ],
+        "oLanguage": {
+            "sLengthMenu": "Отображено _MENU_ записей на страницу",
+            "sSearch": "Поиск:",
+            "sZeroRecords": "Ничего не найдено - извините",
+            "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+            "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+            "sInfoFiltered": "(filtered from _MAX_ total records)",
+            "oPaginate": {
+                "sFirst": "Первая",
+                "sNext": ">",
+                "sPrevious": "<",
+                "sLast": "Последняя",
+            },
+        },
+    });
+    $('#addNoticeImage').on('show.bs.modal', function (event) {
+        let button = $(event.relatedTarget);
+        let title = button.data('title');
+        let modal = $(this);
+        modal.find('.modal-title').text('Добавить справку к ' + title);
+        modal.find('#addNoticeImageModalId').val(button.data('id'));
+        modal.find('#addNoticeImageModalType').val(button.data('type'));
+    })
+
+    $('#contract-select-all').on(
+        'click',
+        function() {
+            $('.contract-selection').prop('checked', this.checked);
+        }
+    );
+});
+</script>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<a href="{% url 'the_redhuman_is:new_worker' %}"><button>Добавить рабочего</button></a>
+{% endblock %}
+
+{% block table-data %}
+  <table>
+    <tr>
+      <th>Номер</th>
+      <th>Дата</th>
+      <th>Выход</th>
+      <th>РКО</th>
+    </tr>
+  {% for act in acts %}
+    <tr>
+      <td>{{ act.pk }}</td>
+      <td>{{ act.date|date:"d.m.Y" }}</td>
+      <td>{{ act.turnout }}</td>
+      <td>{{ act.rko }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+{% endblock %}

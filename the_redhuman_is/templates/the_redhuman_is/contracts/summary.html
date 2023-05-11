@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block extra_html_head %}
+<style>
+td {
+    text-align: center;
+}
+</style>
+{% endblock %}
+
+{% block buttons %}
+<h4>Данные о договорах с установленной датой начала для каждого подрядчика</h4>
+{% endblock %}
+
+{% block obj-data %}
+{% include 'the_redhuman_is/core/modal.include' with link_class='cell' modal_id='dialog' modal_body_id='dialog_body' %}
+<table class="table rh-table table-hover">
+    <thead>
+        <tr>
+            <th>Подрядчик</th>
+            <th title="Действующие договора со справкой об УОЗ и СНИЛС">
+                Действующие договора
+            </th>
+            <th title="Договора с датой без фотографии справки об УоЗ">
+                Без справки
+            </th>
+            <th title="Договора с датой, для которых уже получена справка об УОЗ, но нет СНИЛСа">
+                Со справкой, без СНИЛС
+            </th>
+            <th>
+                Средняя численность на {{ today|date:'d.m.y'}}
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for contractor, registered, reg_starting, reg_finishing, avg in data %}
+    <tr>
+        <td>{{ contractor }}</td>
+        <td><a class="cell" href="{% url 'the_redhuman_is:contractor_workers'%}?contractor={{contractor.pk}}&filter=registered">{{ registered }}</a></td>
+        <td><a class="cell" href="{% url 'the_redhuman_is:contractor_workers'%}?contractor={{contractor.pk}}&filter=reg_starting">{{ reg_starting }}</a></td>
+        <td><a class="cell" href="{% url 'the_redhuman_is:contractor_workers'%}?contractor={{contractor.pk}}&filter=reg_finishing">{{ reg_finishing }}</a></td>
+        <td>{{ avg|floatformat:1 }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+{{ filter_form.media }}
+<h4>ВкусВилл: данные по выработке</h4>
+{% endblock %}
+
+{% block obj-data %}
+<form method="GET">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            {{ filter_form.first_day }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.last_day }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.report_type }}
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+                Показать
+            </button>
+            <button class="btn btn-sm btn-outline-primary" type="submit" name="format" value="xls">
+                <i class="fas fa-download"></i>
+            </button>
+        </div>
+    </div>
+</form>
+
+<table id="main-table" class="table rh-table table-hover">
+    <thead>
+        <tr>
+            <th rowspan="2">Работник</th>
+            {% for day in days %}
+                <th>{{ day|date:"d.m" }}</th>
+            {% endfor %}
+        </tr>
+        <tr class="text-center">
+            {% for day in days %}
+                <th>{{ day|date:"D" }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+    {% for worker, data in grid.items %}
+        {% for output_name, cells in data.items %}
+        <tr>
+            <td><a href="{% url 'the_redhuman_is:worker_detail' worker.pk %}">{{ worker }}{% if output_name %} - {{ output_name }}{% endif %}</a></td>
+            {% for cell in cells %}
+                <td class="text-center">{% if cell != None %}{{ cell }}{% endif %}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

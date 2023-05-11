@@ -1,0 +1,399 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+{% load redhuman_tags %}
+{% load human_readable_values %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<style>
+.col {
+    margin-bottom: 0;
+}
+.filter-button {
+    margin-bottom: 12px;
+}
+#id_first_day, #id_last_day {
+    width: 100px;
+}
+.select2-container {
+    min-width: 120px !important;
+}
+.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+    background-color: #BFE8F2;
+}
+.status-cell:hover {
+    background-color: #76DAF2 !important;
+}
+.applicant-multiple-links {
+    background-color: #FEE;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="modal fade" id="modalForm" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить соискателя</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="alert alert-danger" id="modal-form-alert" style="display: none;">
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'applicants:create' %}" method="post" class="rh-vertical-form" id="applicantForm" autocomplete="off">
+                    {% crispy create_form %}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary" id="edit-applicant-submit" form="applicantForm">Сохранить</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="unassigned-form" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Заявки без автора</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="unassigned-form-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="history-form" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">История статусов</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="history-form-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="GET">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            <label for="id_manager">{{ filter_form.manager.label }}</label>
+            {{ filter_form.manager }}
+        </div>
+        <div class="form-group col col-auto">
+            <label for="id_source">{{ filter_form.source.label }}</label>
+            {{ filter_form.source }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.first_day }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.last_day }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.interval_type }}
+        </div>
+        <div class="form-check form-check-inline col col-auto">
+            <input type="checkbox" class="form-check-input" name="show_first_reaction" id="id_show_first_reaction" {% if show_first_reaction %}checked="checked"{% endif %}>
+            <label class="form-check-label" for="id_show_first_reaction">время реакции</label>
+        </div>
+        <div class="form-check form-check-inline col col-auto">
+            <input type="checkbox" class="form-check-input" name="show_first_turnout_date" id="id_show_first_turnout_date" {% if show_first_turnout_date %}checked="checked"{% endif %}>
+            <label class="form-check-label" for="id_show_first_turnout_date">дата выхода</label>
+        </div>
+        <div class="form-check form-check-inline col col-auto">
+            <input type="checkbox" class="form-check-input" name="show_multiple_links" id="id_show_multiple_links" {% if show_multiple_links %}checked="checked"{% endif %}>
+            <label class="form-check-label" for="id_show_multiple_links">спорные связи</label>
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+                Показать
+            </button>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col col-auto filter-button">
+            <button class="btn btn-sm {% if status_highlight or today_work %}btn-outline-primary{% else %}btn-primary{% endif %}" type="submit">
+                Всего кандидатов ({{ applicants_count }})
+            </button>
+        </div>
+        {% for status, count in status_infos %}
+        <div class="form-group col col-auto filter-button">
+            <button class="btn btn-sm {% if status.pk == status_highlight %}btn-primary{% else %}btn-outline-primary{% endif %}" name="filter_status" value="{{ status.pk }}" type="submit">
+                {{ status.name }} ({{ count }})
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+</form>
+
+<div class="row">
+    <div class="col col-auto">
+        <button id="new-applicant-button" class="btn btn-sm btn-outline-primary" data-toggle="modal">Добавить соискателя</button>
+    </div>
+    <div class="col col-auto">
+        <form method="GET">
+            <input type="hidden" name="today_work" value="true">
+            <input id="today_work_hidden_manager" type="hidden" name="manager" value="">
+            <button class="btn btn-sm {% if today_work %}btn-primary{% else %}btn-outline-primary{% endif %}" type="submit">Работа на сегодня</button>
+        </form>
+    </div>
+    <div class="col col-auto">
+        <form method="GET">
+            <button class="btn btn-sm btn-outline-primary" type="submit">Все мои заявки</button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <table class="table table-bordered table-hover table-sm mr-3" id="dataTable">
+            <thead>
+            <tr>
+                <th>Дата<br>зан-я</th>
+                <th>Посл.<br>ред-е</th>
+                <th>Автор</th>
+                <th>Телефон</th>
+                <th>Тип<br>звонка</th>
+                <th>ФИО</th>
+                <th>Пол</th>
+                <th>Гр-во</th>
+                <th>Паспорт</th>
+                <th>Статус</th>
+                {% if show_first_turnout_date %}
+                <th>Выход</th>
+                <th>Кол-во в-в</th>
+                <th>Работник</th>
+                {% endif %}
+                <th>Источник</th>
+                <th>Лет</th>
+                <th>Есть<br>док-ты?</th>
+                <th>Есть<br>карта?</th>
+                <th>Метро</th>
+                <th>Объект</th>
+                <th>Город<br>пр-я</th>
+                <th>Тип<br>работы</th>
+                <th>Дата след.<br>контакта</th>
+                <th>Комментарий</th>
+                {% if show_first_reaction %}
+                <th>t</th>
+                {% endif %}
+            </tr>
+            </thead>
+            <tbody>
+            {% with request.user|has_group:"Подборщики внешние" as external_recruiter %}
+                {% for item in applicant_list %}
+                    <tr data-id="{{ item.id }}" class="cursor-pointer{% if show_multiple_links and item.has_multiple_possible_links %} applicant-multiple-links{% endif %}">
+                        <td>{{ item.init_date|date:"d.m.y" }}</td>
+                        <td>{{ item.last_edited|date:"H:i d.m.y" }}</td>
+                        <td>{{ item.author }}</td>
+                        <td>{{ item.phone }}</td>
+                        <td>{{ item.get_type_display }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.get_sex_display|default_if_none:'' }}</td>
+                        <td>{{ item.citizenship|default_if_none:'-' }}</td>
+                        <td>
+                            {% if item.passport_series and item.passport_number %}
+                                {{ item.passport_series }}<br>{{ item.passport_number }}
+                            {% endif %}
+                        </td>
+                        <td class="status-cell">{{ item.status|default_if_none:'' }}</td>
+                        {% if show_first_turnout_date %}
+                        <td>{{ item.first_turnout_date|date:"d.m.y" }}</td>
+                        <td>{{ item.worker_link.worker.worker_turnouts.count }}</td>
+                        {% with worker=item.worker_link.worker %}
+                        <td>{% if worker %}<a href="{% url 'the_redhuman_is:worker_detail' worker.pk %}" target="_blank">{{ worker }}</a>{% endif %}</td>
+                        {% endwith %}
+                        {% endif %}
+                        <td>{{ item.source|default_if_none:'' }}</td>
+                        <td>{{ item.age|default_if_none:'' }}</td>
+                        <td class="text-center">{% yes_no item.have_docs %}</td>
+                        <td class="text-center">{% yes_no item.have_bank_card %}</td>
+                        <td>{{ item.metro|default_if_none:'' }}</td>
+                        {% if external_recruiter %}
+                        <td>{{ item.location.location_name|default_if_none:'' }}</td>
+                        {% else %}
+                        <td>{{ item.location.full_name|default_if_none:'' }}</td>
+                        {% endif %}
+                        <td>{{ item.city|default_if_none:'' }}</td>
+                        <td>{{ item.get_work_type_display|default_if_none:'-' }}</td>
+                        <td>{{ item.next_date|date:"d.m.y" }}</td>
+                        <td>{{ item.comment }}</td>
+                        {% if show_first_reaction %}
+                        <td>{{ item.idle_time|short_interval }}</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            {% endwith %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{% static 'js/applicants_list.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.maskedinput.min.js' %}"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+
+<script>
+let id = null;
+
+function loadFormData() {
+    let url = "{% url 'applicants:detail' 0 %}";
+    url = url.replace('0', id);
+    $.ajax({
+        method: "GET",
+        url: url,
+        success: function (data) {
+            $('#id_init_date').val(data.object.init_date);
+            $('#id_age').val(data.object.age);
+            $('#id_author').val(data.object.author);
+            $('#id_comment').val(data.object.comment);
+            $('#id_have_docs').prop("checked", data.object.have_docs);
+            $('#id_have_bank_card').prop("checked", data.object.have_bank_card);
+            $('#id_work_type').val(data.object.work_type);
+            $('#id_location').val(data.object.location).change();
+            $('#id_metro').val(data.object.metro).change();
+            $('#id_city').val(data.object.city);
+            $('#id_citizenship').val(data.object.citizenship);
+            $('#id_passport_series').val(data.object.passport_series);
+            $('#id_passport_number').val(data.object.passport_number);
+            $('#id_name').val(data.object.name);
+            $('#id_sex').val(data.object.sex);
+            $('#id_next_date').val(data.object.next_date);
+            $('#id_phone').val(data.object.phone);
+            $('#id_source').val(data.object.source).change();
+            let option = new Option(data.object.status.name, data.object.status.id);
+            option.selected = true;
+            $("#id_status").append(option).trigger("change");
+            $('#id_status_hidden').val(data.object.status.id);
+            $('#id_type').val(data.object.type).change();
+            let action = "{% url 'applicants:update' 0 %}";
+            let editForm = $('#applicantForm');
+            editForm.attr('action', action.replace(0, data.object.id));
+        },
+    });
+}
+
+function resetFormData() {
+    id = null;
+    $('#applicantForm')[0].reset();
+    $('#id_status').val({{ initial_status }}).trigger('change');
+    $('#id_status_hidden').val(null).trigger('change');
+    $('#id_metro').val(null).change();
+    $('#applicantForm').attr('action', "{% url 'applicants:create' %}");
+}
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$(document).ready(function () {
+    {% if not request.user.is_superuser %}
+    $('#div_id_author').hide();
+    {% endif %}
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+            }
+        }
+    });
+    $("#id_phone").mask("7(999)999-99-99");
+    $("#id_phone").bind('paste', function() { $(this).val(''); });
+    $.fn.dataTable.moment('DD.MM.YY');
+    $.fn.dataTable.moment('HH:mm DD.MM.YY');
+    $.fn.dataTable.moment('HH:mm');
+    $('#dataTable').DataTable({
+        "pageLength": 50,
+        "stateSave": true,
+        "order": [[0, "asc"]],
+        "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+        "oLanguage": {
+            "sLengthMenu": "Отображено _MENU_ записей на страницу",
+            "sSearch": "Поиск:",
+            "sZeroRecords": "Ничего не найдено - извините",
+            "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+            "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+            "sInfoFiltered": "(filtered from _MAX_ total records)",
+            "oPaginate": {
+                "sFirst": "Первая",
+                "sNext": ">",
+                "sPrevious": "<",
+                "sLast": "Последняя",
+            },
+        },
+    });
+    $(document).on('click', 'tr', function () {
+        resetFormData();
+        id = $(this).data('id');
+        if (id) {
+            $('#modalForm').modal();
+        }
+    });
+    $('#new-applicant-button').on(
+        'click',
+        function() {
+            resetFormData();
+            $('#modalForm').modal();
+        }
+    );
+    $('#modalForm').on('show.bs.modal', function (e) {
+        if (id) {
+            loadFormData();
+        }
+    });
+    $('#modalForm').on('hidden.bs.modal', function (e) {
+        resetFormData();
+    });
+    $(document).on(
+        'click',
+        '.status-cell',
+        function() {
+            id = $(this).parent().data('id');
+            $('#history-form').data('id', id);
+            $('#history-form').modal();
+            return false;
+        }
+    );
+    $('#generalMenuWarning').on(
+        'click',
+        function() {
+            $('#unassigned-form').modal();
+        }
+    );
+    let onManagerChanged = function() {
+        $('#today_work_hidden_manager').val($('#id_manager').val());
+    }
+    $('#id_manager').on(
+        'change',
+        onManagerChanged
+    );
+    onManagerChanged();
+});
+</script>
+{% endblock %}

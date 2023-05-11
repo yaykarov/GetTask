@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<h4>Импорт календаря ведомостей</h4>
+{% endblock %}
+
+{% block obj-data %}
+<form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:paysheet_do_import_calendar' %}">
+    {% csrf_token %}
+    <input type="file" name="calendar"/>
+    <input type="submit"/>
+</form>
+{% endblock %}

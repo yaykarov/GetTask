@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load redhuman_is_tags %}
+
+{% load static %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+{% endblock %}
+
+{% block buttons %}
+<h4>Список самозанятых</h4>
+{% endblock %}
+
+{% block obj-data %}
+<table id="self-employment" class="table rh-table table-hover">
+    <thead>
+        <tr>
+            <th>ФИО</th>
+            <th>Гражданство</th>
+            <th>Дата<br/>регистрации</th>
+            <th>Держатель карты</th>
+            <th>ИНН</th>
+            <th>Счет</th>
+            <th>Банк</th>
+            <th>БИК</th>
+            <th>Корр. счет</th>
+            <th></th>
+        </tr>
+    </thead>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript">
+const disableBtn = '<button class="btn btn-sm btn-outline-danger switch">Отключить</button>';
+const enableBtn = '<button class="btn btn-sm btn-success switch">Задействовать</button>';
+$(document).ready(function() {
+    let table_selector = $('#self-employment');
+    let table = table_selector.DataTable( {
+        processing: true,
+        serverSide: true,
+        ajax: "{% url 'the_redhuman_is:self_employment_data' %}",
+        lengthMenu: [[100, 20, -1], [100, 20, "Все"]],
+        orderCellsTop: true,
+        columns: [
+            { orderable: true,
+              data: null,
+              render: function(data) {
+                  return '<a href="' +
+                      "{% url 'the_redhuman_is:worker_detail' pk=12345 %}".replace("12345", data[10]) +
+                      '" target="_blank">' + data[0] + '</a>';
+              }
+            },
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            { orderable: false,
+              render: function(data) {
+                  return data ? enableBtn : disableBtn;
+              },
+            },
+        ],
+        sPaginationType: 'full_numbers',
+        oLanguage: {
+            'sProcessing': 'Загружается....',
+            'sLengthMenu': 'Отображено _MENU_ записей на страницу',
+            'sSearch': 'Поиск:',
+            'sZeroRecords': 'Ничего не найдено - извините',
+            'sInfo': 'Показано с _START_ по _END_ из _TOTAL_ записей',
+            'sInfoEmpty': 'Показано с 0 по 0 из 0 записей',
+            'sInfoFiltered': '(всего _MAX_ записей)',
+            'oPaginate': {
+                'sFirst': 'Первая',
+                'sNext':'>',
+                'sPrevious':'<',
+                'sLast':'Последняя',
+            }
+        },
+    } );
+    table_selector.on('click', 'button.switch', function () {
+        let cell = table.cell($(this).parents('td')[0]);
+        let pk = table.row($(this).parents('tr')[0]).data()[11];
+        $.ajax({
+            url: "{% url 'the_redhuman_is:self_employment_toggle' %}",
+            method: 'POST',
+            data: {'pk': pk},
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            success: function(data) {
+                if (data['is_actual']) {
+                    cell.data(disableBtn).draw()
+                } else {
+                    cell.data(enableBtn).draw()
+                }
+            },
+            error: function (data) {
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

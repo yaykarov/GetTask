@@ -1,0 +1,350 @@
+{% extends 'base.html' %}
+
+{% load human_readable_values %}
+{% load humanize %}
+{% load mathfilters %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+<style>
+    .finance-account-debet:not(:hover) {
+        background-color: #EFE !important;
+    }
+    .finance-account-credit:not(:hover) {
+        background-color: #FEE !important;
+    }
+    tr,th, td {
+        padding-top: 5px !important;
+        padding-bottom: 5px !important;
+        margin-top: 5px !important;
+        margin-bottom: 5px !important;
+    }
+    #total-values {
+        font-size: 10pt;
+    }
+    .header {
+        font-family: apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetic";
+        font-size: 16px;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block obj-data %}
+<form method="GET" class="form-inline">
+    <div class="form-row mb-0">
+        <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="id_location">Операции за интервал: </label>
+            </div>
+        </div>
+        <div class="form-group col col-auto">
+            {{ interval_form.first_day }}
+            {{ interval_form.last_day }}
+        </div>
+        <button type="submit" class="btn btn-sm btn-outline-primary">
+            Показать
+        </button>
+    </div>
+</form>
+{% if account %}
+<div class="row">
+    <div class="col-auto col-lg-6">
+        <div>
+            <span class="header">{{ account }}</span>
+        </div>
+        <table id="total-values" class="table">
+            <thead>
+                <tr >
+                    <th class="header">Оборот, Дебет</th>
+                    <th class="header">Оборот, Кредит</th>
+                    <th class="header">Сальдо, Дебет</th>
+                    <th class="header">Сальдо, Кредит</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ debit|intcomma }}</td>
+                    <td>{{ credit|intcomma }}</td>
+                    {% if saldo >= 0 %}
+                    <td>{{ saldo|intcomma }}</td>
+                    <td>0</td>
+                    {% elif saldo < 0 %}
+                    <td>0</td>
+                    <td>{{ saldo|abs|intcomma }}</td>
+                    {% endif %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="row mt-3 mb-3">
+    <div class="col col-auto">
+        <h4>Сумма по всем операциям: {{ total_sum|separate }}</h4>
+    </div>
+</div>
+{% endif %}
+<div class="row">
+    <div class="col-auto col-lg-12">
+        <table id="operations" class="table display compact">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Дата</th>
+                    <th>Дебет-Счет</th>
+                    <th>Кредит-Счет</th>
+                    <th>Комментарий</th>
+                    <th>Сумма</th>
+                    <th>Автор</th>
+                    <th>Направление</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <div id="edit-modal" class="modal fade" tab-index="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <p class="modal-title bold">Операция</p>
+                    </div>
+                    <div class="modal-body">
+                        <form action="" id="edit_form">
+                            <input type="hidden" name="pk" value="">
+
+                            <div class="form-group">
+                                <p class="debet-name"><strong>Дебет:</strong> <span data-name="debet"></span></p>
+                                <p class="credit-name"><strong>Кредит:</strong> <span data-name="credit"></span></p>
+                            </div>
+                            <div class="form-group">
+                                <label for="sum_input">Сумма: </label>
+                                <input type="text" name="amount" class="form-control" placeholder="Сумма" id="sum_input">
+                            </div>
+                            <div class="form-group">
+                                <label for="comment_input">Комментарий:</label>
+                                <textarea name="comment" class="form-control" placeholder="Комментарий" id="comment_input"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="timepoint_input">Дата и время:</label>
+                                <input name="timepoint" class="form-control" placeholder="Дата и время" id="timepoint_input">
+                            </div>
+
+                            <div class="form-row form-inline">
+                                <div class="form-group col col-auto">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text" for="id_operation_first_day">
+                                                Интервал оплаты
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {{ payment_interval_form.operation_first_day }}
+                                    {{ payment_interval_form.operation_last_day }}
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-danger btn-delete mr-auto">Удалить</button>
+                        <button class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                        <button class="btn btn-primary btn-ok">ОК</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <div id="message-modal" class="modal fade" tab-index="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title">Операция</p>
+                </div>
+                <div class="modal-body">
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" data-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ interval_form.media }}
+{{ payment_interval_form.media }}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/3.2.6/js/dataTables.fixedColumns.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+
+<script>
+let data = [];
+
+function url() {
+    let first_day = $('#id_first_day').val();
+    let last_day = $('#id_last_day').val();
+
+{% if operations_url %}
+    let _url = "{{ operations_url }}";
+{% else %}
+    let _url = document.location.protocol + "//" + document.location.host +
+        "{% url 'the_redhuman_is:operating_account_detail_json' pk=123 %}".replace("123", "{{ account.pk }}");
+{% endif %}
+
+    if (first_day || last_day) {
+        _url += '?';
+        if (first_day) {
+            _url += ('first_day=' + first_day);
+            if (last_day) {
+                _url += ('&last_day=' + last_day);
+            }
+        } else {
+            _url += ('last_day=' + last_day);
+        }
+    }
+
+    return _url;
+}
+
+function show_edit_modal() {
+    let pk = this.getAttribute("data-pk");
+    let first_day = this.getAttribute("data-first-day");
+    let last_day = this.getAttribute("data-last-day");
+    let row = $(this).closest("tr").find("td");
+    let timepoint = row[1].innerText;
+    let debet = row[2].innerText;
+    let credit = row[3].innerText;
+    let comment = row[4].innerText;
+    let amount = parseFloat(row[5].innerText.replace(/\s/g, ""));
+    $("#edit-modal input[name=pk]").val(pk);
+    $("#edit-modal input[name=amount]").val(amount);
+    $("#edit-modal input[name=timepoint]").val(timepoint);
+    $("#edit-modal span[data-name=debet]").text(debet);
+    $("#edit-modal span[data-name=credit]").text(credit);
+    $("#edit-modal textarea[name=comment]").val(comment);
+    $("#id_operation_first_day").val(first_day);
+    $("#id_operation_last_day").val(last_day);
+
+    $("#edit-modal").modal({'show':true});
+};
+
+function do_copy(data) {
+    navigator.clipboard.writeText(data);
+};
+
+$(document).ready(function(){
+    let buttonHtml = "<button class=\"btn btn-outline-primary edit-btn\"><i class=\"fa fa-edit\"></i></button>";
+    var table = $("#operations").DataTable(
+        {
+            processing: true,
+            serverSide: true,
+            ajax: get_rows,
+            order: [[1,"asc"]],
+            lengthMenu: [[100, 20, -1], [100, 20, "Все"]],
+            columnDefs: [{targets: 0, data: null, defaultContent: buttonHtml, orderable: false}, {targets: -1, visible: false}],
+        }
+    );
+    function get_rows(request, drawCallback, settings) {
+        $.ajax({
+            url: url(),
+            method: "GET",
+            data: {
+                draw: request.draw,
+                length: request.length,
+                start: request.start,
+                order_index: request.order[0].column,
+                order_dir: request.order[0].dir,
+                search_text: request.search.value,
+            },
+            success: function(data) {
+                drawCallback(data);
+                let buttons = $("#operations .edit-btn");
+                let trs = $("#operations tr");
+                let classname = "";
+                for (let index = 0; index < buttons.length; index++) {
+                    buttons[index].setAttribute("data-pk", data.data[index][0]);
+                    let first_day = data.data[index][8];
+                    let last_day = data.data[index][9];
+                    if (!first_day) first_day = "";
+                    if (!last_day) last_day = "";
+                    buttons[index].setAttribute("data-first-day", first_day);
+                    buttons[index].setAttribute("data-last-day", last_day);
+                    if (data.data[index][7] == 1)
+                        classname = "finance-account-debet";
+                    else if (data.data[index][7] == -1)
+                        classname = "finance-account-credit";
+                    trs[index + 1].className = classname;
+                }
+                $("#operations .edit-btn").on("click", show_edit_modal);
+            }
+        });
+    }
+});
+
+$("#edit-modal .btn-ok").on('click',function(){
+    let form = $("#edit_form");
+    let amount = form.find("input[name=amount]").val();
+    let comment = form.find("textarea[name=comment]").val();
+    let timepoint = form.find("input[name=timepoint]").val();
+    let pk = form.find("input[name=pk]").val();
+    let first_day = form.find("input[name=operation_first_day]").val();
+    let last_day = form.find("input[name=operation_last_day]").val();
+    let data = {
+        amount: amount,
+        comment: comment,
+        pk: pk,
+        timepoint: timepoint,
+        first_day: first_day,
+        last_day: last_day,
+    };
+    $.ajax({
+        url: "{% url 'the_redhuman_is:edit_expense' %}", method: "GET", data: data, success: function (data) {
+            show_message_modal("Изменения сохранены",data.message);
+            refreshOperationTable();
+            $("#edit-modal").modal('hide');
+        },
+        error: function(data) {
+            show_message_modal("Ошибка",data.responseText);
+            console.log(data);
+        }
+    });
+});
+
+$("#edit-modal .btn-delete").on('click',function(){
+    let pk = $("#edit_form input[name=pk]").val();
+    let data = {pk: pk, delete: "true"};
+    $.ajax({
+        url: "{% url 'the_redhuman_is:edit_expense' %}", method: "GET", data: data, success: function (data) {
+            //alert(data.message);
+            show_message_modal("Изменения сохранены",data.message);
+            refreshOperationTable();
+            $("#edit-modal").modal('hide');
+        },
+        error: function(data) {
+            show_message_modal("Ошибка",data.responseText);
+            console.log(data);
+        }
+    });
+});
+
+function show_message_modal(title, message) {
+    if (message.length>200) {
+        message = message.substring(0,200) + "...";
+    }
+    let message_modal = $("#message-modal");
+    message_modal.find(".modal-title").html("<h5>"+title+"</h5>");
+    message_modal.find(".modal-body").html(message);
+    message_modal.modal('show');
+}
+function refreshOperationTable() {
+    $("#operations").DataTable({retrieve: true}).draw();
+}
+</script>
+{% endblock %}

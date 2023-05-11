@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block body %}
+    <div class="row">
+        <div class="col">
+            {{ image }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            {% if image %}
+                <img src="{{ image.url }}" class="X" />
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

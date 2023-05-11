@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_html_head %}
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+{% endblock %}
+
+{% block buttons %}
+<h4>Воронка подбора</h4>
+{% endblock %}
+
+{% block obj-data %}
+{% include 'applicants/base_filter_form.include' %}
+<div id="funnel-container"></div>
+{% endblock %}
+
+{% block scripts %}
+{{ filter_form.media }}
+<script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+<script type="text/javascript" src="{% static 'js/funnel.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+
+<script>
+$(document).ready(function() {
+    let funnel_data = [
+{% for item in data %}
+{ name: '{{ item.name }}', count: {{ item.count }}, url: '{{ item.url|safe }}', color: '{{ item.color }}', {% if item.need_gantt %}need_gantt: 1, begin: {{ item.begin }}, seconds: {{ item.seconds }}{% else %}need_gantt: 0{% endif %} },
+{% endfor %}
+    ];
+
+    var width = 0.85 * document.body.clientWidth;
+    var height = 500;
+
+    render_funnel('#funnel-container', width, height, funnel_data);
+});
+
+</script>
+{% endblock %}

@@ -1,0 +1,13 @@
+<tr id="{{ form.prefix }}">
+    <td>
+    	<input id="id_{{ form.prefix }}-id" name="{{ form.prefix }}-id" value="" class="id" type="hidden">
+    	{{ form.bid_date_time }}
+    </td>
+    <td>{{ form.on_date }}</td>
+    <td>{{ form.on_time }}</td>
+    <td>{{ form.customer }}</td>
+    <td>{{ form.cust_location }}</td>
+    <td>{{ form.bid_turn }}</td>
+    <td colspan="2">{{ form.number_of_workers }}&nbsp;&nbsp;<button class="ts_button btn btn-outline-primary" id="remove_row_button">-</button></td>
+    <th></th>
+</tr>

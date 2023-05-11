@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_html_head %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+{% endblock %}
+{% block buttons %}
+    <a href="{% url 'the_redhuman_is:new_worker' %}" class="btn btn-sm btn-outline-primary">Добавить рабочего</a>
+{% endblock %}
+
+{% block obj-data %}
+    <style>
+        #total_values {
+            width: 30%;
+            float: left;
+        }
+    </style>
+<div class="row">
+    <div class="col">
+        {% if headers.range %}
+        <div>{{ headers.range }}</div>
+        {% endif %}
+        {% if headers.customer %}
+        <div>{{ headers.customer }}</div>
+        {% endif %}
+        {% if headers.object %}
+        <div>{{ headers.object }}</div>
+        {% endif %}
+        {% if headers.service %}
+        <div>{{ headers.service }}</div>
+        {% endif %}
+        {% if headers.sheet_turn %}
+        <div>{{ headers.sheet_turn }}</div>
+        {% endif %}
+        {% if headers.maint_managers %}
+        <div>{{ headers.maint_managers }}</div>
+        {% endif %}
+        {% if headers.dev_managers %}
+        <div>{{ headers.dev_managers }}</div>
+        {% endif %}
+    </div>
+</div>
+    {% if total_values %}
+        <div class="row">
+            <div class="col">
+                <table id="total_values" class="table rh-table">
+                    <thead>
+                    {% if display == 'perfs' %}
+                        <caption>Выработка</caption>
+                    {% elif display == 'turns' %}
+                        <caption>Число выходов</caption>
+                    {% elif display == 'hours_worked' %}
+                        <caption>Часов отработано</caption>
+                    {% elif display == 'turns' %}
+                        <caption>Число выходов</caption>
+                    {% elif display == 'noderived' %}
+                        <caption>Не выведено</caption>
+                    {% endif %}
+                    <tr>
+                        <th>Показатель</th>
+                        <th>Значение</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Выработка:</td>
+                        <td>{{ total_values.performance }}</td>
+                    </tr>
+                    <tr>
+                        <td>Отработано часов:</td>
+                        <td>{{ total_values.hours }}</td>
+                    </tr>
+                    <tr>
+                        <td>Не выведено:</td>
+                        <td>{{ total_values.noderived }}</td>
+                    </tr>
+                    <tr>
+                        <td>Число выходов:</td>
+                        <td>{{ total_values.turns }}</td>
+                    </tr>
+                    <tr>
+                        <td>Число рабочих:</td>
+                        <td>{{ total_values.worker_num }}</td>
+                    </tr>
+                    <tr>
+                        <td>Число задействованных объектов:</td>
+                        <td>{{ total_values.locations }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <hr>
+    {% endif %}
+    <div class="row">
+        <div class="col">
+            <table id="timesheets" class="table rh-table">
+                <caption><label for="">Табели</label></caption>
+                <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Смена</th>
+                    <th>Заказчик</th>
+                    <th>Объект</th>
+                    <th>Контактное лицо</th>
+                    <th>Бригадир</th>
+                    <th>Кол-во рабочих по заявке</th>
+                    <th>Не выведено</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for timesheet in timesheets %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'the_redhuman_is:timesheet' pk=timesheet.pk %}">{{ timesheet.sheet_date|date:"d.m.Y" }}</a>
+                        </td>
+                        <td>{{ timesheet.sheet_turn }}</td>
+                        <td>{{ timesheet.customer }}</td>
+                        <td>{{ timesheet.cust_location }}</td>
+                        <td>{{ timesheet.customer_repr }}</td>
+                        <td>{{ timesheet.foreman }}</td>
+                        <td>{{ timesheet.customerorder.number_of_workers }}</td>
+                        <td>{{ timesheet.noderived }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+    <script>
+        $(document).ready(function () {
+            $.fn.dataTable.moment( 'DD.MM.YYYY' );
+            let timesheets = $("#timesheets").DataTable(
+                {
+                    "fixedHeader": {
+                        header: true,
+                        footer: true
+                    },
+                    "order": [[ 0, "desc" ]],
+                    "processing": true,
+                    "jQueryUI": true,
+                    "lengthMenu": [[100, 50, 20, -1], [100, 50, 20, "All"]],
+                    "sPaginationType": "full_numbers",
+                    "oLanguage": {
+                        "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                        "sSearch": "Поиск:",
+                        "sZeroRecords": "Ничего не найдено - извините",
+                        "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                        "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                        "sInfoFiltered": "(filtered from _MAX_ total records)",
+                        "oPaginate": {
+                            "sFirst": "Первая",
+                            "sNext": ">",
+                            "sPrevious": "<",
+                            "sLast": "Последняя",
+                        }
+                    },
+                    "orderCellsTop": true
+                }
+            );
+            $("#total_values").DataTable();
+        })
+
+        function timesheetsCommaTargets() {
+            var targets = [];
+            {% for day in days %}
+                targets.push(2 + {{ forloop.counter0 }});
+            {% endfor %}
+            {% if show_average_performance %}
+                targets[targets.length] = targets[targets.length - 1] + 1;
+            {% endif %}
+            return targets;
+        }
+    </script>
+{% endblock %}

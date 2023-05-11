@@ -1,0 +1,91 @@
+.user {
+  position: absolute;
+  right: 28px;
+  top: 36px;
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  border-radius: 6px;
+  z-index: 100;
+}
+
+.user:hover {
+  box-shadow: 0 8px 8px rgba(0,0,0,0.1);
+}
+
+.user:hover > .underline {
+  display: block;
+  opacity: 0.5;
+}
+
+.user:hover > .logout {
+  display: block;
+}
+
+.user:hover > .usernameWrapper > img {
+  transform: rotate(180deg);
+}
+
+.usernameWrapper {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 9px;
+  margin-left: 12px;
+  margin-right: 12px;
+}
+
+.username {
+  margin-right: 8px;
+  font-family: Roboto, sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 19px;
+}
+
+.balance {
+  font-family: Roboto, sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 16px;
+  color: black;
+  margin-left: 12px;
+  margin-right: 12px;
+}
+
+.red {
+  color: #FD1B1B !important;
+}
+
+.underline {
+  margin-top: 14px;
+  width: 100%;
+  height: 1px;
+  display: block;
+  background-color: #d9d9d9;
+  display: none;
+}
+
+.logout {
+  display: none;
+  margin-left: 12px;
+  margin-right: 12px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  font-family: Roboto, sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.logout img {
+  margin-right: 8px;
+  position: relative;
+  top: 2px;
+}

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+{% endblock %}
+
+{% block buttons %}
+<h5>Рабочие, готовые выйти {{ date|date:'d.m' }}</h5>
+{% endblock %}
+
+{% block obj-data %}
+<form method="GET">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            {{ date_form.date }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ zone_form.zone }}
+        </div>
+        <div class="form-group col col-auto">
+            <input id="show_rejected" type="checkbox" name="show_rejected" {% if not show_rejected %}checked{% endif %} style="margin-top: 8px; margin-left: 4px;">
+        </div>
+        <div class="form-group col col-auto" style="margin-top: 5px;">
+            Показать отказавшихся
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+                Показать
+            </button>
+        </div>
+    </div>
+</form>
+
+<div class="form-row">
+<div class="col col-auto">
+<table class="table rh-table table-hover" id="main-table">
+    <thead>
+        <tr>
+            <th>№</th>
+            <th>Рабочий</th>
+            <th>Телефон</th>
+            <th>Гражданство</th>
+            <th>Филиал</th>
+            <th>Выходил раньше?</th>
+            <th>Готов выйти?</th>
+            <th>Заявок {{ date|date:'d.m' }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for worker in workers %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td><a href="{% url 'the_redhuman_is:worker_detail' worker.pk %}" target="_blank">{{ worker }}</a></td>
+                <td>{{ worker.tel_number }}</td>
+                <td>{{ worker.citizenship }}</td>
+                <td>{{ worker.zone_name }}</td>
+                <td>{% if worker.has_turnouts %}да{% else %}нет{% endif %}</td> 
+                <td>{% if worker.online %}да{% else %}нет{% endif %}</td>
+                <td>{{ worker.requests_count }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ date_form.media }}
+{{ zone_form.media }}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/3.2.6/js/dataTables.fixedColumns.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+
+<script>
+$(document).ready(
+    function () {
+        let main_table = $('#main-table').DataTable({
+            "pageLength": 50,
+            "order": [],
+            "lengthMenu": [[100, 20, -1], [100, 20, "Все"]],
+            "stateSave": true,
+            "searching": true,
+            "info": true,
+            "oLanguage": {
+                "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                "sSearch": "Поиск:",
+                "sZeroRecords": "Ничего не найдено - извините",
+                "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                "sInfoFiltered": "(filtered from _MAX_ total records)",
+                "oPaginate": {
+                    "sFirst": "Первая",
+                    "sNext": ">",
+                    "sPrevious": "<",
+                    "sLast": "Последняя",
+                },
+            },
+            "columnDefs": [
+                { "orderable": false, "targets": [0] }
+            ],
+            "orderCellsTop": true,
+        });
+        main_table.on(
+            "order.dt search.dt",
+            function () {
+                main_table.column(
+                    0,
+                    { search: "applied", order: "applied" }
+                ).nodes().each(
+                    function (cell, i) {
+                        cell.innerHTML = i + 1;
+                    }
+                );
+            }
+        ).draw();
+    }
+);
+</script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load human_readable_values %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.css"/>
+{% endblock %}
+
+{% block buttons %}
+<h4>Список работников, у которых есть залог. ({{ workers|length }} душ)</h4>
+{% endblock %}
+
+{% block obj-data %}
+<table class="table rh-table table-hover" id="main-table">
+<thead>
+    <tr>
+        <th></th>
+        <th>Работник</th>
+        <th>Дата последнего выхода</th>
+        <th>Последний выход на</th>
+        <th>Залог</th>
+        <th>Остаток на счете</th>
+    </tr>
+</thead>
+<tbody>
+    {% for account, amount, remainder in workers %}
+    <tr>
+        <td></td>
+        <td>
+            <a href="{% url 'the_redhuman_is:worker_detail' account.workerdeposit.worker.pk %}" target="_blank">{{ account.workerdeposit.worker }}</a>
+        </td>
+        <td>{{ account.workerdeposit.worker.get_turnouts.last.timesheet.sheet_date|date:'d.m.Y' }}</td>
+        <td>{{ account.workerdeposit.worker.get_turnouts.last.timesheet.cust_location }}</td>
+        <td>
+            <a href="{% url 'the_redhuman_is:operating_account_detail' pk=account.pk %}">
+            {{ amount|separate }}
+            </a>
+        </td>
+        <td>
+            {{ remainder }}
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+<tfoot>
+    <td></td>
+    <td>Итого</td>
+    <td></td>
+    <td></td>
+    <td>{{ total|separate }}</td>
+</tfoot>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+
+<script>
+$(document).ready(function () {
+    $.fn.dataTable.moment('DD.MM.YYYY');
+    var t = $('#main-table').DataTable({
+        "columnDefs": [
+            {
+                "searchable": false,
+                "orderable": false,
+                "targets": 0
+            }
+        ],
+        "pageLength": 100,
+        "order": [],
+        "lengthMenu": [[100, 20, -1], [100, 20, "Все"]],
+        "stateSave": true,
+        "oLanguage": {
+            "sLengthMenu": "Отображено _MENU_ записей на страницу",
+            "sSearch": "Поиск:",
+            "sZeroRecords": "Ничего не найдено - извините",
+            "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+            "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+            "sInfoFiltered": "(filtered from _MAX_ total records)",
+            "oPaginate": {
+                "sFirst": "Первая",
+                "sNext": ">",
+                "sPrevious": "<",
+                "sLast": "Последняя",
+            },
+        },
+    });
+    t.on(
+        'order.dt search.dt',
+        function () {
+            t.column(
+                0,
+                {
+                    search:'applied',
+                    order:'applied'
+                }
+            ).nodes(
+            ).each(
+                function(cell, i) {
+                    cell.innerHTML = i + 1;
+                } 
+            );
+        } 
+    ).draw();
+});
+</script>
+{% endblock %}

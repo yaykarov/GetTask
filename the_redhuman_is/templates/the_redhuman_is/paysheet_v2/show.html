@@ -1,0 +1,570 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load human_readable_values %}
+{% load humanize %}
+{% load mathfilters %}
+{% load thumbnail %}
+{% load redhuman_tags %}
+
+{% block extra_html_head %}
+{{ accountable_person_form.media }}
+<link rel="stylesheet" href="{% static 'css/main.css' %}"/>
+<link rel="stylesheet" href="{% static 'css/magnific_popup.css' %}"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+<style>
+.worker-warning {
+    background-color: #FDD;
+}
+.worker-banned {
+    background-color: #CCF;
+}
+.worker-has-receipt {
+    background-color: #DFD;
+}
+.cell-warning {
+    background-color: #FEE;
+}
+</style>
+{% endblock %}
+
+{% block buttons %}
+<form id="post-form" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+</form>
+<form id="table-form" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+</form>
+<form id="pdf-form-normal" method="GET">
+    <input type="hidden" name="output" value="pdf"/>
+    <input type="hidden" name="workers" value="normal"/>
+</form>
+<form id="xls-form-self-employed" method="GET">
+    <input type="hidden" name="output" value="csv"/>
+    <input type="hidden" name="workers" value="self_employed_normal"/>
+</form>
+<form id="xls-form-self-employed-another-account" method="GET">
+    <input type="hidden" name="output" value="xls"/>
+    <input type="hidden" name="workers" value="self_employed_another_account"/>
+</form>
+<form id="deletion-form" method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:paysheet_v2_remove' pk=paysheet.id %}">
+    {% csrf_token %}
+</form>
+<form id="receipts-form" method="GET" action="{% url 'the_redhuman_is:paysheet_v2_paysheet_receipts' pk=paysheet.id %}">
+</form>
+<form id="talk_bank-report-form" method="GET" action="{% url 'the_redhuman_is:paysheet_v2_talk_bank_payment_report' pk=paysheet.id %}">
+</form>
+<h4 style="margin-bottom: 24px;">
+    {% if mode == 'superuser' and not paysheet.is_closed %}
+        <button type="submit" class="btn btn-outline-danger" form="deletion-form" title="Удалить ведомость целиком">
+            <i class="fa fa-trash"></i>
+        </button>
+    {% endif %}
+    <button type="submit" class="btn btn-outline-primary" form="receipts-form" title="Скачать чеки">
+        <i class="fa fa-arrow-circle-down"></i>
+    </button>
+    <button type="submit" class="btn btn-outline-primary" form="talk_bank-report-form" title="Скачать отчет ТокБанка о выплатах">
+        <i class="fa">TB</i>
+    </button>
+    {{ paysheet }}{% if accountable_person %}, {{accountable_person}}{% endif %}
+    <div>
+    {% if talk_bank_payment_status_text %}ТБ: {{ talk_bank_payment_status_text }} {% endif %}
+    </div>
+</h4>
+{% endblock %}
+
+{% block obj-data %}
+<div class="row mb-4">
+    {% if mode == 'superuser' or mode == 'close_allowed' %}
+    <div class="col col-auto">
+        <form name="registryForm" method="POST" action="{% url 'the_redhuman_is:paysheet_v2_add_registry' paysheet.pk %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div>
+                <label for="id_registry">Добавить обратный реестр:</label>
+            </div>
+            <input id="id_registry" type="file" name="registry" accept="text/csv" multiple/>
+        </form>
+    </div>
+    <div class="col col-auto">
+        <form name="imageForm" method="POST" action="{% url 'the_redhuman_is:paysheet_v2_add_image' paysheet.pk %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div>
+                <label for="id_image">Добавить фото: </label>
+            </div>
+            <input id="id_image" type="file" name="image" accept="image/png, image/jpeg" multiple/>
+        </form>
+    </div>
+    {% endif %}
+    <div class="col col-auto">
+    {% for photo in photos %}
+        {% thumbnail photo.image "x350" as im %}
+            <a href="{{ photo.image.url }}" target="_blank"><img class="rounded img-thumbnail img-sm" src="{{ im.url }}"></a>
+        {% endthumbnail %}
+    {% endfor %}
+    </div>
+</div>
+
+{% if mode != 'readonly' and not paysheet.is_closed %}
+<div class="row">
+<div class="col col-auto pr-0">
+    {% if mode == 'superuser' %}
+    <button type="submit" form="pdf-form-normal" class="btn btn-outline-primary" formaction="{% url 'the_redhuman_is:paysheet_v2_download' pk=paysheet.pk %}" title="Скачать ведомость (без СЗ) в .pdf">
+        <i class="fa fa-download"></i>
+    </button>
+    <button type="submit" form="xls-form-self-employed" class="btn btn-outline-danger" formaction="{% url 'the_redhuman_is:paysheet_v2_download' pk=paysheet.pk %}" title="Скачать ведомость (только СЗ с собственным счетом) в .csv">
+        <i class="fa fa-download"></i>
+    </button>
+    <button type="submit" form="xls-form-self-employed-another-account" class="btn btn-outline-warning" formaction="{% url 'the_redhuman_is:paysheet_v2_download' pk=paysheet.pk %}" title="Скачать ведомость (только СЗ с чужим счетом) в .xls">
+        <i class="fa fa-download"></i>
+    </button>
+    <button id="pay-talk_bank" type="submit" class="btn btn-outline-warning" formaction="{% url 'the_redhuman_is:paysheet_v2_make_payments_with_talk_bank' pk=paysheet.pk %}" title="Оплатить ведомость через ТокБанк">
+        <i class="fa">TB</i>
+    </button>
+    <button id="send-email" type="submit" class="btn btn-outline-success" formaction="{% url 'the_redhuman_is:paysheet_v2_email' pk=paysheet.pk %}" title="Отправить ведомость на email">
+        <i class="fa fa-envelope"></i>
+    </button>
+    {% if paysheet.is_locked %}
+    <button type="submit" form="post-form" class="btn btn-outline-danger" formaction="{% url 'the_redhuman_is:paysheet_v2_toggle_lock' pk=paysheet.pk%}" title="Разблокировать операции">
+        <i class="fa fa-unlock"></i>
+    </button>
+    {% else %}
+    <button type="submit" form="post-form" class="btn btn-outline-success" formaction="{% url 'the_redhuman_is:paysheet_v2_toggle_lock' pk=paysheet.pk%}" title="Заблокировать операции">
+        <i class="fa fa-lock"></i>
+    </button>
+    {% endif %}
+    <button type="submit" form="table-form" class="btn btn-outline-primary" formaction="{% url 'the_redhuman_is:paysheet_v2_update_amounts' paysheet.pk %}" title="Сохранить суммы выплат">
+        <i class="far fa-save"></i>
+    </button>
+    <button type="submit" form="table-form" class="btn btn-outline-primary" formaction="{% url 'the_redhuman_is:paysheet_v2_reset_workers' pk=paysheet.pk %}" title="Пересобрать операции у выбранных рабочих">
+        <i class="fa fa-sync"></i>
+    </button>
+    <button type="submit" form="table-form" class="btn btn-outline-warning" formaction="{% url 'the_redhuman_is:paysheet_v2_reset_workers' pk=paysheet.pk %}" title="Пересобрать операции у выбранных рабочих, включая оплату выходов у других клиентов" name="filter_payments_by_customer" value="false">
+        <i class="fa fa-sync"></i>
+    </button>
+    <button type="submit" form="table-form" class="btn btn-outline-danger" formaction="{% url 'the_redhuman_is:paysheet_v2_recreate' pk=paysheet.pk %}" title="Полностью пересобрать рабочих и операции">
+        <i class="fa fa-sync"></i>
+    </button>
+    <button type="submit" form="table-form" class="btn btn-outline-primary" formaction="{% url 'the_redhuman_is:paysheet_v2_add_remainders' pk=paysheet.pk %}" title="Добавить остаток к выплате у выбранных рабочих">
+        <i class="fa fa-hand-holding-usd"></i>
+    </button>
+    {% endif %}
+    {% if mode == 'superuser' or mode == 'close_allowed' %}
+    <button type="submit" form="table-form" class="btn btn-outline-primary" formaction="{% url 'the_redhuman_is:paysheet_v2_save_receipts' pk=paysheet.pk %}" title="Сохранить чеки у выбранных рабочих">
+        <i class="fa fa-link"></i>
+    </button>
+    <button type="submit" form="table-form" class="btn btn-outline-danger" formaction="{% url 'the_redhuman_is:paysheet_v2_remove_workers' pk=paysheet.pk %}" title="Удалить выбранных рабочих из ведомости">
+        <i class="fa fa-trash"></i>
+    </button>
+    {% endif %}
+</div>
+{% if accountable_person_form %}
+<div class="form-group col col-auto pt-1">
+    <form class="form-inline" method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:paysheet_v2_set_accountable_person' paysheet.pk %}">
+        {% csrf_token %}
+        <div class="label pr-1">{{ accountable_person_form.person.label_tag }}</div>
+        {{ accountable_person_form.person }}
+        <button class="btn btn-sm btn-outline-primary ml-1" type="submit">Установить</button>
+    </form>
+</div>
+{% endif %}
+<div class="form-group col col-auto pt-1">
+    <form class="form-inline" method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:paysheet_v2_close' paysheet.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-sm btn-outline-primary ml-1" type="submit">Закрыть ведомость</button>
+    </form>
+</div>
+{% endif %}
+</div>
+
+<div id="message-modal" class="modal fade" tab-index="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="modal-title">Операция</p>
+            </div>
+            <div class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-auto">
+    <table id="paysheet-table" class="table table-hover cell-border compact">
+    <thead>
+        <tr>
+            <th rowspan="2">№</th>
+            <th rowspan="2"><input type="checkbox" id="worker-select-all"></th>
+            <th rowspan="2"></th>
+            <th rowspan="2">Чек</th>
+            <th rowspan="2">Гражданство</th>
+            <th rowspan="2">Регион</th>
+            <th rowspan="2">Рабочий</th>
+            <th rowspan="2">Залог</th>
+            <th rowspan="2">Полный<br>остаток</th>
+            <th rowspan="2">Остаток<br>на конец<br>периода</th>
+            <th rowspan="2">Заработано<br>за период</th>
+            <th rowspan="2">Накопленная<br>ошибка<br>округления</th>
+            <th rowspan="2">Выплатить</th>
+            {% for day in days %}
+                <th>{{ day|date:"d.m" }}</th>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for day in days %}
+                <th>{{ day|date:"D" }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for index, worker, line in grid %}
+        <tr{% if worker.banned %} class="worker-banned" {% elif worker.payday_saldo < worker.paysheet_amount_to_pay %} class="worker-warning"{% endif %}>
+            <td>{{ index }}</td>
+            <td>
+                <input type="checkbox" class="worker-selection" id="worker_{{ worker.pk }}" name="worker_pk" value="{{ worker.pk }}" form="table-form">
+            </td>
+            <td {% if worker.has_registry_receipt %}class="worker-has-receipt"{% endif %}>{% if worker.is_selfemployed %}СЗ{% endif %}</td>
+            <td>
+                {% if worker.is_selfemployed and not worker.has_registry_receipt %}
+                <input type="text" form="table-form" name="receipt_{{ worker.pk }}" value="{% if worker.paysheet_receipt_url %}{{ worker.paysheet_receipt_url }}{% endif %}" style="max-width: 24px;" />
+                {% endif %}
+            </td>
+            <td{% with worker.citizenship_name as citizenship %}{% if citizenship != 'РФ' %} style="background: #FCC;"{% endif %}>{{citizenship}}{% endwith %}</td>
+            <td>{{ worker.location }}</td>
+            <td style="white-space: nowrap;"><a href="{% url 'the_redhuman_is:worker_detail' pk=worker.pk %}">{{ worker }}</a></td>
+            <td class="dt-center total_deposit">{{ worker.deposit_saldo|separate }}</td>
+            <td class="dt-center total_amount">{{ worker.turnover_saldo|separate }}</td>
+            <td>{{ worker.payday_saldo|separate }}</td>
+            <td>{{ worker.interval_saldo|separate }}</td>
+            <td>
+                <input type="hidden" form="table-form" name="remainder_{{ worker.pk }}" value="{{ worker.remainder }}"/>
+                {{ worker.remainder|separate }}
+            </td>
+            <td class="dt-center total_amount">
+                <input type="text" form="table-form" name="amount_{{ worker.pk }}" value="{{ worker.paysheet_amount_to_pay }}" style="max-width: 72px;" />
+            </td>
+            {% for cell in line %}
+                <td class="dt-center{% if cell.warning %} cell-warning{% endif%}">
+                    <a href="{% url 'the_redhuman_is:paysheet_v2_day_details' paysheet_pk=paysheet.pk worker_pk=worker.pk date=days|lookup:forloop.counter0|date:"d.m.Y" %}" class="popup btn btn-sm btn-link">
+                        {% include "the_redhuman_is/paysheet_v2/cell_amount.html" %}
+                    </a>
+                </td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th class="text-right" colspan="7">Итого</th>
+            <td class="dt-center">{{ total_values.deposit|separate }}</td>
+            <td class="dt-center">{{ total_values.total|separate }}</td>
+            <td class="dt-center">{{ total_values.payday_saldo|separate }}</td>
+            <td class="dt-center">{{ total_values.interval_saldo|separate }}</td>
+            <td class="dt-center">{{ total_values.remainder|separate }}</td>
+            <td class="dt-center">{{ total_values.paysheet_amount_to_pay|separate }}</td>
+            {% if not paysheet.is_closed %}
+            {% endif %}
+            {% for day in days %}
+                <td class="dt-center"></td>
+            {% endfor %}
+        </tr>
+    </tfoot>
+    </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+
+<script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'js/magnific_popup/magnific_popup.min.js' %}"></script>
+
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+
+<script>
+function add_alert(message) {
+    let template = "<div class=\"alert alert-danger\" role=\"alert\">\n" +
+        message +
+        "                <button class=\"close\" type=\"button\" data-dismiss=\"alert\" aria-label=\"close\"><span aria-hidden=\"true\">&times</span></button>\n" +
+        "            </div>";
+    $("#alert-box").append(template);
+}
+
+function closePopup() {
+    $.magnificPopup.close();
+}
+
+function onRemove(id) {
+    document.getElementById(id).remove();
+
+    if (id.includes('cfine')) {
+        var deduction_val_id = id.replace('id_div_cfine', 'id_val_deduction');
+        var deduction_comment_id = id.replace('id_div_cfine', 'id_comment_deduction');
+
+        $('#'+deduction_val_id).remove();
+        $('#'+deduction_comment_id).remove();
+    }
+
+    return false;
+}
+
+function onAdd(id_suffix) {
+    let form_id = "container_" + id_suffix;
+    let button_id = "id_add_button_" + id_suffix;
+    addField(form_id, button_id, id_suffix + nextId(form_id, id_suffix), "", "");
+    return false;
+}
+
+function addField(form_id, button_id, id_suffix, key, value) {
+    let div = document.createElement("div");
+    div.id = "id_div_" + id_suffix;
+    div.innerHTML = "<span class=\"t_input\"><input placeholder=\"Сумма\" id=\"id_val_" + id_suffix + "\" type=\"text\" value=\"" + key + "\"" +
+        "name=\"val_" + id_suffix + "\"/></span>\n" +
+        "<input placeholder=\"Комментарий\" id=\"id_comment_" + id_suffix + "\" type=\"text\" value=\"" + value + "\"" +
+        "name=\"comment_" + id_suffix + "\"/>\n" +
+        "<button type=\"submit\" onClick=\"return onRemove('id_div_" + id_suffix +
+        "')\">-</button>";
+    $('#' + form_id + ' .in').append(div);
+
+    div = document.createElement("div");
+    div.innerHTML = "<input id=\"id_id_" + id_suffix + "\" type=\"hidden\" value=\"\" name=\"id_" + id_suffix + "\">\n" +
+    "<input id=\"id_operation_" + id_suffix + "\" type=\"hidden\" value=\"\" name=\"operation_" + id_suffix + "\">"
+
+    $('#' + form_id + ' .in').append(div);
+}
+
+function nextId(form_id, id_suffix) {
+
+    let id = $('#' + form_id + ' .in').find('input[type="text"]').last().attr('id');
+
+    let __last_id = 0;
+
+    if (typeof id !== typeof undefined && id !== false)
+        __last_id = id.replace('id_comment_' + id_suffix + '_id_', '');
+
+    __last_id++;
+
+    return "_id_" + __last_id;
+}
+
+function calendarCommaTargets() {
+    var targets = [];
+    {% for day in days %}
+        targets.push(2 + {{ forloop.counter0 }});
+    {% endfor %}
+    {% if show_average_performance %}
+        targets[targets.length] = targets[targets.length - 1] + 1;
+    {% endif %}
+    return targets;
+}
+
+function _get_float(text) {
+    return parseFloat(text.replace(/\s/g, '').replace(',', '.'));
+}
+
+$(document).ready(
+    function() {
+        $("#id_registry").change(
+            function () {
+                document.registryForm.submit();
+            }
+        );
+        $("#id_image").change(
+            function () {
+                document.imageForm.submit();
+            }
+        );
+
+        $('#worker-select-all').on(
+            'click',
+            function() {
+                $('.worker-selection').prop('checked', this.checked);
+            }
+        );
+
+        $('.popup').magnificPopup({
+            type: 'ajax',
+        });
+
+        let tableOptions = {
+            "fixedHeader": {
+                header: true,
+                footer: true
+            },
+            "processing": true,
+            "jQueryUI": true,
+            "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+            "sPaginationType": "full_numbers",
+            "oLanguage": {
+                "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                "sSearch": "Поиск:",
+                "sZeroRecords": "Ничего не найдено - извините",
+                "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                "sInfoFiltered": "(filtered from _MAX_ total records)",
+                "oPaginate": {
+                    "sFirst": "Первая",
+                    "sNext":">",
+                    "sPrevious":"<",
+                    "sLast":"Последняя",
+                    }
+            },
+            "columnDefs": [
+                { "searchable": false, "orderable": false, "targets": [0, 1, 3] },
+            ],
+            "orderCellsTop": true,
+        }
+
+        let calendarTargets = calendarCommaTargets();
+        let calendar = $("#paysheet-table").DataTable(tableOptions);
+        calendar.on(
+            "order.dt search.dt",
+            function () {
+                calendar.column(
+                    0,
+                    { search: "applied", order: "applied" }
+                ).nodes().each(
+                    function (cell, i) {
+                        cell.innerHTML = i + 1;
+                    }
+                );
+            }
+        ).draw();
+        if ($("#paysheet-prepay-table").length!=0)
+            calendar = $("#paysheet-prepay-table").DataTable(tableOptions);
+        $("#paysheet-prepay-table .value").on("keyup",function(e){
+            if (this.classList.value.search("changed")==-1)
+                this.classList.add("changed");
+            if (!this.innerText.match(/^\d+(\.\d+)?$/)) {
+                this.classList.add("danger");
+            }
+            else {
+                this.classList.remove("danger");
+                let cells = $(".changed").not(".danger");
+                let total = 0;
+                for (let cell of cells)
+                    total += Number.parseFloat(cell.innerText);
+                $(".total-amount").text(total);
+                /*let cell = calendar.cell(this);
+                let prev = 0;
+                if (cell.data() != "")
+                    prev = cell.data();
+                let value = Number.parseFloat(this.innerText);
+                value = value == NaN ? 0 : value;
+                let total = Number.parseFloat($(".total-amount").text());
+                total += value - prev;
+                $(".total-amount").text(total);
+                cell.data(value);*/
+            }
+        });
+        $("#send-email").click(function (e) {
+            e.preventDefault();
+            let button = $(this);
+            $.ajax({
+                dataType: 'json',
+                type: 'POST',
+                url: button.attr('formAction'),
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+            });
+            button.prop('disabled', true);
+        });
+        $("#pay-talk_bank").click(function (e) {
+            e.preventDefault();
+            let button = $(this);
+            console.log('asdfasf');
+            $.ajax({
+                type: 'POST',
+                url: button.attr('formAction'),
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                success: function() {
+                    console.log('wtf!!!');
+                    window.location.reload();
+                }
+            });
+        });
+    });
+    $("#statement-account-form").on("submit",function(){
+        let values = [];
+        for (let tr of $("#paysheet-prepay-table tr[data-prepayment-pk]")) {
+            tr = $(tr);
+            let pk = tr.attr("data-prepayment-pk");
+            let amountStr = tr.find(".amount");
+            //let comment = tr.find(".comment");
+            if (amountStr.hasClass("danger")) {
+                add_alert("Неправильное значение суммы аванса");
+                return false;
+            }
+            else {
+                if (amountStr.text()=="")
+                    values.push(pk+":"+"0");
+                else {
+                    let amount = Number.parseFloat(amountStr.text());
+                    values.push(pk + ":" + amount);
+                }
+            }
+        }
+        let table = $("#paysheet-prepay-table").DataTable({retrieve: true});
+        let saldos = table.column("2").data();
+        let prepayments = table.column("3").data();
+        for (let i=0; i<saldos.length; i++)
+            if (prepayments[i]<saldos[i]) {
+                add_alert("Сумма аванса больше остатка счета рабочего");
+                return false;
+            }
+        let input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "prepayment";
+        input.value = values.join(" ");
+        this.appendChild(input);
+        return true;
+    });
+
+
+    $('body').on("input", ".cfines input[type='text']", function () {
+
+        var id = $(this).attr('id').replace('cfine', 'deduction');
+
+        if (id.includes('comment'))
+        {
+            var re = /"(.*)"/;
+            var newstr = $('#'+id).text().replace(re, '"'+$(this).val()+'"');
+
+            $('#'+id).html(newstr+"<br>");
+        }
+        else
+            $('#'+id).html($(this).val());
+
+        if ($('#'+id).attr('style') == 'display: none')
+            $('#'+id).show();
+    });
+
+    $('body').on("click", ".cfines .add_button", function () {
+        var buttonFullId = $(this).attr('id');
+        var rowId = buttonFullId.substr(buttonFullId.length - 1);
+
+        var lastInputId = $(this).parent().find('input[type="text"]').last().attr('id');
+        var id = lastInputId.substr(lastInputId.length - 1);
+
+        $('#deductions_'+rowId).append('<span id="id_val_deduction_'+rowId+'_id_'+id+'"></span> <span style="display: none" id="id_comment_deduction_'+rowId+'_id_'+id+'"> - На основании штрафа от {% now "m.d.Y" %} ""<br></span>');
+    }
+);
+
+</script>
+{% endblock %}

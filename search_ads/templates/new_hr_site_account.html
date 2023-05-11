@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Сайт вакансий</title>
+  </head>
+
+  {% block buttons %}
+    <a href="{% url 'search_ads:hr_reports' %}"><button>Назад</button></a>
+  {% endblock %}
+
+  {% block table-data %}
+    <form method="POST">
+      {% csrf_token %}
+      <table>
+        {{ сform.as_table }}
+      </table>
+        <button type="submit">Сохранить</button>
+    </form>
+  {% endblock %}
+</html>

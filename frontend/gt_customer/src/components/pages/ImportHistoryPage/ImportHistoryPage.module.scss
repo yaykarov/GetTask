@@ -1,0 +1,24 @@
+.link {
+    text-decoration: underline;
+}
+.import-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    height: auto!important;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 10px;
+    line-height: 12px!important;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #ffffff;
+}
+.import-status-default {
+    background: #cccccc;
+    color: #000000;
+}
+
+.import-status-finished_with_errors {background: #FF4F4F;}
+.import-status-processing {background: #8793FC;}
+.import-status-finished {background: #95E76E;}

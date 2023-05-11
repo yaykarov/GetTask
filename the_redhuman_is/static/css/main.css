@@ -1,0 +1,71 @@
+.r
+{
+    overflow: hidden;
+    position: relative;
+}
+
+.c
+{
+    float: left;
+    padding-right: 20px;
+}
+
+h1
+{
+    margin-top: 0;
+}
+
+#entity-table input
+{
+    width: 210px;
+}
+
+#save_button
+{
+    display: none;
+}
+
+.catalog_table {
+    padding-left: 50px;
+    margin-left: 255px;
+    border-left: 1px solid black;
+    min-height: 150px;
+}
+
+.bank_table
+{
+    margin-left: 120px;
+}
+
+.catalog_table input
+{
+    font-size: 12px;
+    line-height: 14px;
+    padding: 2px 2px;
+    margin-right: 5px;
+    float: left;
+}
+
+.catalog_table table td
+{
+    border: 0;
+    padding: 0;
+}
+
+
+.catalog_table h1
+{
+    font-size: 16px;
+}
+
+.catalog_menu a
+{
+    font-size: 14px;
+}
+
+.catalog_menu
+{
+    position: absolute;
+    left: 0;
+    top: 0;
+}

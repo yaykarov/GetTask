@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<h4>
+Работники, у которых есть выходы с {{ first_day|date:"d.m.Y" }} по {{ last_day|date:"d.m.Y"}} включительно.
+</h4>
+{% endblock %}
+
+{% block obj-data %}
+
+<form method="GET">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            {{ filter_form.first_day }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.last_day }}
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+                Показать
+            </button>
+        </div>
+    </div>
+</form>
+
+{% for header, grid in grids %}
+<h6>{{ header|safe }}</h6>
+<table class="table rh-table table-hover">
+<tbody>
+{% for name, row in grid%}
+<tr>
+    <td>{{ name }}</td>
+    {% for value in row %}
+    <td>{{ value }}</td>
+    {% endfor %}
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+{{ filter_form.media }}
+{% endblock %}

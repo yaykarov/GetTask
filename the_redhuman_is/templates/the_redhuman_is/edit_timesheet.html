@@ -1,0 +1,10 @@
+{% load static %}
+
+<form method="POST" action="{% url 'the_redhuman_is:edit_timesheet' pk %}" enctype='multipart/form-data'>
+  {% csrf_token %}
+  <table>
+    {{ tform.as_table }}
+  </table>
+<br>
+<button type="submit" style="width:300px;height:75px">Сохранить</button>
+</form>

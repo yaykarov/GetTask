@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load human_readable_values %}
+{% load redhuman_tags %}
+{% load static %}
+
+{% block extra_html_head %}
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+<style>.DTFC_LeftBodyLiner { overflow-x: hidden; }</style>
+{% endblock %}
+
+{% block buttons %}
+<h4>Сводка по клиентам</h4>
+{% endblock %}
+
+{% block obj-data %}
+{% include 'the_redhuman_is/core/modal.include' with link_class='cell' modal_id='dialog' modal_body_id='dialog_body' %}
+<form method="GET">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            {{ filter_form.customer_fetch_type }}
+        </div>
+        <div class="form-group col col-auto">
+            <label for="id_customer">{{ filter_form.customers.label }}</label>
+            {{ filter_form.customers }}
+        </div>
+        <div class="form-group col col-auto">
+            <label for="id_manager">{{ filter_form.manager.label }}</label>
+            {{ filter_form.manager }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.first_day }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.last_day }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.layout_type }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.report_type }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.citizenship }}
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+                Показать
+            </button>
+            <button class="btn btn-sm btn-outline-primary" type="submit" name="format" value="xls">
+                <i class="fas fa-download"></i>
+            </button>
+        </div>
+    </div>
+</form>
+
+<div class="row">
+<div class="col col-auto">
+<table class="table rh-table table-hover" id="main-table">
+<thead>
+    <tr>
+        <th rowspan="2">Клиент</th>
+        {% for day in days %}
+            <th>{{ day|date:"d.m" }}</th>
+        {% endfor %}
+        <th rowspan="2">
+            Среднее
+        </th>
+        <th rowspan="2">
+            Итого
+        </th>
+    </tr>
+    <tr>
+        {% for day in days %}
+            <th><center>{{ day|date:"D" }}<center></th>
+        {% endfor %}
+    </tr>
+</thead>
+<tbody>
+{% for location, row_name, row, row_average, row_sum in data %}
+<tr>
+    <td>{{ row_name|safe }}</td>
+    {% for cell_value, details_url in row %}
+        <td>
+            <a class="cell" href="{{ details_url|safe }}"><center>{{ cell_value|separate }}</center></a>
+        </td>
+    {% endfor %}
+    <td>
+    <center>{{ row_average|separate }}</center>
+    </td>
+    <td>
+    <center>{{ row_sum|separate }}</center>
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+<tfoot>
+<tr>
+    <td>Итого</td>
+    {% for value in column_sums %}
+        <td><center>{{ value|separate }}</center></td>
+    {% endfor %}
+    <td><center>{{ sum_average|separate }}</center></td>
+    <td><center>{{ sum_overall|separate }}</center></td>
+</tr>
+</tfoot>
+</table>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ filter_form.media }}
+<script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/3.2.6/js/dataTables.fixedColumns.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+<script>
+$(document).ready(function () {
+    jQuery.extend(
+        jQuery.fn.dataTableExt.oSort,
+        {
+            "numeric-comma-pre": function (a) {
+                var text = a.replace(/\n/g, '');
+                let m = text.match(/<a.*?>(.*)<.a>/);
+                if (m) {
+                    text = m[1];
+                }
+                text = text.replace(/,/g, '.').replace(/[^0123456789.]/g, '');
+                if (text == '') {
+                    return -1.0;
+                }
+                return parseFloat(text);
+            },
+
+            "numeric-comma-asc": function (a, b) {
+                return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+            },
+
+            "numeric-comma-desc": function (a, b) {
+                return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+            }
+        }
+    );
+    var commaTargets = [];
+    {% for day in days %}
+    commaTargets.push(1 + {{ forloop.counter0 }});
+    {% endfor %}
+    commaTargets[commaTargets.length] = commaTargets[commaTargets.length - 1] + 1;
+    $('#main-table').DataTable(
+        {
+            "scrollY": "85vh",
+            "scrollX": true,
+            "scrollCollapse": true,
+            "processing": true,
+            "pageLength": 100,
+            "stateSave": true,
+            "order": [[0, "asc"]],
+            "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+            "oLanguage": {
+                "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                "sSearch": "Поиск:",
+                "sZeroRecords": "Ничего не найдено - извините",
+                "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                "sInfoFiltered": "(filtered from _MAX_ total records)",
+                "oPaginate": {
+                    "sFirst": "Первая",
+                    "sNext": ">",
+                    "sPrevious": "<",
+                    "sLast": "Последняя",
+                },
+            },
+            "columnDefs": [
+                {
+                    "type": "numeric-comma",
+                    targets: commaTargets,
+                },
+                {
+                    "width": "240px",
+                    targets: 0
+                }
+            ],
+        }
+    );
+
+    function updateCitizenshipField() {
+        let report_type = $('#id_report_type').val();
+        if (report_type == 'new_turnouts' || report_type == 'new_turnouts_natural' || report_type == 'new_applicants') {
+            $('#id_citizenship').parent().show();
+        } else {
+            $('#id_citizenship').parent().hide();
+        }
+    }
+
+    $('#id_report_type').on('change', updateCitizenshipField);
+
+    updateCitizenshipField();
+});
+</script>
+{% endblock %}

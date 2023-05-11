@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_html_head %}
+{{ search_form.media }}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block obj-data %}
+<div class="container">
+<div class="row">
+    <div class="col col-md-3">
+        <h4>Поиск рабочего</h4>
+    </div>
+</div>
+<form id="search-form" method="GET" target="_blank">
+
+<div class="row mb-2">
+<div class="col col-md-3">
+    {{ search_form.worker }}
+</div>
+</div>
+
+<div class="row">
+<div class="col col-md-3">
+    <button type="submit" class="btn btn-lg btn-outline-primary form-control">
+        Перейти
+    </button>
+</div>
+</div>
+
+</form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+
+<script>
+function updateFormAction() {
+    let worker_id = $('#id_worker').val();
+    var action = '';
+    if (worker_id != null) {
+        action = "{% url 'the_redhuman_is:worker_detail' pk=123 %}".replace(
+            '123',
+            worker_id
+        );
+    }
+    $('#search-form').attr('action', action);
+}
+$(document).ready(
+    function() {
+        $('#id_worker').on('change', updateFormAction);
+    }
+);
+</script>
+{% endblock %}

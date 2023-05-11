@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<h4>Кари: импорт данных (<a href='{% url 'the_redhuman_is:kari_performance_files' %}'>список сохраненных ранее файлов</a>)</h4>
+{% endblock %}
+
+
+{% block obj-data %}
+<h5 class="mt-1">Файл с выработкой</h5>
+<div class="row mb-5">
+    <div class="col col-2">
+    <form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:kari_import_performance_file' %}">
+        {% csrf_token %}
+        <input type="file" name="performance" class="mb-2"/>
+        <button type="submit" class="btn btn-sm btn-outline-primary">Отправить выработку</button>
+    </form>
+    </div>
+</div>
+{% endblock %}

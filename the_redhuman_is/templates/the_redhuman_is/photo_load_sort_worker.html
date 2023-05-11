@@ -1,0 +1,164 @@
+{% extends 'the_redhuman_is/photo_load_sort.html' %}
+{% load crispy_forms_tags %}
+{% block forms %}
+    <span>Выберите рабочего или создайте нового.</span>
+    <div class="row border-bottom pb-xl-2 pb-1">
+        <div class="col-auto">
+            {{ worker_search }}
+        </div>
+    </div>
+    <div class="row border-bottom pb-xl-2 pb-1">
+        <div class="col pt-1 pt-xl-2">
+            <ul class="nav nav-tabs mb-1 mb-xl-2" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#worker" role="tab" data-toggle="tab">Рабочий</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#passport" role="tab" data-toggle="tab">Паспорт</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#reg" role="tab" data-toggle="tab">Регистрация</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#patent" role="tab" data-toggle="tab">Патент</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade show active" id="worker">
+                    <div class="rh-vertical-form">
+                        <input type="hidden" name="worker_id" id="worker_id" value="{{ worker_form.instance.pk }}">
+                        {% crispy worker_form %}
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="passport">
+                    <div class="rh-vertical-form">
+                        {% crispy passport_form %}
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="reg">
+                    <div class="row mb-xl-2 mb-1">
+                        <div class="col-auto ml-auto">
+                            <button class="btn btn-sm btn-light ml-auto clear-subform" type="button" data-name="id_reg" title="Очистить форму регистрации">
+                                <i class="fas fa-eraser"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="rh-vertical-form">
+                        {% crispy reg_form %}
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="patent">
+                    <div class="row mb-xl-2 mb-1">
+                        <div class="col-auto ml-auto">
+                            <button class="btn btn-sm btn-light ml-auto clear-subform" type="button" data-name="id_pat" title="Очистить форму патента">
+                                <i class="fas fa-eraser"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="rh-vertical-form">
+                        {% crispy patent_form %}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-auto ml-auto">
+                    <button class="btn btn-sm btn-primary" type="submit">Сохранить</button>
+                    <button class="btn btn-sm btn-secondary" type="reset">Сбросить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row pt-xl-2 pt-1 border-bottom">
+        <div class="col">
+            <div class="font-weight-bold">Комментарии</div>
+            {% include 'the_redhuman_is/photo_load_messages_list.html' %}
+            <div class="row my-xl-2 my-1">
+                <div class="col-auto ml-auto">
+                    <button class="btn btn-sm btn-outline-primary ml-auto" data-toggle="modal" data-target="#commentModal" type="button">Добавить комментарий</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row pt-xl-2 pt-1 pb-2">
+        <div class="col-auto ml-auto">
+            <a href="{% url 'the_redhuman_is:photo_load_close_session' object.pk %}" class="btn btn-sm btn-danger">Закрыть сессию</a>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('#id_worker').change(function () {
+                $.ajax({
+                    type: "GET",
+                    url: "{% url 'the_redhuman_is:ajax_worker' %}?q=" + $(this).val(),
+                    success: function (response) {
+                        $('#worker_id').val(response.id);
+                        $('#id_worker-last_name').val(response.last_name);
+                        $('#id_worker-name').val(response.name);
+                        $('#id_worker-patronymic').val(response.patronymic);
+                        $('#id_worker-sex').val(response.sex);
+                        $('#id_worker-tel_number').val(response.tel_number);
+                        $('#id_worker-birth_date').val(reformatDate(response.birth_date));
+                        updateSelect(
+                            '#id_worker-place_of_birth',
+                            response.place_of_birth,
+                            response.place_of_birth_name
+                        );
+                        $('#id_worker-mig_series').val(response.mig_series);
+                        $('#id_worker-mig_number').val(response.mig_number);
+                        $('#id_worker-m_date_of_exp').val(reformatDate(response.m_date_of_exp));
+                        $('#id_worker-m_date_of_issue').val(reformatDate(response.m_date_of_issue));
+                        updateSelect(
+                            '#id_worker-citizenship',
+                            response.citizenship,
+                            response.citizenship_name
+                        );
+                        updateSelect(
+                            '#id_worker-position',
+                            response.position,
+                            response.position_name
+                        );
+                    }
+                });
+                $.ajax({
+                    type: "GET",
+                    url: "{% url 'the_redhuman_is:ajax_worker_passport' %}?q=" + $(this).val(),
+                    success: function (response) {
+                        $('#id_pass-worker_id').val(response.worker_id);
+                        $('#id_pass-passport_type').val(response.passport_type);
+                        $('#id_pass-another_passport_number').val(response.another_passport_number);
+                        $('#id_pass-date_of_issue').val(reformatDate(response.date_of_issue));
+                        $('#id_pass-date_of_exp').val(reformatDate(response.date_of_exp));
+                        $('#id_pass-issued_by').val(response.issued_by);
+                    }
+                });
+                $.ajax({
+                    type: "GET",
+                    url: "{% url 'the_redhuman_is:ajax_worker_reg' %}?q=" + $(this).val(),
+                    success: function (response) {
+                        $('#id_reg-id').val(response.id);
+                        $('#id_reg-worker_id').val(response.worker_id);
+                        $('#id_reg-r_date_of_issue').val(reformatDate(response.r_date_of_issue));
+                        $('#id_reg-city').val(response.city);
+                        $('#id_reg-street').val(response.street);
+                        $('#id_reg-house_number').val(response.house_number);
+                        $('#id_reg-building_number').val(response.building_number);
+                        $('#id_reg-appt_number').val(response.appt_number);
+                    }
+                });
+                $.ajax({
+                    type: "GET",
+                    url: "{% url 'the_redhuman_is:ajax_worker_patent' %}?q=" + $(this).val(),
+                    success: function (response) {
+                        $('#id_pat-worker_id').val(response.worker_id);
+                        $('#id_pat-date_of_issue').val(reformatDate(response.date_of_issue));
+                        $('#id_pat-series').val(response.series);
+                        $('#id_pat-number').val(response.number);
+                        $('#id_pat-issued_by').val(response.issued_by);
+                        $('#id_pat-profession').val(response.profession);
+                        $('#id_pat-profession_id').val(response.profession_id);
+                    }
+                });
+            });
+        })
+    </script>
+{% endblock %}

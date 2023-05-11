@@ -1,0 +1,441 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load mathfilters %}
+
+{% block extra_html_head %}
+    <link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+    <link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+    <style>
+        #calendar_average #calendar_detail {
+            font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
+            font-size:   10pt;
+        }
+        .full-width {
+            width: 100%;
+        }
+    </style>
+{% endblock %}
+
+{% block buttons %}
+
+{% endblock %}
+{% block obj-data %}
+    <div class="container-fliud">
+        <div class="row">
+            <div class="col">
+                <form class="rh-calendar-top-form">
+                    <div class="row">
+                        <div class="col-auto" style="min-width: 340px">
+                            <div class="form-group row mb-1 mb-xl-2">
+                                <label class="col-3 col-form-label">{{ form.customer.label }}</label>
+                                <div class="col-8">
+                                    {{ form.customer }}
+                                </div>
+                            </div>
+                            <div class="form-group row mb-1 mb-xl-2">
+                                <label class="col-3 col-form-label">{{ form.location.label }}</label>
+                                <div class="col-8">
+                                    {{ form.location }}
+                                </div>
+                            </div>
+                            <div class="form-group row mb-1 mb-xl-2">
+                                <label class="col-3 col-form-label">{{ form.service.label }}</label>
+                                <div class="col-8">
+                                    {{ form.service }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-group row mb-1 mb-xl-2">
+                                <label class="col-1 col-form-label">{{ form.begin_date.label }}</label>
+                                <div class="col-4">
+                                    {{ form.begin_date }}
+                                </div>
+                                <label class="col-1 col-form-label">{{ form.end_date.label }}</label>
+                                <div class="col-4">
+                                    {{ form.end_date }}
+                                </div>
+                            </div>
+                            <div class="form-group row mb-1 mb-xl-2">
+                                <label class="col col-form-label">{{ form.mmanager.label }}</label>
+                                <div class="col">
+                                    {{ form.mmanager }}
+                                </div>
+                            </div>
+                            <div class="form-group row mb-1 mb-xl-2">
+                                <label class="col col-form-label">{{ form.dmanager.label }}</label>
+                                <div class="col">
+                                    {{ form.dmanager }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-group row mb-1 mb-xl-2">
+                                <label class="col-4 col-form-label">{{ form.display.label }}</label>
+                                <div class="col-8">
+                                    {{ form.display }}
+                                </div>
+                            </div>
+                            <div class="form-group row mb-1 mb-xl-2">
+                                <label class="col-4 col-form-label">{{ form.report_type.label }}</label>
+                                <div class="col-8">
+                                    {{ form.report_type }}
+                                </div>
+                            </div>
+                            <div class="form-group row mb-1 mb-xl-2">
+                                <label class="col-4 col-form-label">{{ form.sheet_turn.label }}</label>
+                                <div class="col-8">
+                                    {{ form.sheet_turn }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-group row mb-1 mb-xl-2">
+                                <label class="col-auto col-form-label">{{ form.avg_or_sum.label }}</label>
+                                <div class="col-auto">
+                                    {{ form.avg_or_sum }}
+                                </div>
+                            </div>
+                            <div class="form-group row mb-1 mb-xl-2">
+                                <label class="col col-form-label">{{ form.show_details.label }}</label>
+                                <div class="col">
+                                    {{ form.show_details }}
+                                </div>
+                            </div>
+                            <div class="form-check row mb-1 mb-xl-2">
+                                <button class="btn btn-sm btn-primary d-flex ml-auto" onclick="updateCalendarContent()">Искать</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div id="calendar_average" class="col"></div>
+        </div>
+        <div class="row">
+            <div id="calendar_detail" class="col-auto" style="max-width: 1600px"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ form.media }}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/3.2.6/js/dataTables.fixedColumns.min.js"></script>
+    <script>
+        jQuery.extend(
+            jQuery.fn.dataTableExt.oSort,
+            {
+                "numeric-comma-pre": function (a) {
+                    if (a == "-") {
+                        return -1.0;
+                    }
+                    if (a == "Н/д") {
+                        return 0.0;
+                    }
+                    return parseFloat(a.replace(/,/, "."));
+                },
+
+                "numeric-comma-asc": function (a, b) {
+                    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+                },
+
+                "numeric-comma-desc": function (a, b) {
+                    return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+                }
+            }
+        );
+
+        function updateCalendarAverageContent() {
+            $("#calendar_average").html("Загрузка...");
+            let average_request = new XMLHttpRequest();
+            let params = "?";
+            let ids = ["customer", "location", "service", "display", "begin_date", "end_date", "sheet_turn", "report_type", "mmanager", "dmanager", "avg_or_sum"];
+            for (id of ids) {
+                let value = $("#id_" + id).val();
+                if (value)
+                    params += id + "=" + value + "&";
+            }
+            average_request.onreadystatechange = function () {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        $("#calendar_average").html(this.response);
+                        $("#average").DataTable(
+                            {
+                                scrollX: true,
+                                scrollCollapse: true,
+                                fixedColumns: {
+                                    leftColumns: 2,
+                                    //rightColumns: 2,
+                                },
+                                paging: false,
+                                bFilter: false,
+                                oLanguage: {
+                                    sLengthMenu: "",
+                                    sInfo: ""
+                                },
+                                "processing": true,
+                                "jQueryUI": true,
+                                "orderCellsTop": true
+                            }
+                        );
+                        initClickables();
+                    } else {
+                        $("#calendar_average").html("Что-то пошло не так");
+                    }
+                }
+            };
+            let url = "{% url 'the_redhuman_is:calendar_average_content' %}";
+
+            url = url + params;
+
+            average_request.open("GET", url, true);
+            average_request.send();
+        }
+
+        function updateCalendarDetailsContent() {
+            let params = "?";
+            let ids = ["customer", "location", "service", "display", "begin_date", "end_date", "sheet_turn", "report_type", "mmanager", "dmanager", "avg_or_sum"];
+            for (id of ids) {
+                let value = $("#id_" + id).val();
+                if (value)
+                    params += id + "=" + value + "&";
+            }
+            let show_details = $("#id_show_details").prop("checked");
+            if (show_details == true) {
+                let detail_request = new XMLHttpRequest();
+                $("#calendar_detail").html("Загрузка...");
+                detail_request.onreadystatechange = function () {
+                    if (this.readyState == 4) {
+                        if (this.status == 200) {
+                            $("#calendar_detail").html(this.response);
+                            let calendarTargets = calendarCommaTargets();
+                            let calendar = $("#calendar").DataTable(
+                                {
+                                    "scrollX": true,
+                                    "scrollCollapse": true,
+                                    "fixedColumns": {
+                                        "leftColumns": 3,
+                                    },
+                                    "processing": true,
+                                    "jQueryUI": true,
+                                    "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+                                    "sPaginationType": "full_numbers",
+                                    "oLanguage": {
+                                        "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                                        "sSearch": "Поиск:",
+                                        "sZeroRecords": "Ничего не найдено - извините",
+                                        "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                                        "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                                        "sInfoFiltered": "(filtered from _MAX_ total records)",
+                                        "oPaginate": {
+                                            "sFirst": "Первая",
+                                            "sNext": ">",
+                                            "sPrevious": "<",
+                                            "sLast": "Последняя",
+                                        }
+                                    },
+                                    "columnDefs": [
+                                        {
+                                            "searchable": false,
+                                            "orderable": false,
+                                            "targets": 0
+                                        },
+                                        {
+                                            "type": "numeric-comma",
+                                            targets: calendarTargets
+                                        }
+                                    ],
+                                    "orderCellsTop": true
+                                }
+                            );
+                            calendar.on(
+                                "order.dt search.dt",
+                                function () {
+                                    calendar.column(
+                                        0,
+                                        {search: "applied", order: "applied"}
+                                    ).nodes().each(
+                                        function (cell, i) {
+                                            cell.innerHTML = i + 1;
+                                        }
+                                    );
+                                }
+                            ).draw();
+                        } else {
+                            $("#calendar_detail").html("Что-то пошло не так");
+                        }
+                    }
+                };
+                let detail_url = '{% url "the_redhuman_is:calendar_detail_content" %}';
+                detail_url += params;
+                detail_request.open("GET", detail_url, true);
+                detail_request.send();
+            }
+            else
+                $("#calendar_detail").html("");
+        }
+
+        function indexOf(elem, parent) {
+            let result = null;
+            let index = 0;
+            for (let node of $(parent).find(".clickable")) {
+                if (node == elem)
+                    return index;
+                index++;
+            }
+            return -1;
+        }
+
+        function initClickables() {
+            $(".clickable").on("click", function () {
+                let url;
+                if (this.className.indexOf("timesheets") != -1)
+                    url = new URL("https://" + document.location.host + "{% url 'the_redhuman_is:range_timesheets' %}");
+                else if (this.className.indexOf("operating_account") != -1)
+                    url = new URL("https://" + document.location.host + "{% url 'the_redhuman_is:account_total_detail' %}");
+                else if (this.className.indexOf("timesheet_locations") != -1)
+                    url = new URL("https://" + document.location.host + "{% url 'the_redhuman_is:timesheet_locations' %}");
+                else return false;
+                let display = this.getAttribute("data-display");
+                let months = ["Января", "Февраля", "Марта", "Апреля", "Мая", "Июня", "Июля", "Августа", "Сентября", "Октября",
+                    "Ноября", "Декабря"];
+                let begin_interval_year = $("#id_begin_date").val().split(".")[2];
+                let end_interval_year = $("#id_end_date").val().split(".")[2];
+                let firstRow = $("#average thead tr")[0];
+                let secondRow = $("#average thead tr")[1];
+                let inputDateFirst = $($(firstRow).find(".date")[indexOf(this, this.parentElement)]).find("div").text();
+                let endDateSecond = $($(secondRow).find(".date")[indexOf(this, this.parentElement)]).find("div").text();
+                let dateBeginStr = null;
+                let dateEndStr = null;
+                if (inputDateFirst.match(/^\d{1,2}\.\d{1,2}$/g)) {
+                    // год.число.месяц
+                    let matches = inputDateFirst.match(/\d{1,2}/g);
+                    dateBeginStr = begin_interval_year + "." + matches[0] + "." + matches[1];
+                    dateEndStr = dateBeginStr;
+                    console.log(dateBeginStr);
+                } else if (inputDateFirst.match(/^\d{1,2}\.\d{1,2}\.\d{4}$/g)) {
+                    dateBeginStr = inputDateFirst.match(/\d{4}/) + "." + inputDateFirst.match(/\d{1,2}/)[0] + "." +
+                        inputDateFirst.match(/\d{1,2}/)[1];
+                    dateEndStr = dateBeginStr;
+                    console.log(dateBeginStr);
+                } else if (inputDateFirst.match(/^\d{1,2} [а-я]+$/i)) {
+                    let dayBegin = inputDateFirst.match(/\d{1,2}/)[0];
+                    let dayEnd = endDateSecond.match(/\d{1,2}/)[0];
+                    let monthBegin = inputDateFirst.match(/[а-яa-z]+/i)[0];
+                    let monthEnd = endDateSecond.match(/[а-яa-z]+/i)[0];
+                    let monthIndexBegin = months.indexOf(monthBegin) + 1;
+                    let monthIndexEnd = months.indexOf(monthEnd) + 1;
+                    if (monthIndexBegin === 0 || monthIndexEnd === 0) {
+                        alert("Неправильная дата");
+                        return;
+                    }
+                    dateBeginStr = begin_interval_year + "." + dayBegin + "." + monthIndexBegin;
+                    dateEndStr = begin_interval_year + "." + dayEnd + "." + monthIndexEnd;
+                } else if (inputDateFirst.match(/^\d{1,2} [а-я]+ \d{4}$/i)) {
+                    let dayBegin = inputDateFirst.match(/\d{1,2}/)[0];
+                    let dayEnd = endDateSecond.match(/\d{1,2}/)[0];
+                    let monthBegin = inputDateFirst.match(/[а-яa-z]+/i)[0];
+                    let monthEnd = endDateSecond.match(/[а-яa-z]+/i)[0];
+                    let monthIndexBegin = months.indexOf(monthBegin) + 1;
+                    let yearBegin = inputDateFirst.match(/\d{4}/)[0];
+                    let yearEnd = endDateSecond.match(/\d{4}/)[0];
+                    let monthIndexEnd = months.indexOf(monthEnd) + 1;
+                    if (monthIndexBegin === 0 || monthIndexEnd === 0) {
+                        alert("Неправильная дата");
+                        return;
+                    }
+                    dateBeginStr = yearBegin + "." + dayBegin + "." + monthIndexBegin;
+                    dateEndStr = yearEnd + "." + dayEnd + "." + monthIndexEnd;
+                }
+                console.log(dateBeginStr);
+                console.log(dateEndStr);
+
+                console.log(url.toString());
+                url.searchParams.append("begin", dateBeginStr.replace(/\./g, "-"));
+                url.searchParams.append("end", dateEndStr.replace(/\./g, "-"));
+                let ids = ["customer", "location", "service", "display", "begin_date", "end_date", "sheet_turn", "report_type", "mmanager", "dmanager", "avg_or_sum"];
+                for (id of ids) {
+                    let value = $("#id_" + id).val();
+                    if (value)
+                        url.searchParams.append(id, value);
+                    //params += id+"="+value+"&";
+                }
+                if (display)
+                    url.searchParams.append("display", display);
+                console.log(url.toString());
+                //document.location.href = url.toString();
+                window.open(url, "_blank");
+            });
+        }
+
+        function updateCalendarContent() {
+            updateCalendarAverageContent();
+            updateCalendarDetailsContent();
+        }
+
+        $(document).ready(
+            function () {
+                updateCalendarContent();
+
+                $("#id_display").change(updateCalendarDetailsContent);
+                $("#id_show_details").click(updateCalendarDetailsContent);
+
+
+                $('#id_customer').on('change', function () {
+                    $('#id_mmanager').select2({
+                        placeholder: '',
+                        allowClear: true,
+                        ajax: {
+
+                            url: '/m_manager-autocomplete/?customer_id=' + $(this).val(),
+                            dataType: 'json'
+                        }
+                    });
+
+                    $('#id_dmanager').select2({
+                        placeholder: '',
+                        allowClear: true,
+                        ajax: {
+                            url: '/d_manager-autocomplete/?customer_id=' + $(this).val(),
+                            dataType: 'json'
+                        }
+                    });
+                });
+
+                $('#id_mmanager').on('change', function () {
+                    $('#id_customer').select2({
+                        placeholder: '',
+                        allowClear: true,
+                        ajax: {
+
+                            url: '/customer-autocomplete/?mmanager_id=' + $(this).val(),
+                            dataType: 'json'
+                        }
+                    });
+                });
+
+                $('#id_dmanager').on('change', function () {
+                    $('#id_customer').select2({
+                        placeholder: '',
+                        allowClear: true,
+                        ajax: {
+
+                            url: '/customer-autocomplete/?dmanager_id=' + $(this).val(),
+                            dataType: 'json'
+                        }
+                    });
+                });
+            }
+        );
+
+    </script>
+{% endblock %}

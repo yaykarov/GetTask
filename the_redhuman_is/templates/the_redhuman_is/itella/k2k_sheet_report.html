@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_html_head %}
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+{% endblock %}
+
+{% block buttons %}
+<h5>Результат проверки отчета КТУ</h5>
+{% endblock %}
+
+{% block obj-data %}
+
+{% if candidates_for_alias %}
+<h6>Рабочих с таким именем у нас нет:</h6>
+<form method="POST" enctype="multipart/form-data" target="_blank" action="{% url 'the_redhuman_is:itella_save_k2k_aliases' %}">
+    {% csrf_token %}
+    <table class="table rh-table">
+    <tbody>
+        {% for alias, search_form in candidates_for_alias %}
+        <tr>
+            <td>
+                <input type="text" name="alias_{{ forloop.counter0 }}" value="{{ alias }}" readonly/>
+            </td>
+            <td>{{ search_form.worker_field }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+    <button type="submit" class="btn btn-sm btn-outline-primary">Установить алиасы</button>
+</form>
+{% endif %}
+
+{% if itella_missed_days %}
+<h6>У Ителлы отсутствует информация по следующим дням:</h6>
+<table class="table rh-table">
+<tbody>
+    {% for day in itella_missed_days %}
+    <tr>
+        <td>{{ day|date:'d.m.Y' }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endif %}
+
+{% if itella_missed_turnouts %}
+<h6>У Ителлы отсутствует информация по следующим выходам:</h6>
+<table class="table rh-table">
+<tbody>
+    {% for day, worker in itella_missed_turnouts %}
+    <tr>
+        <td>{{ day|date:'d.m.Y'}}</td>
+        <td>
+            <a href="{% url 'the_redhuman_is:worker_detail' worker.pk %}" target="_blank">
+                {{ worker }}
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endif %}
+
+{% if alpha_missed_days %}
+<h6>У нас отсутствует информация по следующим дням:</h6>
+<table class="table rh-table">
+<tbody>
+    {% for day in alpha_missed_days %}
+    <tr>
+        <td>{{ day|date:'d.m.Y' }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endif %}
+
+{% if alpha_missed_turnouts %}
+<h6>У нас отсутствует информация по следующим выходам:</h6>
+<table class="table rh-table">
+<tbody>
+    {% for day, worker in alpha_missed_turnouts %}
+    <tr>
+        <td>{{ day|date:'d.m.Y'}}</td>
+        <td>
+            <a href="{% url 'the_redhuman_is:worker_detail' worker.pk %}" target="_blank">
+                {{ worker }}
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endif %}
+
+{% if different_hours %}
+<h6>Выходы, по которым у нас с Ителлой не сошлись часы:</h6>
+<table class="table rh-table">
+<thead>
+    <tr>
+        <th>Дата</th>
+        <th>Работник</th>
+        <th>Услуга</th>
+        <th>Часы Ителлы</th>
+        <th>Часы наши</th>
+    </tr>
+    {% for day, worker, service, itella_hours, alpha_hours in different_hours %}
+    <tr>
+        <td>{{ day|date:'d.m.Y' }}</td>
+        <td>
+            <a href="{% url 'the_redhuman_is:worker_detail' worker.pk %}" target="_blank">
+                {{ worker }}
+            </a>
+        </td>
+        <td>{{ service.name }}</td>
+        <td>{{ itella_hours }}</td>
+        <td>{{ alpha_hours }}</td>
+    </tr>
+    {% endfor %}
+</thead>
+</table>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+{% endblock %}

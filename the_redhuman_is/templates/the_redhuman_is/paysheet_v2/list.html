@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load mathfilters %}
+{% load redhuman_tags %}
+{% load human_readable_values %}
+
+{% block extra_html_head %}
+{% load crispy_forms_tags %}
+{{ creation_form.media }}
+{{ interval_form.media }}
+<script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<style>
+.paysheet-warning {
+    background-color: #FDD;
+}
+</style>
+{% endblock %}
+
+{% block buttons %}
+<h4>Ведомости</h4>
+{% endblock %}
+
+{% block obj-data %}
+{% if not readonly %}
+<form id="create-paysheet" method="POST" enctype="multipart/form-data" class="form-inline mb-0" target="_blank">
+    {% csrf_token %}
+    <div class="form-row mb-0">
+        <div class="form-group col col-auto">
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="id_customer">Клиент</label>
+                </div>
+                {{ creation_form.customer }}
+            </div>
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="id_location">Объект</label>
+                </div>
+                {{ creation_form.location }}
+            </div>
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="id_worker">Подотчетное лицо</label>
+                </div>
+                {{ creation_form.accountable_person }}
+            </div>
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="id_worker">Рабочий</label>
+                </div>
+                {{ creation_form.worker }}
+            </div>
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="id_worker">С</label>
+                </div>
+            {{ interval_form.first_day }}
+            </div>
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="id_worker">По</label>
+            </div>
+            {{ interval_form.last_day }}
+            </div>
+        </div>
+    </div>
+</form>
+<div class="row mt-1 mb-3">
+    <div class="col col-auto">
+        <button class="btn btn-sm btn-outline-primary" type="submit" form="create-paysheet" formaction="{% url 'the_redhuman_is:paysheet_v2_do_create' %}">
+            Создать зарплатную ведомость
+        </button>
+    </div>
+    <div class="col col-auto pl-0">
+        <button class="btn btn-sm btn-outline-primary" type="submit" form="create-paysheet" formaction="{% url 'the_redhuman_is:prepayment_create' %}">
+            Создать авансовую ведомость
+        </button>
+    </div>
+    <div class="col col-auto pl-0">
+        <button class="btn btn-sm btn-outline-primary" type="submit" form="create-paysheet" formaction="{% url 'the_redhuman_is:paysheet_create_yesterday_paysheets' %}">
+            Создать вчерашние ведомости и авансы
+        </button>
+    </div>
+    <div class="col col-auto pl-0">
+        <button class="btn btn-sm btn-outline-primary" type="submit" form="create-paysheet" formaction="{% url 'the_redhuman_is:paysheet_create_requested' %}" formtarget="_self">
+            Создать ведомости по заявкам работников
+        </button>
+    </div>
+    <div class="col col-auto pl-0">
+        <button class="btn btn-sm btn-outline-primary" type="submit" form="create-paysheet" formaction="{% url 'the_redhuman_is:paysheet_bulk_create_paysheets' %}">
+            Создать ведомости за неделю
+        </button>
+    </div>
+</div>
+{% endif %}
+
+<table id="paysheets-table" class="table rh-table-full-width table-hover">
+    <thead>
+    <tr>
+        <th>№</th>
+        <th>Тип</th>
+        <th>Дата создания</th>
+        <th>Клиент</th>
+        <th>Интервал с</th>
+        <th>Интервал по</th>
+        <th>Сумма</th>
+        <th>Выдано<br>меньше на</th>
+        <th>Подотчетное лицо</th>
+        <th>Статус</th>
+        {% if not readonly %}
+        <th></th>
+        {% endif %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for paysheet in paysheets %}
+        <tr {% if not paysheet.is_closed and paysheet.expired %}class="paysheet-warning"{% endif %}>
+            <td>{{ paysheet.pk }}</td>
+            <td>З/П</td>
+            <td>{{ paysheet.timestamp|date:'d.m.Y' }}</td>
+            <td>
+                <a href="{% url 'the_redhuman_is:paysheet_v2_show' paysheet.id %}">{{ paysheet.short_description }}</a>
+            </td>
+            <td>{{ paysheet.first_day|date:'d.m.Y' }}</td>
+            <td>{{ paysheet.last_day|date:'d.m.Y' }}</td>
+            <td class="text-right">{{ paysheet.total_amount|separate }}</td>
+            {% with amount=paysheet.total_amount|sub:paysheet.issued_amount %}
+            <td class="text-right">{{ amount|separate }}</td>
+            {% endwith %}
+            <td>{{ paysheet.accountable_name }}</td>
+            <td>
+                {% if paysheet.is_closed %}
+                    Закрытая
+                {% else %}
+                    {% if paysheet.money_issued %}
+                    Сумма выдана
+                    {% else %}
+                    Новая
+                    {% endif %}
+                {% endif %}
+            </td>
+            {% if not readonly %}
+            <td>
+                {% if not paysheet.is_closed %}
+                <form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:paysheet_v2_remove' pk=paysheet.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    {% for prepayment in prepayments %}
+        <tr {% if not prepayment.is_closed and prepayment.expired %}class="paysheet-warning"{% endif %}>
+            <td>{{ prepayment.pk }}</td>
+            <td>Аванс</td>
+            <td>{{ prepayment.timestamp|date:'d.m.Y' }}</td>
+            <td>
+                <a href="{% url 'the_redhuman_is:prepayment_show' prepayment.id %}">{{ prepayment.short_description }}</a>
+            </td>
+            <td>{{ prepayment.first_day|date:'d.m.Y' }}</td>
+            <td>{{ prepayment.last_day|date:'d.m.Y' }}</td>
+            <td class="text-right">{{ prepayment.total_amount|separate }}</td>
+            {% with amount=prepayment.total_amount|sub:prepayment.issued_amount %}
+            <td class="text-right">{{ amount|separate }}</td>
+            {% endwith %}
+            <td>{{ prepayment.accountable_name }}</td>
+            <td>
+                {% if prepayment.is_closed %}
+                    Закрытая
+                {% else %}
+                    {% if prepayment.money_issued %}
+                    Сумма выдана
+                    {% else %}
+                    Новая
+                    {% endif %}
+                {% endif %}
+            </td>
+            {% if not readonly %}
+            <td>
+                {% if not prepayment.is_closed %}
+                <form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:prepayment_remove' pk=prepayment.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger" type="submit">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+
+<script>
+$(document).ready(function () {
+    $.fn.dataTable.moment('DD.MM.YYYY');
+    $("#paysheets-table").DataTable(
+        {
+            "fixedHeader": {
+                header: true,
+                footer: true
+            },
+            "order": [[2, "desc"]],
+            "processing": true,
+            "jQueryUI": true,
+            "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+            "sPaginationType": "full_numbers",
+            "oLanguage": {
+                "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                "sSearch": "Поиск:",
+                "sZeroRecords": "Ничего не найдено - извините",
+                "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                "sInfoFiltered": "(filtered from _MAX_ total records)",
+                "oPaginate": {
+                    "sFirst": "Первая",
+                    "sNext": ">",
+                    "sPrevious": "<",
+                    "sLast": "Последняя",
+                }
+            },
+            "orderCellsTop": true,
+            {% if not readonly %}
+             columnDefs: [{targets: -1, orderable: false}]
+            {% endif %}
+        }
+    );
+});
+</script>
+{% endblock %}

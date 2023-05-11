@@ -1,0 +1,25 @@
+.tooltipBlue {
+    padding: 1px;
+    border-radius: 1px;
+    border: 1px solid #55aafffa;
+}
+
+.tooltipBlueSelected {
+    padding: 3px;
+    border-radius: 1px;
+    border: 3px solid #55aafffa;
+    z-index: 101;
+}
+
+.tooltipRed {
+    padding: 1px;
+    border-radius: 1px;
+    border: 1px solid #e44444fa;
+}
+
+.tooltipRedSelected {
+    padding: 3px;
+    border-radius: 1px;
+    border: 3px solid #e44444fa;
+    z-index: 100;
+}

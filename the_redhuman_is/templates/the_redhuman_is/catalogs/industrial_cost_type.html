@@ -1,0 +1,39 @@
+{% extends './index.html' %}
+{% load static %}
+
+{% block catalog-table %}
+    <h1>Виды производственных расходов</h1>
+    <table id="catalog-table" class="table rh-table-full-width">
+        <thead>
+             <tr>
+                 <th>Наименование</th>
+             </tr>
+        </thead>
+
+        <tbody>
+            {% for industrial_cost_type in industrial_cost_types %}
+                <tr>
+                    <td width="250">{{ industrial_cost_type.name }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <form action="{% url 'the_redhuman_is:manage_industrial_cost_type' %}" method="post" id="entity_form">
+        {% csrf_token %}
+
+        <input id="id_form-TOTAL_FORMS" name="form-TOTAL_FORMS" type="hidden" value="1">
+        <input id="id_form-INITIAL_FORMS" name="form-INITIAL_FORMS" type="hidden" value="0">
+        <input id="id_form-MIN_NUM_FORMS" name="form-MIN_NUM_FORMS" type="hidden" value="0">
+        <input id="id_form-MAX_NUM_FORMS" name="form-MAX_NUM_FORMS" type="hidden" value="1">
+
+        <table id="entity-table">
+
+        </table>
+
+        <br>
+
+        <button id="add_row_button" class="btn btn-sm btn-primary"><i class="far fa-plus-square"></i></button>
+        <button id="save_button" type="submit" class="btn btn-sm btn-primary">Сохранить</button> <span id="result"></span>
+    </form>
+{% endblock %}

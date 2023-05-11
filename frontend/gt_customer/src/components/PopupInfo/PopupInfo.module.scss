@@ -1,0 +1,48 @@
+.popup {
+  width: 500px;
+  height: auto;
+  position: relative;
+  padding-top: 40px;
+  padding-left: 40px;
+  word-break: break-word;
+}
+
+.popupContent {
+  margin-right: 40px;
+}
+
+.popupClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.popupTitle {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 24px;
+  line-height: 28px;
+  margin-bottom: 40px;
+}
+
+.button {
+  margin-bottom: 40px;
+  margin-top: 40px;
+  width: 149px;
+  height: 48px;
+  background: #000000;
+  border-radius: 6px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+}

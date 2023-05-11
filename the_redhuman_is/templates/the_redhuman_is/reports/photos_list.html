@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block extra_html_head %}
+<style>
+img {
+    max-width: 85%;
+}
+</style>
+{% endblock %}
+
+{% block buttons %}
+<h4>Список фото</h4>
+{% endblock %}
+
+{% block obj-data %}
+<div class="container">
+{% for photo in photos %}
+<div class="row">
+    <div class="col">
+        <a href="{{ photo.image.url }}">
+            <img src="{{ photo.image.url }}"/>
+        </a>
+    </div>
+</div>
+{% endfor %}
+</div>
+{% endblock %}

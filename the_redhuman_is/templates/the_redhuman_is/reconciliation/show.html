@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block extra_html_head %}
+{% load static %}
+{% load human_readable_values %}
+{% load crispy_forms_tags %}
+{% load thumbnail %}
+{{ invoice_form.media }}
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<link rel="stylesheet" href="{% static 'css/crispy_filter.css' %}">
+{% endblock %}
+
+{% block buttons %}
+{% if not reconciliation.is_closed %}
+<form id="deletion-form" method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:reconciliation_remove' pk=reconciliation.id %}">
+    {% csrf_token %}
+</form>
+{% endif %}
+<h4>
+{% if not reconciliation.is_closed %}
+<button type="submit" class="btn btn-outline-danger" form="deletion-form" title="Удалить сверку">
+    <i class="fa fa-trash"></i>
+</button>
+{% endif %}
+    {{ reconciliation }} {% if legal_entity and not reconciliation.is_closed %}({{ legal_entity.short_name }}) {% endif %}<a href="{% url 'the_redhuman_is:report_customer_summary' %}?customers={{ reconciliation.customer.pk }}&amp;first_day={{ reconciliation.first_day|date:'d.m.Y' }}&amp;last_day={{ reconciliation.last_day|date:'d.m.Y' }}&amp;layout_type=shift" target="_blank">(сводка по клиенту за интервал)</a>
+</h4>
+<h4>
+    <a href="{% url 'the_redhuman_is:backoffice_delivery_interval_report' %}?first_day={{ reconciliation.first_day|date:'d.m.Y' }}&amp;last_day={{ reconciliation.last_day|date:'d.m.Y' }}&amp;customer={{ reconciliation.customer.pk }}&amp;location={{ reconciliation.location.pk }}">Отчет доставки за интервал</a>
+</h4>
+<h4>
+    <a href="{% url 'the_redhuman_is:reconciliation_extra_documents' reconciliation.pk %}" target="_blank">Дополнительные документы</a>
+</h4>
+<h4>
+    <a href="/rf/delivery/?first_day={{ reconciliation.first_day|date:'d.m.Y' }}&amp;last_day={{ reconciliation.last_day|date:'d.m.Y' }}&amp;customer={{ reconciliation.customer.pk }}&amp;customer_resolution=suspicious{% if reconciliation.location %}&amp;location={{ reconciliation.location.pk }}{% endif %}" target="_blank">Подозрительные заявки ({{ suspicious_requests_count }} шт.)</a>
+</h4>
+<h4>
+    <a href="/rf/delivery/?first_day={{ reconciliation.first_day|date:'d.m.Y' }}&amp;last_day={{ reconciliation.last_day|date:'d.m.Y' }}&amp;customer={{ reconciliation.customer.pk }}&amp;customer_resolution=normal{% if reconciliation.location %}&amp;location={{ reconciliation.location.pk }}{% endif %}" target="_blank">Заявки на рассмотрении ({{ normal_requests_count }} шт.)</a>
+</h4>
+{% if not legal_entity and not reconciliation.is_closed %}
+<div class="alert alert-danger">
+    Чтобы завершить сверку, необходимо установить у клиента юрлицо.
+</div>
+{% endif %}
+{% endblock %}
+
+{% block obj-data %}
+<div class="row mb-4">
+    <div class="col col-auto">
+        <form name="imageForm" method="POST" action="{% url 'the_redhuman_is:reconciliation_add_image' reconciliation.pk %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div>
+                <label for="id_image">Добавить сканы актов: </label>
+            </div>
+            <input id="id_image" type="file" name="image" accept="image/png, image/jpeg" multiple/>
+        </form>
+    </div>
+    <div class="col col-auto">
+    {% for photo in photos %}
+        {% thumbnail photo.image "x200" as im %}
+            <a href="{{ photo.image.url }}" target="_blank"><img class="rounded img-thumbnail img-sm" src="{{ im.url }}"></a>
+        {% endthumbnail %}
+    {% endfor %}
+    </div>
+</div>
+{% if not reconciliation.is_closed and user_can_block %}
+<div class="row">
+<div class="form-group col col-auto pt-1">
+    <form class="form-inline" method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:reconciliation_block_operations' reconciliation.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="block" value="{% if operations_blocked %}false{% else %}true{% endif %}"/>
+        <button class="btn btn-sm btn-outline-primary ml-1" type="submit">
+            {% if operations_blocked %}Разблокировать{% else %}Заблокировать{% endif %} операции
+        </button>
+    </form>
+</div>
+</div>
+{% endif %}
+{% if legal_entity and reconciliation.is_ready_to_close and not reconciliation.is_closed %}
+<div class="row">
+<div class="form-group col col-auto pt-1">
+    <form class="form-inline" method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:reconciliation_close' reconciliation.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="legal_entity" value="{{ legal_entity.pk }}"/>
+        <button class="btn btn-sm btn-outline-primary ml-1" type="submit">Завершить сверку</button>
+    </form>
+</div>
+</div>
+{% endif %}
+<div class="form-group">
+    <h5>Счет на оплату</h5>
+    <form action="{% url 'the_redhuman_is:reconciliation_set_invoice' reconciliation.pk %}" method="post">
+        {% csrf_token %}
+        {% crispy invoice_form %}
+    </form>
+</div>
+<div class="row">
+<div class="col">
+<h5>Сводка</h5>
+<table class="table table-hover rh-table">
+    <tbody>
+        <tr><td>Всего часов отработано</td><td class="text-right">{{ reconciliation.total_hours|separate }}</td></tr>
+        <tr><td>Всего рублей начислено клиенту</td><td class="text-right">{{ reconciliation.sum_total|separate }}</td></tr>
+        <tr><td>Всего штрафов</td><td class="text-right">{{ reconciliation.sum_fines|separate }}</td></tr>
+    </tbody>
+</table>
+</div>
+</div>
+
+<div class="row">
+<div class="col">
+<h5>Счета</h5>
+<table class="table table-hover rh-table">
+    <thead>
+        <tr>
+            <th>Имя</th>
+            <th>Сальдо</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for account in accounts %}
+        <tr>
+            <td><a href="{% url 'the_redhuman_is:operating_account_detail' account.pk %}">{{ account }}</a></td>
+            <td class="text-right">{{ account.turnover_saldo|separate }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+
+<div class="row">
+<div class="col">
+<h5>Список табелей за интервал</h5>
+<table class="table table-hover rh-table">
+    <thead>
+        <tr>
+            <th>№</th>
+            <th>Дата</th>
+            <th>Смена</th>
+            <th>Закрыт</th>
+            <th>Объект</th>
+            <th>Рабочих по заявке</th>
+            <th>Рабочих по табелю</th>
+            <th>Кол-во часов</th>
+            <th>Начислено клиенту</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for timesheet in reconciliation.timesheets %}
+        <tr>
+            <td>{{ timesheet.pk }}</td>
+            <td>
+                <a href="{% url 'the_redhuman_is:timesheet' pk=timesheet.pk %}" target="_blank">{{ timesheet.sheet_date|date:"d.m.y" }}</a>
+            </td>
+            <td>{{ timesheet.sheet_turn }}</td>
+            <td>{% if timesheet.is_executed %}Да{% else %}Нет{% endif %}</td>
+            <td>{{ timesheet.cust_location.location_name }}</td>
+            <td class="text-right">{{ timesheet.customerorder.number_of_workers }}</td>
+            <td class="text-right">{{ timesheet.worker_turnouts__count }}</td>
+            <td class="text-right">{{ timesheet.worker_turnouts__hours_worked__sum }}</td>
+            <td class="text-right">{{ timesheet.customer_amount|separate }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+
+<div class="row">
+<div class="col">
+<h5>Список штрафов за интервал</h5>
+<table class="table table-hover rh-table">
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Сумма</th>
+            <th>Комментарий</th>
+            <th>Фигурант</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fine in reconciliation.fines %}
+        <tr>
+            <td>{{ fine.timepoint|date:"d.m.y" }}</td>
+            <td class="text-right"><a href="{% url 'admin:finance_operation_change' fine.pk %}" target="_blank">{{ fine.amount|separate }}</a></td>
+            <td>{{ fine.comment }}</td>
+            <td><a href="{% url 'the_redhuman_is:worker_detail' fine.worker_pk %}" target="_blank">{{ fine.worker_name }}</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(
+    function() {
+        $("#id_image").change(
+            function () {
+                document.imageForm.submit();
+            }
+        );
+    }
+);
+</script>
+{% endblock %}

@@ -1,0 +1,46 @@
+<div class="alert alert-danger" id="snils-error" style="display: none;"></div>
+<div class="alert alert-success" id="snils-ok" style="display: none;"></div>
+<label>СНИЛС</label>
+<form id="snils-form" method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:worker_save_snils' worker.pk %}">
+    {% csrf_token %}
+    <input id="redirect_input" type="hidden" name="redirect_url"/>
+    <table>
+        <tr><th><label for="id_number">Номер:</label></th><td><input id="id_number" name="number" value="{{ worker.snils.number }}" type="text" required="true"/></td></tr>
+        <tr><th><label for="id_date_of_issue">Дата регистрации:</label></th><td><input id="id_date_of_issue" name="date_of_issue" value="{{ worker.snils.date_of_issue|date:'d.m.Y' }}" placeholder="ДД.ММ.ГГГГ" type="text" required="true"/></td></tr>
+        <tr><th><label for="id_image">Фото:</label></th><td><input id="id_image" name="image" type="file" /></td></tr>
+    </table>
+    <button class="btn btn-sm btn-primary" type="submit">Сохранить</button>
+</form>
+<script>
+document.getElementById('redirect_input').value = window.location.href;
+
+$('#snils-form').on(
+    'submit',
+    function() {
+        $('#snils-error').hide();
+        $('#snils-ok').hide();
+        $.ajax({
+            type: 'POST',
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            url: this.action,
+            data: $(this).serialize(),
+            success: function(data) {
+                if (data.ok) {
+                    $('#snils-ok').show();
+                    $('#snils-ok').html('Сохранено');
+                } else if (data.error) {
+                    $('#snils-error').show();
+                    $('#snils-error').html(data.error);
+                }
+            },
+            error: function(data) {
+                $(modal_body_id).html('Что-то пошло не так.');
+            }
+        });
+
+        return false;
+    }
+);
+</script>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=989b59f8-689c-4833-8d44-829e18827691" type="text/javascript"></script>
+	<style>
+        html, body, #map {
+            width: 100%; height: 100%; padding: 0; margin: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+ymaps.ready(function () {
+    var myMap = new ymaps.Map(
+        'map', {
+            center: [{{center_lat}}, {{center_lon}}],
+            zoom: {{ zoom }}
+        }, {
+            searchControlProvider: 'yandex#search'
+        }
+    );
+    
+    {% for points_set in points %}
+        {% for point in points_set.pts %}
+        {
+            let links = '';
+            {% for link in point.3 %}
+                links += '<a target="_blank" href="{{ link.1 }}">{{ link.0 }}</a> ';
+            {% endfor %}
+
+            myMap.geoObjects.add(
+                new ymaps.Placemark(
+                    [{{ point.1 }}, {{ point.0 }}],
+                    {
+                        iconCaption: '{{ point.2 }}',
+                        balloonContent: links + '{{ point.2 }}'
+                    },
+                    {
+                        preset: '{{ points_set.preset }}',
+                    }
+                )
+            );
+
+        }
+        {% endfor %}
+    {% endfor %}
+
+    let polyline = new ymaps.Polyline([
+    {% for point in points.0.pts %}
+        [{{ point.1 }}, {{ point.0 }}],
+    {% endfor %}
+    ], {
+    }, {
+        // Задаем опции геообъекта.
+        // Отключаем кнопку закрытия балуна.
+        balloonCloseButton: false,
+        // Цвет линии.
+        strokeColor: "#000000",
+        // Ширина линии.
+        strokeWidth: 2,
+        // Коэффициент прозрачности.
+        strokeOpacity: 0.3
+    });
+
+    myMap.geoObjects.add(polyline);
+});
+</script>
+</body>
+</html>

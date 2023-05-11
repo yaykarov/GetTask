@@ -1,0 +1,30 @@
+<form  name="{{ id_suffix }}" id="id_form_{{ id_suffix }}" method="POST" enctype="multipart/form-data">
+
+    {% csrf_token %}
+
+    <div class="mt-1 mb-1">
+        <label for="id_entry_{{ id_suffix }}">Количество выходов: </label>
+        <input id="id_entry_{{ id_suffix }}" type="text" value="{{ entry }}" name="bonus" />
+    </div>
+
+    <div class="mr-1" style="float:left">
+        Выходов меньше:
+        <div id="{{ id_suffix }}_1_calc_container" class="entry_container">
+            {{ calc1|safe }}
+        </div>
+    </div>
+
+    <div style="float: left">
+        Выходов больше:
+        <div id="{{ id_suffix }}_2_calc_container" class="entry_container">
+            {{ calc2|safe }}
+        </div>
+    </div>
+
+    <div style="clear: both"></div>
+</form>
+
+<script>
+    setupCalculatorForm("{{ id_suffix }}_1");
+    setupCalculatorForm("{{ id_suffix }}_2");
+</script>

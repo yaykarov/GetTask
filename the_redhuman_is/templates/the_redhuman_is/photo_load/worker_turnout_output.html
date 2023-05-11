@@ -1,0 +1,12 @@
+{% for item in items %}
+<div class="form-group row">
+    {% with item_name_part='output_'|add:index|add:'_'|add:timesheet_pk|add:'_'|add:worker_pk|add:'_' %}
+    <label for="id_{{ item_name_part }}{{ item.box_type.pk }}" class="col-form-label col-lg-4">
+        {{ item.box_type.name }}
+    </label>
+    <div class="col-lg-8">
+        <input id="id_{{ item_name_part }}{{ item.box_type.pk }}" class="form-control" name="{{ item_name_part }}{{ item.box_type.pk }}" value="{{ item.amount }}" type="text">
+    </div>
+    {% endwith %}
+</div>
+{% endfor %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<h4>Вкусвилл: должники с 01.07 по 15.08</h4>
+{% endblock %}
+
+{% block obj-data %}
+<table class="rh-table table table-hover">
+<thead>
+    <tr>
+        <th>Рабочий</th>
+        <th>Долг</th>
+        <th>Штрафы</th>
+        <th>Вычеты</th>
+        <th>Вычеты минус долг</th>
+    </tr>
+</thead>
+<tbody>
+    {% for w, s, f, d, r in debtors %}
+    <tr>
+        <td>
+            <a href="{% url 'the_redhuman_is:worker_detail' pk=w.pk %}">{{w}}</a>
+        </td>
+        <td class="text-center">{{ s }}</td>
+        <td class="text-center">{{ f }}</td>
+        <td class="text-center">{{ d }}</td>
+        <td class="text-center">{{ r }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endblock %}

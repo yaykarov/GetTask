@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+  {% block buttons %}
+    {% if notice %}
+      <label>Добавить фото справки в {{ notice }}</label>
+    {% endif %}
+  {% endblock %}
+
+  {% block obj-data %}
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+        <button type="submit">Сохранить</button>
+    </form>
+  {% endblock %}

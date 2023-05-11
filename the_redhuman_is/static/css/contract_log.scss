@@ -1,0 +1,33 @@
+.rh-card{
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  &:hover{
+    box-shadow: $btn-box-shadow;
+    filter: brightness(98%);
+  }
+  &.rh-danger{
+    border-color: $danger !important;
+    background: lighten(red, 40%);
+    &.selected{
+      color: $danger;
+    }
+  }
+  &.selected{
+    background: $white !important;
+  }
+  a{
+    color: inherit;
+    width: 100%;
+    height: 100%;
+    &:hover{
+      text-decoration: none;
+    }
+  }
+  .title{
+    font-size: small;
+  }
+  .count{
+    font-size: xx-large;
+    font-weight: bold;
+  }
+}

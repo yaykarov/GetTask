@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+
+{% load humanize %}
+{% load mathfilters %}
+{% load static %}
+
+{% block extra_html_head %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+{% endblock %}
+{% block obj-data %}
+
+{% endblock %}
+
+{% block buttons %}
+
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-auto mx-auto">
+            <table id="total_turn" class="table rh-table">
+                <tr>
+                    <th>Оборот</th><th>Среднее</th>
+                </tr>
+                <tr>
+                    <td>{{ total_amount|intcomma }}</td><td>{{ average_amount|floatformat:1 }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+<table id="operations" class="table rh-table-full-width">
+    <caption><label>{{ caption }}</label></caption>
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Дебет-Счет</th>
+            <th>Кредит-Счет</th>
+            <th>Комментарий</th>
+            <th>Сумма</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for operation in operations %}
+        <tr class="finance-account-{% if operation.direction == 1 %}debet{% elif operation.direction == -1 %}credit{% endif %}">
+            <td>{{ operation.timepoint|date:"d.m.Y" }}</td>
+            <td>{{ operation.debet }}</td>
+            <td>{{ operation.credit }}</td>
+            <td>{{ operation.comment }}</td>
+            <td>{{ operation.amount }}</td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan='5' align='center'>нет операций</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+
+{% block scripts %}
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $("#operations").DataTable({"lengthMenu": [[100, 50, 20, -1], [100, 50, 20, "All"]]});
+        $("#total_turn").DataTable();
+    });
+</script>
+
+{% endblock %}

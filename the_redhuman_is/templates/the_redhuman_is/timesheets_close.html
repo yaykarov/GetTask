@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+
+{% endblock %}
+
+{% block table-data %}
+    <div class="row">
+        <div class="col-auto mx-auto">
+            <table class="table rh-table">
+                <tr>
+                    <th>Дата</th>
+                    <th>Смена</th>
+                    <th>Заказчик</th>
+                    <th>Объект</th>
+                    <th>Контактное лицо</th>
+                    <th>Бригадир</th>
+                    <th>Кол-во рабочих</th>
+                    <th>Добавить фото</th>
+                    <th>Добавить часы</th>
+                </tr>
+                {% for timesheet in timesheets %}
+                    <tr>
+                        <td><a href="{% url 'the_redhuman_is:timesheet' pk=timesheet.pk %}">{{ timesheet.sheet_date|date:"d.m.Y" }}</a></td>
+                        <td>{{ timesheet.sheet_turn }}</td>
+                        <td>{{ timesheet.customer }}</td>
+                        <td>{{ timesheet.cust_location }}</td>
+                        <td>{{ timesheet.customer_repr }}</td>
+                        <td>{{ timesheet.foreman }}</td>
+                        <td>{{ timesheet.turnouts_number }}</td>
+                        <th><a href="{% url 'the_redhuman_is:new_timesheet_to_close' pk=timesheet.pk %}" class=" btn btn-outline-primary">+ фото</a></th>
+                        <td><a href="{% url 'the_redhuman_is:add_hours' pk=timesheet.pk %}" class="btn btn-outline-primary">+ часы</a></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

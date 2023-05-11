@@ -1,0 +1,35 @@
+{% extends 'base.html' %}{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Табель</title>
+</head>
+
+{% block buttons %}
+    <h4>Добавить/дополнить табель</h4>
+{% endblock %}
+{% block obj-data %}
+    <div class="row">
+        <div class="col-auto">
+            <form method="POST" enctype='multipart/form-data'>
+                {% csrf_token %}
+                <table>
+                    {{ tform.as_table }}
+                </table>
+                <br>
+                <button type="submit" class="btn btn-primary btn-lg btn-block">Сохранить</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+    <link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+    <script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+    <script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+    <script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+    <script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+    <script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+{% endblock %}
+
+</html>

@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_html_head %}
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<style>
+.cell-danger {
+    background-color: #FEE;
+}
+</style>
+{% endblock %}
+
+{% block buttons %}
+<h4>Своевременность обработки табелей</h4>
+{% endblock %}
+
+{% block obj-data %}
+<form method="GET">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            <label for="id_manager">{{ filter_form.manager.label }}</label>
+            {{ filter_form.manager }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.first_day }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.last_day }}
+        </div>
+        <div class="form-group col col-auto">
+            {{ filter_form.delay_type }}
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+                Показать
+            </button>
+        </div>
+    </div>
+</form>
+
+<table class="table rh-table table-hover">
+<thead>
+    <tr>
+        <th>Клиент</th>
+        {% for day in days %}
+            <th>{{ day|date:"d.m" }}</th>
+        {% endfor %}
+        <th>
+            Просрочено
+        </th>
+    </tr>
+</thead>
+<tbody>
+{% for location, shift, row, row_sum in data %}
+<tr>
+    <td>{{ location.customer_id }}&nbsp;-&nbsp;{{ location.location_name }}&nbsp;-&nbsp;{{ shift }}</td>
+    {% for timesheets in row %}
+    <td>
+        {% for timesheet, delay in timesheets %}
+        <div {% if delay != '0' and delay != '-' %}class="cell-danger" {% endif %}>
+            <a href="{% url 'the_redhuman_is:timesheet' timesheet.pk %}">
+                <center>{{ delay|safe }}</center>
+            </a>
+        </div>
+        {% endfor %}
+    </td>
+    {% endfor %}
+    <td {% if row_sum != 0 %}class="cell-danger"{% endif %}>
+    <center>{{ row_sum }}</center>
+    </td>
+</tr>
+{% endfor %}
+<tr>
+    <td>Просрочено за день</td>
+    {% for expired in expired_by_day %}
+    <td {% if expired != 0 %}class="cell-danger"{% endif %}>
+        <center>{{ expired }}</center>
+    </td>
+    {% endfor %}
+    <td {% if expired_overall != 0 %}class="cell-danger"{% endif %}>
+        <center>{{ expired_overall }}</center>
+    </td>
+</tr>
+</tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+{{ filter_form.media }}
+<script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+<script>
+$(document).ready(function() {
+    $('td > .cell-danger').parent().css('background-color', '#FEE');
+});
+</script>
+{% endblock %}

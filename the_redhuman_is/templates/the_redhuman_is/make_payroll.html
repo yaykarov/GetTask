@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load humanize static %}
+{% load mathfilters %}
+
+{% block extra_html_head %}
+{{ payment_interval_form.media }}
+{% endblock %}
+
+{% block obj-data %}
+<div class="container">
+<div class="row">
+    <div class="col col-12 col-lg-6">
+        <form action="" method="POST">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group col col-auto">
+                    <strong><label for="id_worker">Работник: </label></strong>
+                    {{ form.worker }}
+                </div>
+                <div class="form-group col col-auto">
+                    <button type="submit" class="btn btn-sm btn-primary">Выбрать</button>
+                </div>
+            </div>
+        </form>
+
+        {% if worker %}
+        <label>ФИО: <a href="{% url 'the_redhuman_is:worker_detail' pk=worker.pk %}">{{ worker }}</a></label>
+        <table class="table table-hover rh-table" style="margin-bottom: 32px;">
+          <tr>
+            <th>Начислено</th>
+            <th>Выплачено</th>
+            <th>К выплате</th>
+          </tr>
+          <tr>
+            {% if total_wc_ops >= 0 %}
+            <td>{{ total_wc_ops|intcomma }}</td>
+            <td>{{ total_wd_ops|intcomma }}</td>
+            <td>{{ worker_saldo|intcomma }}</td>
+            {% else %}
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            {% endif %}
+          </tr>
+        </table>
+        {% endif %}
+
+        <form action="" method="post" id="payment_form">
+            {% csrf_token %}
+            <table>
+            {{ form_tp.as_table }}
+            </table>
+            <div class="form-row form-inline">
+                <div class="form-group col col-auto">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" for="id_first_day">
+                                Интервал оплаты
+                            </label>
+                        </div>
+                    </div>
+                    {{ payment_interval_form.first_day }}
+                    {{ payment_interval_form.last_day }}
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col col-auto">
+                    <button type="submit" class="btn btn-sm btn-primary">Начислить</button>
+                </div>
+            </div>
+        </form>
+
+        <strong>Взаиморасчеты</strong>
+        <table class="table table-hover rh-table">
+            <tr>
+              <th>Дата</th>
+              <th>Комментарий</th>
+              <th>Начислено</th>
+              <th>Выплачено</th>
+            </tr>
+            {% for w_op in w_ops %}
+              <tr>
+                {% if "26." in w_op.debet.fullname %}
+                <td>{{ w_op.timepoint|date:"d.m.Y" }}</td>
+                <td>{{ w_op.comment }}</td>
+                <td>{{ w_op.amount|intcomma }}</td>
+                <td>0,0</td>
+                {% endif %}
+                {% if "50." in w_op.credit.fullname %}
+                <td>{{ w_op.timepoint|date:"d.m.Y" }}</td>
+                <td>{{ w_op.comment }}</td>
+                <td>0,0</td>
+                <td>{{ w_op.amount|intcomma }}</td>
+                {% endif %}
+              </tr>
+            {% endfor %}
+          </table>
+    </div>
+    <div class="col col-12 col-lg-6">
+        <strong>Операции по 26 счету</strong>
+        <table class="table table-hover rh-table">
+          <tr>
+            <th>Дата</th>
+            <th>Проводка</th>
+            <th>Комментарий</th>
+            <th>Начислено</th>
+            <th>Кредит по 26<br>(как правило пусто)</th>
+          </tr>
+        {% for k_op in k_ops %}
+        <tr>
+            <td>{{ k_op.timepoint|date:"d.m.Y" }}</td>
+            <td>Д{{ k_op.debet }}__К{{ k_op.credit }}</td>
+            <td class="comment-cell">{{ k_op.comment }}</td>
+            {% if "26." in k_op.debet.fullname %}
+            <td>{{ k_op.amount|intcomma }}</td>
+            <td></td>
+            {% else %}
+            <td></td>
+            <td>{{ k_op.amount|intcomma }}</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+        </table>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+<link href="{% static 'css/make-payroll.css' %}" type="text/css" media="all" rel="stylesheet" />
+
+{{form.media}}
+
+{% endblock %}

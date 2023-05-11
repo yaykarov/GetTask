@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+    {% if success %}
+        <div class="alert alert-success" role="alert">
+            Данные успешно загружены
+        </div>
+        {% if errors %}
+            <h5>Ошибки при загрузке</h5>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Строка</th>
+                    <th>Ошибка</th>
+                </tr>
+                </thead>
+                {% for item in errors %}
+                    <tr class="table-danger">
+                        <td>{{ item.row }}</td>
+                        <td>{{ item.error }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+    {% endif %}
+    <div class="container h-100 d-flex justify-content-center">
+        <div class="jumbotron my-auto">
+            <div class="card">
+                <div class="card-header">
+                    Импорт соискателей
+                </div>
+                <div class="card-body">
+                    <form id="importApplicant" method="post" action="{% url 'applicants:import' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">Выберите файл</label>
+                            <input name="file" type="file" class="form-control" id="file" required>
+                        </div>
+                    </form>
+                    <button class="btn btn-primary" type="submit" form="importApplicant">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

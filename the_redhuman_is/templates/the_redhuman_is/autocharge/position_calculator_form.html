@@ -1,0 +1,24 @@
+<style>
+.section {
+    margin-top: 15px;
+}
+</style>
+
+<div class="section">
+    <table>
+        <tr><th colspan="2">Калькулятор</th></tr>
+        {{ position_form.as_table }}
+    </table>
+    <div id="position_calc_container">
+        {{ position_calc|safe }}
+    </div>
+</div>
+
+<button class="section btn btn-sm btn-primary" id="id_save_position_calculator">Сохранить</button>
+<label class="section" id="id_save_position_calculator_result"></label>
+
+<script>
+setupPositionCalculatorForm("position");
+
+setupPositionSubmitButton("#id_save_position_calculator");
+</script>

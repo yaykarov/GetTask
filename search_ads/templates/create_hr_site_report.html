@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_html_head %}
+<!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">-->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+
+</style>
+{% endblock %}
+{% block buttons %}
+<!--<a href="{% url 'search_ads:hr_reports' %}"><button class="btn btn-primary">Все отчеты</button></a>-->
+{% endblock %}
+
+{% block cform1 %}
+<div id="app">
+    <div class="row">
+        <div class="s6 col">
+            <form action="{% url 'search_ads:get_search_results' %}" name="search_params" class="search_params" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="">Выберите биржу</label>
+                    <div class="section prop_container">
+                        <label><input type="checkbox" name="site[]" value="birge"><span>Бирге</span></label>
+                        <label><input type="checkbox" name="site[]" value="avito"><span>Авито</span></label>
+                        <label><input type="checkbox" name="site[]" value="rabota"><span>Работа</span></label>
+                        <label><input type="checkbox" name="site[]" value="jerdesh"><span>Жердеш</span></label>
+                        <label><input type="checkbox" name="site[]" value="jobmo"><span>Job-mo</span></label>
+                    </div>
+                </div>
+                <div class="input-field form-group">
+                    <label for="">Число позиций отслеживания</label>
+                    <input type="text" name="maxpos" value="30" class="validate">
+                </div>
+                <div class="section form-group">
+                    <label><input type="checkbox" name="in_vacancies"><span> Искать в вакансиях</span></label>
+                    <label><input type="checkbox" name="save" value="true" checked><span> Сохранить в базу данных</span></label>
+                </div>
+                <div class="manager form-group">
+                    <ul>
+                        <!--<li v-for="manager in manager_names()">${manager}</li>-->
+                    </ul>
+                    <label for="">Менеджеры</label>
+                    <select-auto name="managers" v-bind:datasource="manager_names"></select-auto>
+                </div>
+                <div class="keywords form-group">
+                    <label for="">Ключевые слова</label>
+                    <!--<div class="chips keyword"><input type="text" class="chip_add" ></div>-->
+                    <chip-simple name="keywords" ></chip-simple>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-primary" v-on:click="search">Искать</button>
+                    <div id="search-progress"  style="visibility: hidden; word-wrap: normal">
+                        Загрузка...
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col s6">
+            <table class="table compact managers">
+                <label for="">Менеждеры</label>
+                <thead>
+                    <th>Имя</th>
+                    <th>Телефон</th>
+                </thead>
+                <tbody>
+                    <tr v-for="(key, value) in manager_phones">
+                        <td>${value}</td>
+                        <td>${key}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div>
+                <button class="btn btn-sm btn-outline-primary" data-target="#manager-modal" data-toggle="modal"><i class="material-icons">add</i></button>
+            </div>
+            <modal-fade modal-id="manager-modal"  v-bind:modal-active="managerModalActive" v-on:modal-ok="createManager()">
+                <form class="toCreateForm" action="{% url 'search_ads:new_hr_account' %}" method="POST">
+                    {% csrf_token %}
+                    <table class="table compact">
+                        <tr>
+                            <td>Имя</td><td><input type="text" name="name"></td>
+                        </tr>
+                        <tr>
+                            <td>Телефон</td><td><input type="text" name="phone" class="validate"></td>
+                        </tr>
+                    </table>
+                    <div id="error-log" style="color: red"></div>
+                </form>
+            </modal-fade>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12" v-if="form_sent">
+            <h5>Результаты поиска</h5>
+            <table class="res_table table">
+                <thead>
+                    <tr class="table_header">
+                        <!--  ["keyword","position","site","date_time","id_or_tel","title","price","url"]; -->
+                        <th>Ключевое слово</th>
+                        <th>Позиция в выдаче по поисковому запросу</th>
+                        <th>Сайт</th>
+                        <th>Работник</th>
+                        <th>дата и время</th>
+                        <th>телефон</th>
+                        <th>Заголовок</th>
+                        <th>Ссылка</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="row in ads">
+                        <td>${ row.keyword }</td>
+                        <td>${ row.position }</td>
+                        <td>${ row.site }</td>
+                        <td>${ row.account.name }</td>
+                        <td><span v-if="row.date_time_str">${ row.date_time_str }</span><span v-else>-</span></td>
+                        <td>${ row.account.phone }</td>
+                        <td>${ row.title }</td>
+                        <td><a v-bind:href="row.ref">Ссылка</a></td>
+                    </tr>
+                    <tr>
+                        <td colspan="8">Нет объявлений</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-lg-12">
+            <h5><a href="#" class="badge badge-primary" v-on:click="show_all_reports = !show_all_reports"><span v-show="show_all_reports">-</span><span v-show="!show_all_reports">+</span></a>Все отчеты</h5>
+            <div id="debug"></div>
+            <table id="catalog-table" class="table cell-border compact" v-show="show_all_reports">
+                <thead>
+                    <tr>
+                        <th>Номер отчета</th>
+                        <th>Дата создания отчета</th>
+                        <th>Сайты</th>
+                        <th>Менеджеры</th>
+                        <th>Число позиций поиска</th>
+                        <th>Тег</th>
+                        <th>Имя менеджера</th>
+                        <th>Сайт</th>
+                        <th>Телефон</th>
+                        <th>Дата создания объявления</th>
+                        <th>Заголовок</th>
+                        <th>Ссылка</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="ad in reports">
+                        <td>${ ad.report.pk }</td>
+                        <td>${ ad.report.create_time }</td>
+                        <td>${ ad.report.sites }</td>
+                        <td>${ ad.report.managers }</td>
+                        <td>${ ad.report.positionCount }</td>
+                        <td>${ ad.keyword }</td>
+                        <td>${ ad.account.name }</td>
+                        <td>${ ad.site }</td>
+                        <td>${ ad.account.phone }</td>
+                        <td>${ ad.date_time_str }</td>
+                        <td>${ ad.title }</td>
+                        <td><a v-if="ad.ref" v-bind:href="ad.ref">Ссылка</a><span v-else>-</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="{% static 'js/vue-chip.js' %}"></script>
+<script>
+    function f(e) {
+        console.log(e);
+    }
+    let app = new Vue({
+        delimiters: ["${","}"],
+        el: "#app",
+        computed: {
+            manager_names() {
+                let result = [];
+                for (manager of this.managers)
+                    if (!result.includes(manager.name))
+                        result.push(manager.name);
+                return result.join(", ");
+            },
+            manager_phones() {
+                let result = {};
+                for (let manager of this.managers)
+                    if (Object.keys(result).includes(manager.name)) {
+                        result[manager.name] += ", " + manager.phone;
+                    }
+                    else
+                        result[manager.name] = manager.phone;
+                return result;
+            }
+        },
+        methods: {
+            search(e) {
+                e.preventDefault();
+                let form = $("[name=search_params].search_params");
+                $("#search-progress").attr("style","Загрузка...");
+                let data = form.serializeArray();
+                let method = form.attr('method');
+                let url = form.attr('action');
+                this.key = Math.round(Math.random()*1000000000);
+                data.push({name: 'key', value: this.key});
+                $.ajax({url: url, method: method, data: data, success: this.show_search});
+                this.status_timer = setInterval(this.getReportStatus,1000);
+            },
+            getReportStatus() {
+                $.ajax({url: this.url, data: {key: this.key}, success: this.showReportStatus, error: this.showReportError});
+            },
+            showReportStatus(data) {
+                $("#search-progress").text(data.status);
+            },
+            showReportError(data) {
+                $("#search-progress").text("Ошибка");
+                clearInterval(this.status_timer);
+            },
+            show_search(data) {
+                clearInterval(this.status_timer);
+                this.form_sent = true;
+                this.load_reports();
+                $("#search-progress").attr("style","visibility: hidden");
+                //$("#debug").html(JSON.stringify(data));
+                this.ads = data.ads;
+            },
+            load_reports() {
+                let url = "{% url 'search_ads:hr_reports' %}";
+                $.ajax({
+                    url: url, data: {},
+                    success: this.show_reports
+                });
+            },
+            show_reports(data) {
+                //$("#debug").html(JSON.stringify(data));
+                this.reports = data.ads;
+            },
+            createManager() {
+                let form = $("form.toCreateForm");
+                params = form.serializeArray();
+                url = form.attr("action");
+                $.ajax({url: url, method: form.attr('method'),
+                    data: params,
+                    success: this.show_new_manager,
+                    error: function(data) {
+                        $("#error-log").text(data);
+                    }
+                });
+            },
+            show_new_manager(data) {
+               //$("#error-log").text(JSON.stringify(data));
+                if (data.success == true) {
+                    this.managers.push({name: data.message.split(", ")[0], phone: data.message.split(", ")[1]});
+                }
+                else
+                    $("#error-log").text(data.message);
+            }
+        },
+        data: {
+            reports: [],
+            ads: [],
+            key: null,
+            form_sent: false,
+            status_timer: null,
+            show_all_reports: false,
+            url: "{% url 'search_ads:report_status' %}",
+            managers: [{%for account in accounts%}{name:"{{account.name}}", phone: "{{account.phone}}"},{%endfor%}],
+            managerModalActive: false,
+        },
+    });
+    $(document).ready(function($) {
+        //load_managers();
+        //$(".chips").chips();
+        //init_chips();
+        //$(".modal").modal();
+        app.load_reports();
+        $(".search_params").on("submit",function(){
+            keywords = $(".keywords .keyword")[0];
+            for (item of $(keywords).find(".chip")) {
+                keyword = document.createElement("input");
+                keyword.type = "hidden";
+                keyword.name = "keyword[]";
+                keyword.value = item.innerText.replace("close","");
+                keywords.appendChild(keyword);
+           }
+           managers = $(".manager .keyword")[0];
+           for (item of $(managers).find(".chip")) {
+                manager = document.createElement("input");
+                manager.type = "hidden";
+                manager.name = "manager[]";
+                manager.value = item.innerText.replace("close","");
+                managers.appendChild(manager);
+           }
+           $("#search-progress").attr("style","visibility: visible");
+        });
+        $(".js-add-manager").on("click",function(){
+            form = $("#add_manager form")[0]
+            url = form.getAttribute("action")
+            data = $("#add_manager form").serializeArray()
+            $.ajax({url: url, method: "POST",
+                data: data,
+                success: function(data) {
+                    console.log("error:");
+                    console.log(data);
+                    //load_managers();
+                },
+                error: function(data) {
+                    console.log(data);
+                }
+            });
+
+        })
+    });
+    function load_managers() {
+        $(".managers tr").remove();
+        $.ajax({
+            url: "{% url 'search_ads:hr_site_accounts' %}",
+            method: "GET",
+            data: {},
+            success: function(response) {
+                data = response['accounts'];
+                keys = ["name","phone"];
+                table = $(".managers")[0];
+                for (row of data) {
+                    tr = document.createElement('tr');
+                    tr.className = "table_row";
+                    for (key of keys) {
+                        td = document.createElement("td");
+                        td.innerHTML = row[key];
+                        td.className = key;
+                        tr.appendChild(td);
+                    }
+                    table.appendChild(tr);
+                }
+                //init_chips();
+            }
+        })
+    }
+    function init_chips() {
+        managers = $(".managers .name");
+        names = {};
+        for (manager of managers) {
+            mname = manager.innerText;
+            names[mname]=null;
+        }
+        $(".chips-autocomplete").chips({
+            autocompleteOptions: {
+                data: names,
+                limit: Infinity,
+                minLength: 1
+            }
+        });
+    }
+</script>
+{% endblock %}

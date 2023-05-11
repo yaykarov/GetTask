@@ -1,0 +1,15 @@
+label {
+    margin-right: 0.5em;
+}
+.form-group{
+    margin-right: 1em;
+}
+.form-row{
+    margin-left: 0.35em;
+}
+.btn-action {
+    margin-right: 0.5em;
+}
+.asteriskField {
+    display: none;
+}

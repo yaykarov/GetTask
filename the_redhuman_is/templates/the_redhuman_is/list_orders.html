@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block obj-data %}
+    <div class="row">
+        <div class="col-auto">
+            <table class="table rh-table">
+                <tr>
+                    <th>Дата подачи</th>
+                    <th>Дата вызова</th>
+                    <th>Время вызова</th>
+                    <th>Клиент</th>
+                    <th>Обьект</th>
+                    <th>Смена</th>
+                    <th>Кол-во по запросу</th>
+                    <th>Наличие табеля</th>
+                    <th>Добавить табель</th>
+                </tr>
+                {% for order in orders %}
+                    <tr>
+                        {% if order.timesheet__count >= 1 %}
+                            <td>{{ order.bid_date_time|date:"d.m.Y"  }}</td>
+                            <td>{{ order.on_date|date:"d.m.Y"  }}</td>
+                            <td>{{ order.on_time|date:"H:i" }}</td>
+                            <td>{{ order.customer }}</td>
+                            <td>{{ order.cust_location }}</td>
+                            <td>{{ order.bid_turn }}</td>
+                            <td>{{ order.number_of_workers }}</td>
+                            <td>да ({{ order.timesheet__count }})</td>
+                            <th><a href="{% url 'the_redhuman_is:new_timesheet' pk=order.pk %}"><i class="far fa-plus-square"></i></a></th>
+                        {% else %}
+                            <td>{{ order.bid_date_time|date:"d.m.Y"  }}</td>
+                            <td>{{ order.on_date|date:"d.m.Y"  }}</td>
+                            <td>{{ order.on_time|date:"H:i" }}</td>
+                            <td>{{ order.customer }}</td>
+                            <td>{{ order.cust_location }}</td>
+                            <td>{{ order.bid_turn }}</td>
+                            <td>{{ order.number_of_workers }}</td>
+                            <td>нет ({{ order.timesheet__count }})</td>
+                            <th><a href="{% url 'the_redhuman_is:new_timesheet' pk=order.pk %}"><i class="far fa-plus-square"></i></a></th>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

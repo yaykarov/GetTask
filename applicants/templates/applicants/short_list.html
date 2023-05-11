@@ -1,0 +1,5 @@
+{% for applicant, url in applicants %}
+<a href="{{ url }}" class="list-group-item list-group-item-action details_cell">
+    {{ applicant.phone }}, {{ applicant.name }}, {{ applicant.author }}
+</a>
+{% endfor %}

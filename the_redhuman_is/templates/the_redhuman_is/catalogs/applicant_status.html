@@ -1,0 +1,217 @@
+{% extends './index.html' %}
+{% load static %}
+{% block catalog-table %}
+    <div id="vue-app" class="ml-2">
+        <h1>Статусы</h1>
+        <div class="row">
+            <div class="col col-auto">
+                <div class="card">
+                    <div class="card-header px-1 py-1">
+                        Родители
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action px-1 py-1" v-for="item in statuses" v-bind:class="{'active':(item.id === selectedParent.id)}">
+                            <status v-bind:status="item" v-on:select="clickParent" v-on:update-status="getStatuses" v-on:deleted-status="deletedStatus"></status>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action px-1 py-1">
+                            <add-status v-on:added-status="getStatuses"></add-status>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col col-auto">
+                <div class="card">
+                    <div class="card-header px-1 py-1">
+                        Потомки
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action px-1 py-1" v-for="item in selectedParent.children" v-bind:class="{'active':(item.id === selectedChild.id)}">
+                            <status v-bind:status="item" v-bind:parent='selectedParent.id' v-on:deleted-status="deletedStatus"></status>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action px-1 py-1">
+                            <add-status-child v-bind:parent="selectedParent" v-bind:statuses="filteredStatuses" v-on:update-status="getStatuses"></add-status-child>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script type="text/x-template" id="addStatusTemplate">
+        <div class="input-group input-group-sm">
+            <input type="text" class="form-control mr-0" v-model="statusName"  @keyup.enter="addStatus(statusName)">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="button" title="Добавить" @click="addStatus(statusName)" :disabled="!statusName">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
+    </script>
+    <script type="text/x-template" id="addStatusChildTemplate">
+        <div class="input-group input-group-sm">
+            <select class="custom-select" v-model="selected">
+                <option disabled value="">Выберите статус</option>
+                <option :value="item.id" v-for="item in statuses">[[ item.name ]]</option>
+            </select>
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="button" title="Добавить" @click="addStatus(selected)" :disabled="!selected || !hasParent">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
+    </script>
+    <script type="text/x-template" id="statusTemplate">
+        <div class="row">
+            <div class="col d-flex align-items-center" @click="$emit('select', status)">
+                [[ status.name ]]
+            </div>
+            <div class="col-auto" @click="$emit('select', status)" v-if="status.children">
+                <div class="badge badge-primary badge-pill" v-if="status.children">[[ status.children.length ]]</div>
+            </div>
+            <div class="col-auto form-check form-check-inline" v-if="status.children">
+                <input class="form-check-input" type="checkbox" v-model="status.is_initial" @change="updateStatus">
+                <label class="form-check-label">Начальный</label>
+            </div>
+            <div class="col-auto form-check form-check-inline" v-if="status.children">
+                <input class="form-check-input" type="checkbox" v-model="status.is_final" @change="updateStatus">
+                <label class="form-check-label">Выход</label>
+            </div>
+            <div class="col-auto" v-if="status.children">
+                <input class="form-text" type="text" v-model="status.order" @change="updateStatus">
+            </div>
+            <div class="col-auto">
+                <div title="Удалить статус" @click="deleteStatus">
+                    <i class="fas fa-trash text-danger"></i>
+                </div>
+            </div>
+        </div>
+    </script>
+    <script type="text/javascript" src="{% static 'js/vue-dev.js' %}"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script type="text/javascript" src="{% static 'js/bootstrap-modal.js' %}"></script>
+    <script>
+        window.getCookieRegex = function (name) {
+            match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            if (match) return match[2];
+        };
+        axios.defaults.headers.common['X-CSRFToken'] = window.getCookieRegex('csrftoken');
+        Vue.component('status', {
+            props: ['status', 'parent'],
+            template: '#statusTemplate',
+            delimiters: ['[[', ']]'],
+            data(){
+                return {checked: false}
+            },
+            methods: {
+                updateStatus: function () {
+                    let url = "{% url 'the_redhuman_is:catalog_applicant_status_manage_ajax' %}";
+                    let data = {
+                        'status': this.status.id,
+                        'is_initial': this.status.is_initial,
+                        'is_final': this.status.is_final,
+                        'order': this.status.order
+                    };
+                    axios.post(url, data).then(response => this.$emit('update-status', status));
+                },
+                deleteStatus: function () {
+                    let url = "{% url 'the_redhuman_is:catalog_applicant_status_delete_ajax' %}";
+                    let data = {'status': this.status.id, 'parent': this.parent};
+                    axios.post(url, data).then(response => this.$emit('deleted-status', status));
+                }
+            }
+        });
+        Vue.component('add-status', {
+            props: ['parent'],
+            template: '#addStatusTemplate',
+            delimiters: ['[[', ']]'],
+            data() {
+                return {statusName: ''}
+            },
+            methods: {
+                addStatus: function (newStatus) {
+                    let url = "{% url 'the_redhuman_is:catalog_applicant_status_manage_ajax' %}";
+                    let data = {'new_status': newStatus};
+                    if (this.parent) {
+                        data['parent'] = this.parent.id;
+                    }
+                    axios.post(url, data).then(response => {
+                        this.$emit('added-status', response.data);
+                        this.statusName = '';
+                    });
+
+                }
+            }
+        });
+        Vue.component('add-status-child', {
+            props: ['parent', 'statuses'],
+            template: '#addStatusChildTemplate',
+            delimiters: ['[[', ']]'],
+            data() {
+                return {selected: ''}
+            },
+            methods: {
+                addStatus: function (status) {
+                    let url = "{% url 'the_redhuman_is:catalog_applicant_status_manage_ajax' %}";
+                    let data = {'status': status};
+                    if (this.parent) {
+                        data['parent'] = this.parent.id;
+                    }
+                    axios.post(url, data).then(response => this.$emit('update-status', response.data));
+                },
+
+            },
+            computed: {
+                hasParent: function () {
+                    return !(Object.keys(this.parent).length === 0)
+                }
+            },
+        });
+        let app = new Vue({
+            el: "#vue-app",
+            delimiters: ["[[", "]]"],
+            data: {
+                statuses: [],
+                selectedParent: Object,
+                selectedChild: Object,
+            },
+            methods: {
+                clickChild: function (el) {
+                    this.selectedChild = el;
+                },
+                clickParent: function (el) {
+                    this.selectedParent = el;
+                },
+                deletedStatus: function (deleted) {
+                    if (deleted.id == this.selectedParent.id){
+                        this.selectedParent = {};
+                    }
+                    this.getStatuses();
+                },
+                getStatuses: function () {
+                    let url = "{% url 'the_redhuman_is:catalog_applicant_status_ajax' %}";
+                    axios.get(url).then(response => {
+                        this.statuses = response.data;
+                        if (this.selectedParent.hasOwnProperty('id')) {
+                            this.selectedParent = this.statuses.find(i => i.id == this.selectedParent.id);
+                        }
+                    });
+                }
+            },
+            computed: {
+                filteredStatuses: function () {
+                    if (this.selectedParent.hasOwnProperty('id')) {
+                        return this.statuses.filter(
+                            function (e) {
+                                return this.findIndex(i => i.id === e.id) < 0 && !e.is_initial;
+                            },
+                            this.selectedParent.children
+                        )
+                    } else {return null}
+                }
+            },
+            mounted: function () {
+                this.getStatuses()
+            }
+        });
+    </script>
+{% endblock %}

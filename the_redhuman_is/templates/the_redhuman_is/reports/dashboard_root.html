@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load human_readable_values %}
+
+{% block extra_html_head %}
+<style>
+a {
+    float: right;
+}
+.highlighted-block {
+    background-color: #FEE;
+}
+</style>
+{{ search_form.media }}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block obj-data %}
+<div class="container mb-5">
+<div class="row">
+    <div class="col col-md-3">
+        <h4>Поиск рабочего с актуальной миграционкой</h4>
+    </div>
+</div>
+<form id="search-form" method="GET" target="_blank">
+
+<div class="row mb-2">
+<div class="col col-md-3">
+    {{ search_form.worker }}
+</div>
+</div>
+
+<div class="row">
+<div class="col col-md-3">
+    <button type="submit" class="btn btn-lg btn-outline-primary form-control">
+        Перейти
+    </button>
+</div>
+</div>
+
+</form>
+</div>
+
+<table class="table rh-table table-hover">
+<thead>
+    <tr>
+        <th>Название</th>
+        <th>Значение</th>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td>
+            Своевременность заполнения табеля до смены за {{ yesterday|date:"d.m" }}
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:timesheet_timeliness' %}?delay_type=before" target="_blank">
+                {{ ts_overdue_before }}
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Своевременность заполнения табеля после смены за {{ yesterday|date:"d.m" }}
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:timesheet_timeliness' %}?delay_type=after" target="_blank">
+                {{ ts_overdue_after }}
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Кол-во выходов за {{ yesterday|date:"d.m" }}, всего
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:workers_in_calendar' %}" target="_blank">
+                {{ yesterday_turnouts }}
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Кол-во заявок на {{ tomorrow|date:"d.m" }}, на день
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:report_customer_summary' %}?report_type=turnouts_ordered" target="_blank">
+                {{ tomorrow_ordered_day }}
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Кол-во заявок на {{ tomorrow|date:"d.m" }}, на ночь
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:report_customer_summary' %}?report_type=turnouts_ordered" target="_blank">
+                {{ tomorrow_ordered_night }}
+            </a>
+        </td>
+    </tr>
+    {% for manager, count in noderived %}
+    <tr class="highlighted-block">
+        <td>
+            Недопоставка за {{ yesterday|date:"d.m" }}, {{ manager }}
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:report_customer_summary' %}?report_type=noderived&manager={{ manager.pk }}" target="_blank">
+                {{ count}}
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+    {% for manager, count in absent %}
+    <tr>
+        <td>
+            Невыходы за {{ yesterday|date:"d.m" }}, {{ manager }}
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:report_absent' %}?manager={{ manager.pk }}" target="_blank">
+                {{ count}}
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+    {% for manager, count in unclosed_orders %}
+    <tr class="highlighted-block">
+        <td>
+            Незакрытые заявки, {{ manager }}
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:report_customer_summary' %}?report_type=unclosed_orders&manager={{ manager.pk }}" target="_blank">
+                {{ count}}
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td>
+            Кол-во новых выходов за {{ yesterday|date:"d.m" }}, всего
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:report_customer_summary' %}?report_type=new_turnouts&citizenship=all" target="_blank">
+                {{ new_turnouts }}
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Кол-во новых выходов за {{ yesterday|date:"d.m" }}, РФ
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:report_customer_summary' %}?report_type=new_turnouts&citizenship=russian" target="_blank">
+                {{ new_turnouts_russian }}
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Кол-во новых выходов за {{ yesterday|date:"d.m" }}, не РФ
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:report_customer_summary' %}?report_type=new_turnouts&citizenship=not_russian" target="_blank">
+                {{ new_turnouts_not_russian }}
+            </a>
+        </td>
+    </tr>
+    {% if customer_accrual %}
+    <tr>
+        <td>
+            Начислено клиентам за 01.{{ today|date:"m" }} - {{ today|date:"d.m" }}
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:report_customer_summary' %}?report_type=customer_money" target="_blank">
+                {{ customer_accrual|floatformat:2|separate }}
+            </a>
+        </td>
+    </tr>
+    {% endif %}
+    {% if worker_accrual %}
+    <tr>
+        <td>
+            Начислено рабочим за 01.{{ today|date:"m" }} - {{ today|date:"d.m" }}
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:report_customer_summary' %}?report_type=worker_money" target="_blank">
+                {{ worker_accrual|floatformat:2|separate }}
+            </a>
+        </td>
+    </tr>
+    {% endif %}
+    {% if unpayed %}
+    <tr>
+        <td>
+            Неоплаченные выходы за 01.{{ today|date:"m" }} - {{ today|date:"d.m" }}
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:workers_in_calendar' %}" target="_blank">
+                {{ unpayed|floatformat:2|separate }}
+            </a>
+        </td>
+    </tr>
+    {% endif %}
+</tbody> 
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateFormAction() {
+    let worker_id = $('#id_worker').val();
+    var action = '';
+    if (worker_id != null) {
+        action = "{% url 'the_redhuman_is:worker_detail' pk=123 %}".replace(
+            '123',
+            worker_id
+        );
+    }
+    $('#search-form').attr('action', action);
+}
+$(document).ready(
+    function() {
+        $('#id_worker').on('change', updateFormAction);
+    }
+);
+</script>
+{% endblock %}

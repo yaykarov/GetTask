@@ -1,0 +1,71 @@
+{% load human_readable_values %}
+<div class="font-weight-bold">
+    Детализация
+    <a href="{{ current_url }}&output=xls">
+        <button class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-download"></i>
+        </button>
+    </a>
+</div>
+<table id="calendar" class="table rh-table-full-width">
+<thead>
+    <tr>
+        <th rowspan="2">№</th>
+        <th rowspan="2">Рабочий</th>
+        <th rowspan="2">Паспорт</th>
+        <th rowspan="2">Остаток</th>
+        {% for day in days %}
+            <th>{{ day }}</th>
+        {% endfor %}
+        {% if show_average_performance %}
+            <th rowspan="2">Средняя выработка</th>
+        {% endif %}
+        <th rowspan="2">Кол-во выходов</th>
+        {% if show_sum %}
+            <th rowspan="2">Сумма</th>
+        {% endif %}
+    </tr>
+    <tr>
+        {% for day in week_days %}
+            <th>{{ day }}</th>
+        {% endfor %}
+    </tr>
+</thead>
+<tbody>
+    {% for index, worker, line, worked_days, average_perf, sum in grid %}
+    <tr>
+        <td>{{ index }}</td>
+        <td style="white-space: nowrap;"><a href="{% url 'the_redhuman_is:worker_detail' pk=worker.pk %}">{{ worker }}</a></td>
+        <td>{{ worker.passport|slice:"-4:" }}</td>
+        {% for cell in line %}
+            <td class="text-center">
+                {% if cell == '-' %}
+                    {{ cell }}
+                {% else %}
+                    {{ cell|floatformat:1|separate }}
+                {% endif %}
+            </td>
+        {% endfor %}
+        {% if show_average_performance %}
+            <td class="text-center">{{ average_perf|floatformat:1|separate }}</td>
+        {% endif %}
+        <td class="text-center">{{ worked_days }}</td>
+        {% if show_sum %}
+            <td class="text-center">{{ sum|floatformat:0|separate }}</td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+<script>
+/*function calendarCommaTargets() {
+    *var targets = [];
+    {% for day in days %}
+        targets.push(2 + {{ forloop.counter0 }});
+    {% endfor %}
+    {% if show_average_performance %}
+        targets[targets.length] = targets[targets.length - 1] + 1;
+    {% endif %}
+    return targets;
+}*/
+</script>

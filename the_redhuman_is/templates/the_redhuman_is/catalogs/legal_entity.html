@@ -1,0 +1,46 @@
+{% extends './index.html' %}
+
+{% block catalog-table %}
+<h1>Юрлица</h1>
+<form method="POST" id="entity-delete-form">
+    {% csrf_token %}
+</form>
+<table id="catalog-table" class="table rh-table-full-width">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>На УСН?</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entity in legal_entities %}
+        <tr>
+            <td>{{ entity.short_name }}</td>
+            <td>{% if entity.uses_simple_tax_system %}Да{% else %}Нет{% endif %}</td>
+            <td>
+                <button type="submit" class="btn btn-outline-danger" form="entity-delete-form" formaction="{% url 'the_redhuman_is:catalog_delete_legal_entity' entity.pk %}">
+                    <i class="fa fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<form action="{% url 'the_redhuman_is:catalog_create_legal_entity' %}" method="POST" class="form-inline ml-2">
+    {% csrf_token %}
+    <div class="input-group input-group-sm">
+        <div class="input-group-prepend">
+            <div class="input-group-text">Название</div>
+        </div>
+        <input type="text" class="form-control" name="name" id="entity_name_field" required></input>
+    </div>
+    <div class="form-check ml-2">
+        <input type="checkbox" class="form-check-input" id="simple_taxes_checkbox" name="simple_taxes"/>
+        <label class="form-check-label" for="simple_taxes_checkbox">Использовать УСН</label>
+    </div>
+    <button type="submit" class="btn btn-sm btn-primary ml-2">Создать юрлицо</button>
+</form>
+
+{% endblock %}

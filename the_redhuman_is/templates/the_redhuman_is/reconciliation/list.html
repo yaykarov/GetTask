@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load redhuman_is_tags %}
+
+{% load static %}
+{% load human_readable_values %}
+{% load crispy_forms_tags %}
+
+{% block extra_html_head %}
+{{ interval_form.media }}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.css"/>
+{{ creation_form.media }}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<link rel="stylesheet" href="{% static 'css/crispy_filter.css' %}">
+<style>
+.expired:not(:hover) {
+    background-color: #FEE !important;
+}
+.suspended:not(:hover) {
+    background-color: #ffcccc !important;
+}
+.gray {
+    color: #343a40 !important;
+    border-color: #343a40 !important;
+}
+</style>
+{% endblock %}
+
+{% block buttons %}
+<h4>Сверки (сумма: {{ total|separate }})</h4>
+{% endblock %}
+
+{% block obj-data %}
+{% include 'the_redhuman_is/core/modal.include' with link_class='cell' modal_id='dialog' modal_body_id='dialog_body' title='Акты' %}
+
+<div class="modal fade" id="creation_form_popup" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Новая сверка</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                {% crispy creation_form %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-between align-items-end mb-3">
+    <div class="col col-auto">
+        {% crispy filter.form %}
+    </div>
+    <div class="col col-auto">
+        <button
+            id="creation_form_button"
+            {% if can_create_delete %}
+            class="btn btn-sm btn-outline-primary mt-auto"
+            {% else %}
+            class="btn btn-sm btn-outline-dark mt-auto" disabled
+            {% endif %}
+            data-dismiss="modal">
+            Новая сверка
+        </button>
+    </div>
+</div>
+
+{% if creation_form.errors %}
+    <br/>
+    <div id="form_error" class="alert alert-block alert-danger">
+        {{ creation_form.errors.last_day.as_ul }}
+    </div>
+{% endif %}
+
+<table id="reconciliations-table" class="table rh-table-full-width table-hover">
+    <thead>
+    <tr>
+        <th class="text-center">№</th>
+        <th class="text-center">Дата создания</th>
+        <th class="text-center">Клиент</th>
+        <th class="text-center">Объект</th>
+        <th class="text-center">Сумма</th>
+        <th class="text-center">НДС факт</th>
+        <th class="text-center">НДС от суммы</th>
+        <th class="text-center">Фото акта</th>
+        <th class="text-center">Интервал с</th>
+        <th class="text-center">Интервал по</th>
+        <th class="text-center">Дедлайн</th>
+        <th class="text-center">Дата приостановки услуг</th>
+        <th class="text-center">Дата оплаты</th>
+        <th class="text-center">Статус</th>
+        <th class="text-center">Номер счета</th>
+        <th class="text-center">Дата счета</th>
+        <th class="text-center">Юр. лицо</th>
+        <th class="text-center">Подписан акт</th>
+        {% if not readonly %}
+        <th></th>
+        {% endif %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for reconciliation in reconciliations %}
+        <tr
+            {% if reconciliation.payment_date is None and reconciliation.deadline < today or reconciliation.deadline < reconciliation.payment_date %}
+                class="expired"
+            {% endif %}
+        >
+            <td class="text-center"><a href="{% url 'the_redhuman_is:reconciliation_show' reconciliation.id %}">{{ reconciliation.pk }}</a></td>
+            <td class="text-center">{{ reconciliation.timestamp|date:'d.m.Y' }}</td>
+            <td class="text-left">
+                <a href="{% url 'the_redhuman_is:customer_detail' pk=reconciliation.customer.pk %}">
+                    {{ reconciliation.customer.cust_name }}
+                </a>
+            </td>
+            <td class="text-left">{{ reconciliation.location.location_name|default_if_none:"--" }}</td>
+            <td class="text-right">
+                {{ reconciliation.sum_total|separate }}
+            </td>
+            <td class="text-right" {% if reconciliation.total_vat_accured != reconciliation.total_vat_calculated %}style="background: red;"{% endif %}>
+                {{ reconciliation.total_vat_accured|separate }}
+            </td>
+            <td class="text-right">
+                {{ reconciliation.total_vat_calculated|separate }}
+            </td>
+            <td class="text-center">
+                {% if reconciliation.is_ready_to_close %}
+                <a class="cell" href="{% url 'the_redhuman_is:reconciliation_photos' reconciliation.pk %}">
+                    <button class="btn btn-outline-primary">
+                        <i class="far fa-image"></i>
+                    </button>
+                </a>
+                {% endif %}
+            </td>
+            <td class="text-center">{{ reconciliation.first_day|date:'d.m.Y' }}</td>
+            <td class="text-center">{{ reconciliation.last_day|date:'d.m.Y' }}</td>
+            <td class="text-center">{{ reconciliation.deadline|date:'d.m.Y' }}</td>
+            <td class="text-center{% if reconciliation.suspension_date < today %} suspended{% endif %}">
+                {{ reconciliation.suspension_date|date:'d.m.Y'|default:"--" }}
+            </td>
+            <td class="text-center">{{ reconciliation.payment_date|date:'d.m.Y'|default:"--" }}</td>
+            <td class="text-center">{{ reconciliation.status|recon_status }}</td>
+            <td class="text-center">{{ reconciliation.invoice.number|default:"--" }}</td>
+            <td class="text-center">{{ reconciliation.invoice.date|date:'d.m.Y'|default:"--" }}</td>
+            <td class="text-left">{{ reconciliation.legal_entity|default_if_none:"?" }}</td>
+            <td class="text-center">
+                {% if reconciliation.is_closed %}
+                    Да
+                {% else %}
+                    Нет
+                {% endif %}
+            </td>
+            <td>
+                {% if not reconciliation.is_closed %}
+                <form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:reconciliation_remove' pk=reconciliation.id %}">
+                    {% csrf_token %}
+                    <button type="submit" {% if can_create_delete %}class="btn btn-outline-danger"{% else %}class="btn gray" disabled{% endif %}>
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+
+<script>
+
+function showPhotos(pk) {
+    alert(pk);
+}
+
+$(document).ready(function () {
+    $.fn.dataTable.moment('DD.MM.YYYY');
+    $('#reconciliations-table').DataTable({
+        "pageLength": 50,
+        "order": [],
+        "lengthMenu": [[100, 20, -1], [100, 20, "Все"]],
+        "stateSave": true,
+        "oLanguage": {
+            "sLengthMenu": "Отображено _MENU_ записей на страницу",
+            "sSearch": "Поиск:",
+            "sZeroRecords": "Ничего не найдено - извините",
+            "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+            "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+            "sInfoFiltered": "(filtered from _MAX_ total records)",
+            "oPaginate": {
+                "sFirst": "Первая",
+                "sNext": ">",
+                "sPrevious": "<",
+                "sLast": "Последняя",
+            },
+        },
+    });
+    function openCreateForm() {
+         $("#creation_form_popup").modal()
+    }
+    $("#creation_form_button").on("click", openCreateForm);
+    const url = new URL(window.location.href)
+    if (url.searchParams.get("create_for_customer") !== null) {
+        openCreateForm();
+    }
+});
+
+$("#id_filter_customer").change(function() {
+    $("#id_date_range").val("")
+});
+
+</script>
+{% endblock %}

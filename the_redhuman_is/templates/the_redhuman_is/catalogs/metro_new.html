@@ -1,0 +1,359 @@
+{% extends './index.html' %}
+{% load static %}
+{% block catalog-table %}
+    <style>
+        .active {
+            background-color: deepskyblue;
+        }
+        .clickable {
+            cursor: pointer;
+        }
+        .no-gutters {
+            margin-left: 0;
+            margin-right: 0;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .list-group {}
+        #vue-app {
+            padding: 20px;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+<div id="vue-app">
+    <h1>Метро</h1>
+    <bootstrap-modal modal-id="createModal" v-bind:modal-ok-callback="sendForm" v-bind:modal-ok-label="'Сохранить'" modal-title="Создание">
+        <form onsubmit="return false">
+            <table class="table">
+                <tr v-for="(value, key) in selectedForm">
+                    <td>[[value.label]]</td>
+                    <td v-if="value.type == 'text' || value.type == 'number' || value.type == 'color'"><input v-bind:type="value.type" v-model:value="value.value" v-bind:tabindex="key+1"></td>
+                    <td v-if="value.type == 'select' && value.name=='city'">
+                        <select v-model:value="value.value" v-bind:tabindex="key+1">
+                            <option v-for="city in cities" v-bind:value="city.pk">[[city.name]]</option>
+                        </select>
+                    </td>
+                    <td v-if="value.type == 'select' && value.name=='branch'">
+                        <select v-model:value="value.value" v-bind:tabindex="key+1">
+                            <option v-for="branch in metroBranches"
+                                    v-bind:value="branch.pk"
+                                    v-bind:style="{color: branch.color }">
+                            №[[branch.number]] "[[branch.name]]" г. [[branchCity(branch).name]]</option>
+                        </select>
+                    </td>
+                    <td class="error">[[value.error]]</td>
+                </tr>
+            </table>
+            <div><span v-for="error in errors.all" class="error">[[error]]</span></div>
+        </form>
+    </bootstrap-modal>
+    <bootstrap-modal modal-id="deleteModal" v-bind:modal-ok-callback="sendForm" v-bind:modal-ok-label="selectedRow ? 'Удалить':'ОК'" modal-title="Удаление" >
+        <span v-if="selectedRow">Удалить выбранную модель?</span><span v-else>Выберите модель</span>
+    </bootstrap-modal>
+    <bootstrap-modal modal-id="editModal" v-bind:modal-ok-callback="sendForm" v-bind:modal-ok-label="selectedRow ? 'Сохранить':'ОК'" modal-title="Редактирование">
+        <form onsubmit="return false">
+            <!--<div>[[JSON.stringify(selectedForm)]]</div>-->
+            <table class="table">
+                <tr v-for="(value, key) in selectedForm" v-if="selectedRow">
+                    <td>[[value.label]]</td>
+                    <td v-if="value.type == 'text' || value.type == 'number' || value.type == 'color'"><input v-bind:type="value.type" v-model:value="value.value" v-bind:tabindex="key"></td>
+                    <td v-if="value.type == 'select' && value.name=='city'">
+                        <select v-model:value="value.value" v-bind:tabindex="key+1">
+                            <option v-for="city in cities" v-bind:value="city.pk">[[city.name]]</option>
+                        </select>
+                    </td>
+                    <td v-if="value.type == 'select' && value.name=='branch'">
+                        <select v-model:value="value.value" v-bind:tabindex="key+1">
+                            <option v-for="branch in metroBranches" v-bind:value="branch.pk" v-bind:style="{color: branch.color }">№[[branch.number]] "[[branch.name]]"</option>
+                        </select>
+                    </td>
+                    <td class="error">[[value.error]]</td>
+                </tr>
+            </table>
+            <span v-if="selectedRow == null">Выберите из списка</span>
+            <div><span v-for="error in errors.all" class="error">[[error]]</span></div>
+        </form>
+    </bootstrap-modal>
+    <div class="row">
+        <div class="col-4 no-gutters">
+            <div class="header">
+                Города
+                <a href="#" class="badge badge-primary" data-toggle="modal" data-target="#createModal" v-on:click="selectedForm=cityForm; clearForm(); model='city';action='create';setFocus()"><i class="fa fa-plus"></i></a>
+                <a href="#" class="badge badge-danger" data-toggle="modal" data-target="#deleteModal" v-on:click="model='city';action='delete'"><i class="fa fa-trash"></i></a>
+                <a href="#" class="badge badge-primary" data-toggle="modal" data-target="#editModal" v-on:click="model='city';selectedForm=cityEditForm; clearForm(); setSelectedForm(); action='edit';setFocus()"><i class="fa fa-edit"></i></a>
+            </div>
+            <ul class="list-group">
+                <li v-for="city in cities" v-bind:class="cityListClass(city)" v-on:click="selectedCity = selectedCity == city.pk ? -1 : city.pk; formRowByName(branchForm,'city').value=city.pk">
+                    [[ city.name ]]
+                    <span class="badge badge-info">[[branchCount(city)]]</span>
+                </li>
+            </ul>
+
+        </div>
+        <div class="col-4 no-gutters">
+            <div class="header">
+                Ветки метро
+                <a href="#" class="badge badge-primary" data-toggle="modal" data-target="#createModal" v-on:click="model='branch';action='create';selectedForm=branchForm; clearForm();setFocus()"><i class="fa fa-plus"></i></a>
+                <a href="#" class="badge badge-danger" data-toggle="modal" data-target="#deleteModal" v-on:click="model='branch';action='delete'"><i class="fa fa-trash"></i></a>
+                <a href="#" class="badge badge-primary" data-toggle="modal" data-target="#editModal" v-on:click="model='branch';selectedForm=branchEditForm; clearForm(); setSelectedForm(); action='edit';setFocus()"><i class="fa fa-edit"></i></a>
+            </div>
+            <ul class="list-group">
+                <li v-for="branch in filteredBranches" v-bind:class="branchListClass(branch)" v-bind:style="{color: branch.color }" v-on:click="selectedBranch = selectedBranch == branch.pk ? -1 : branch.pk; formRowByName(stationForm,'branch').value=branch.pk">
+                    №[[branch.number]] [[ branch.name ]] <!--<span v-bind:style="'color': branch.color"></span>-->
+                    <span class="badge badge-info">[[stationCount(branch)]]</span>
+                </li>
+            </ul>
+        </div>
+        <div class="col-4 no-gutters">
+            <div class="header">
+                Станции метро
+                <a href="#" class="badge badge-primary" data-toggle="modal" data-target="#createModal"  v-on:click="selectedForm=stationForm; clearForm(); model='station';action='create';setFocus()"><i class="fa fa-plus"></i></a>
+                <a href="#" class="badge badge-danger" data-toggle="modal" data-target="#deleteModal" v-on:click="model='station';action='delete'"><i class="fa fa-trash"></i></a>
+                <a href="#" class="badge badge-primary" data-toggle="modal" data-target="#editModal" v-on:click="model='station';selectedForm=stationEditForm; clearForm(); setSelectedForm(); action='edit';setFocus()"><i class="fa fa-edit"></i></a>
+            </div>
+            <ul class="list-group">
+                <li v-for="station in filteredStations" v-bind:class="stationListClass(station)" class="list-group-item" v-bind:style="{color: stationBranch(station).color}"  v-on:click="selectedStation = selectedStation == station.pk ? -1 : station.pk">[[ station.name ]]</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+<script type="text/javascript" src="{% static 'js/vue-dev.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/bootstrap-modal.js' %}"></script>
+<script>
+    let url = "{% url 'the_redhuman_is:manage_metro_new' %}";
+    let app = new Vue({
+        el: "#vue-app",
+        delimiters: ["[[","]]"],
+        data: {
+            pressed: false,
+            cities: [],
+            selectedCity: -1,
+            selectedBranch: -1,
+            selectedStation: -1,
+            metroBranches: [],
+            metroStations: [],
+            cityForm: [{name: 'name', value: '', type: 'text', label: 'Имя'}],
+            branchForm: [
+                {name: 'name', value: '', type: 'text', label: 'Имя', error: ''},
+                {name: 'color', value: '#ff0000', type: 'color', label: 'Цвет ветки', error: ''},
+                {name: 'city', value: '', type: 'select', label: 'Город', error: ''},
+                {name: 'number', value: '', type: 'number', label: 'Номер', error: ''},
+            ],
+            stationForm: [
+                {name: 'name', value: '', type: 'text', label: 'Имя', error: ''},
+                {name: 'branch', value: '', type: 'select', label: 'Ветка', error: ''}
+            ],
+            cityEditForm: [
+                {name: 'name', value: '', type: 'text', label: 'Имя', error: ''},
+                {name: 'pk', value: '', type: "hidden", label: '', error: ''}
+                ],
+            branchEditForm: [
+                {name: 'name', value: '', type: 'text', label: 'Имя', error: ''},
+                {name: 'color', value: '#ff0000', type: 'color', label: 'Цвет', error: ''},
+                {name: 'city', value: '', type: 'select', label: 'Город', error: ''},
+                {name: 'number', value: '', type: 'number', label: 'Номер', error: ''},
+                {name: 'pk', value: '', type: "hidden", label: '', error: ''}
+            ],
+            stationEditForm: [
+                {name: 'name', value: '', type: 'text', label: 'Имя', error: ''},
+                {name: 'branch', value: '', type: 'select', label: 'Ветка', error: ''},
+                {name: 'pk', value: '', type: "hidden", label: '', error: ''}
+            ],
+            //selectedRow: null,
+            selectedForm: [],
+            model: "",
+            action: "no",
+            errors: []
+        },
+        methods: {
+            loadData() {
+                let url = "{% url 'the_redhuman_is:ajax_metro_new' %}";
+                $.ajax({url: url, method: "GET", success: this.showData });
+            },
+            showData(data) {
+                this.cities = data.cities;
+                this.metroBranches = data.branches;
+                this.metroStations = data.stations;
+            },
+            sendFormCallback(e) {
+                e.preventDefault();
+                this.pressed = true;
+                let modelData = {};
+                modelData = 'create,edit'.includes(this.action)  ? this.getSelectedForm() : this.selectedRow;
+                if (!modelData)
+                    return false;
+                let data = {...{model: this.model,action: this.action}, ...modelData};
+                //$(".modal-log").html(JSON.stringify(data));
+                $.ajax({url: url, method: "GET", data: data, success: this.showResults });
+                this.clearErrors();
+            },
+            showResults(data) {
+                this.pressed = false;
+                if (data.status === 'ok') {
+                    let modalId = "#" + this.action + "Modal";
+                    $(modalId).modal("toggle");
+
+                    //$(".modal-log").html("Изменения сохранены");
+                    if (data.action === 'create') {
+                        if (data.model === 'city')
+                            this.cities.push(data.entity);
+                        else if (data.model === 'branch')
+                            this.metroBranches.push(data.entity);
+                        else if (data.model === 'station')
+                            this.metroStations.push(data.entity);
+                    }
+                    else if (data.action === 'delete') {
+                        if (data.model === 'city')
+                            this.deleteEntity(this.cities, data.entity);
+                        else if (data.model === 'branch')
+                            this.deleteEntity(this.metroBranches, data.entity);
+                        else if (data.model === 'station')
+                            this.deleteEntity(this.metroStations, data.entity);
+                    }
+                    else if (data.action === 'edit') {
+                        if (data.model === 'city')
+                            this.replaceEntity(this.cities, data.entity);
+                        else if (data.model === 'branch')
+                            this.replaceEntity(this.metroBranches, data.entity);
+                        else if (data.model === 'station')
+                            this.replaceEntity(this.metroStations, data.entity);
+                    }
+                }
+                else {
+                    //let message = 'Ошибка:<br>';
+                    this.errors = data.errors;
+                    for (let key of Object.keys(data.errors)) {
+                        let row = this.formRowByName(this.selectedForm, key);
+                        if (row)
+                            row.error = data.errors[key];
+                    }
+                    //$(".modal-log").html(message);
+                }
+            },
+            deleteEntity(array, entity) {
+                let pk = Number.parseInt(entity.pk);
+                let index = array.indexOf(array.filter(e=>e.pk===pk)[0]);
+                if (index != -1)
+                    array.splice(index,1);
+            },
+            replaceEntity(array, entity) {
+                entity.pk = Number.parseInt(entity.pk);
+                let index = array.indexOf(array.filter(e=>e.pk===entity.pk)[0]);
+                if (index != -1)
+                    Vue.set(array, index, entity);
+            },
+            clearForm() {
+                for (let row of this.selectedForm)
+                    if (row.type !== 'select')
+                        row.value = row.type !== 'color' ? '' : "#ff0000";
+                this.clearErrors();
+            },
+            clearErrors() {
+                for (let row of this.selectedForm)
+                    row.error = '';
+                this.errors = '';
+            },
+            setFocus() {
+                setTimeout(this.setF,500);
+            },
+            setF() {
+                    if (this.action == 'create')
+                        $("#createModal input")[0].focus();
+                    else if (this.action == 'edit')
+                        $("#editModal input")[0].focus();
+                },
+            setSelectedForm() {
+                if (!this.selectedRow)
+                    return false;
+                for (let row of this.selectedForm) {
+                    if (this.selectedRow[row.name])
+                        row.value = this.selectedRow[row.name];
+                }
+            },
+            getSelectedForm() {
+                let result = {};
+                for (item of this.selectedForm) {
+                    result[item.name] = item.value;
+                }
+                return result;
+            },
+            branchCity(branch){
+                let result = this.cities.filter(c=>c.pk==branch.city);
+                if (result.length>0)
+                    return result[0];
+                else
+                    null;
+            },
+            stationBranch(station){
+                let result = this.metroBranches.filter(b=>b.pk==station.branch);
+                if (result.length>0)
+                    return result[0];
+                else
+                    null;
+            },
+            cityListClass(city) {
+                return {'list-group-item': true, clickable: true, active: this.selectedCity == city.pk }
+            },
+            branchListClass(branch) {
+                return {'list-group-item': true, clickable: true, active: this.selectedBranch == branch.pk }
+            },
+            stationListClass(station) {
+                return {'list-group-item': true, clickable: true, active: this.selectedStation == station.pk }
+            },
+            branchCount(city) {
+                return this.metroBranches.filter(b=>b.city==city.pk).length;
+            },
+            stationCount(branch) {
+                return this.metroStations.filter(s=>s.branch==branch.pk).length;
+            },
+            formRowByName(form,name) {
+                for (let row of form)
+                    if (row.name == name)
+                        return row;
+                return null;
+            }
+        },
+        computed: {
+            sendForm() {
+                if (this.action === 'create')
+                    return this.sendFormCallback;
+                else
+                    return this.selectedRow ? this.sendFormCallback : () => 'sd';
+            },
+            filteredBranches() {
+                if (this.selectedCity !== -1)
+                    return this.metroBranches.filter(b=>b.city==this.selectedCity);
+                else
+                    return this.metroBranches;
+            },
+            filteredStations() {
+                let stations = [];
+                if (this.selectedCity !== -1) {
+                    let branch_pks = [];
+                    for (branch of this.filteredBranches)
+                        branch_pks.push(branch.pk);
+                    stations = this.metroStations.filter(s => branch_pks.includes(s.branch));
+                }
+                else
+                    stations = this.metroStations;
+                if (this.selectedBranch !== -1)
+                    return stations.filter(s => s.branch === this.selectedBranch);
+                else
+                    return stations;
+            },
+            selectedRow() {
+                if (this.model === 'city')
+                    return this.selectedCity !== -1 ? this.cities.filter(o=>o.pk===this.selectedCity)[0] : null;
+                else if (this.model === 'branch')
+                    return this.selectedBranches !== -1 ? this.metroBranches.filter(o=>o.pk===this.selectedBranch)[0] : null;
+                else if (this.model === 'station')
+                    return this.selectedStation !== -1 ? this.metroStations.filter(o=>o.pk===this.selectedStation)[0] : null;
+            }
+        }
+    });
+    app.loadData();
+</script>
+{% endblock %}

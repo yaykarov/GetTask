@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block extra_html_head %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+{% endblock %}
+
+{% block buttons %}
+    <form id="table_filters">
+    <span>
+        {{ form.photo.label_tag }} {{ form.photo }}
+        {{ form.contract.label_tag }} {{ form.contract }}
+        {{ form.med_card.label_tag }} {{ form.med_card }}
+        {{ form.patent.label_tag }} {{ form.patent }}
+        {{ form.registration.label_tag }} {{ form.registration }}
+        {{ form.passport.label_tag }} {{ form.passport }}
+    </span>
+</form>
+{% endblock %}
+
+{% block scripts %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#main_table').DataTable({
+            "select": {
+              style: 'os',
+            },
+            "fixedHeader": {
+              header: true,
+              footer: false
+            },
+            "processing": true,
+            "jQueryUI": true,
+            "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+            "sPaginationType": "full_numbers",
+            "aoColumnDefs": [
+              { "sWidth": "50px", "aTargets": [ 1 ] },
+              { "sWidth": "50px", "aTargets": [ 2 ] },
+              { "sWidth": "30px", "aTargets": [ 3 ] },
+              { "sWidth": "30px", "aTargets": [ 4 ] },
+              { "sWidth": "30px", "aTargets": [ 5 ] },
+              { "sWidth": "30px", "aTargets": [ 6 ] },
+            ],
+            "oLanguage": {
+                          "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                          "sSearch": "Поиск:",
+                          "sZeroRecords": "Ничего не найдено - извините",
+                          "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                          "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                          "sInfoFiltered": "(filtered from _MAX_ total records)",
+                          "oPaginate": {
+                                        "sFirst": "Первая",
+                                        "sNext":">",
+                                        "sPrevious":"<",
+                                        "sLast":"Последняя",
+                                        }
+                          }
+            });
+
+        });
+        </script>
+    <script>
+        $( "#table_filters select" ).change(function() {
+      var request_data = {};
+      $( "#table_filters select" ).each( function() {
+            request_data[this.name] = this.value
+      });
+      var dt =  $('#main_table').DataTable();
+      dt.clear();
+      dt.draw();
+      global_workers_data = "";
+      jQuery.ajax({
+                     type:"GET",
+                     url:"{% url 'the_redhuman_is:ajax_workers_documents' %}",
+                     data: request_data,
+                     success: function(response){
+                        global_workers_data = response;
+                        count = 0;
+                         for (const [ key, value ] of Object.entries(response)) {
+                            dt.row.add([
+                                "<a href=\"worker/" + key + "/\" target=\"_blank\">" + value.name + "</a>",
+                                ( value.photos == true) ? "<a href=\"worker_photos/" + key + "/\" target=\"_blank\">да</a>" : "нет",
+                                ( value.contracts == true) ? "<a href=\"contracts_photos/" + key + "/\" target=\"_blank\">да</a>" : "нет",
+                                ( value.med_cards == true) ? "<a href=\"med_card_photos/" + key + "/\" target=\"_blank\">да</a>" : "нет",
+                                ( value.patents == true) ? "да" : "нет",
+                                ( value.registration == true) ? "да" : "нет",
+                                ( value.passport == true) ? "да" : "нет",
+                            ]);
+                        }
+                        dt.draw();
+                     }
+                });
+    });
+    </script>
+{% endblock %}
+
+{% block table-data %}
+    <div class="row">
+        <div class="col">
+            <table id="main_table" class="table rh-table-full-width">
+                <caption><label>Документы рабочих</label></caption>
+                <thead>
+                <tr>
+                    <th>Рабочий</th>
+                    <th>Фотографии</th>
+                    <th>Контракты</th>
+                    <th>Мед. Книжка</th>
+                    <th>Патенты</th>
+                    <th>Регистрации</th>
+                    <th>Паспорта</th>
+                </tr>
+                </thead>
+                <tbody>
+              {% for worker_id, worker in workers_data.items %}
+                <tr>
+                    <td><a href="{% url 'the_redhuman_is:worker_detail' pk=worker_id %}" target="_blank">{{ worker.worker }}</a></td>
+                    <td><a href="{% url 'the_redhuman_is:worker_photos' pk=worker_id %}" target="_blank">{% if worker.profile %} да {% else %} нет {% endif %}</a></td>
+                    <td>
+                        {% if worker.contracts %}
+                            <a href="{% url 'the_redhuman_is:contracts_photos' pk=worker_id %}" target="_blank">да</a>
+                        {% else %}
+                        нет
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if worker.medical_card %}
+                            <a href="{% url 'the_redhuman_is:med_card_photos' pk=worker_id %}" target="_blank">да</a>
+                        {% else %}
+                        нет
+                        {% endif %}
+                    </td>
+                    <td>{% if worker.patents %} да {% else %} нет {% endif %}</td>
+                    <td>{% if worker.registration %} да {% else %} нет {% endif %}</td>
+                    <td>{% if worker.passport %} да {% else %} нет {% endif %}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+              </table>
+        </div>
+    </div>
+{% endblock %}
+

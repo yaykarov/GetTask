@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block extra_html_head %}
+{{ filter_form.media }}
+{% endblock %}
+
+{% block buttons %}
+<h4>Ителла: сверки</h4>
+{% endblock %}
+
+{% block obj-data %}
+<h5 class="mt-1">К2К: проверить отчет КТУ (<a href="{% url 'the_redhuman_is:itella_k2k_sheets_list' %}">список загруженных отчетов)</a></h5>
+<div class="row mb-5">
+    <div class="col col-2">
+    <form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:itella_save_k2k_sheet' %}">
+        {% csrf_token %}
+        <input type="file" name="k2k_sheet" class="mb-2"/>
+        <button type="submit" class="btn btn-sm btn-outline-primary">Отправить отчет КТУ</button>
+    </form>
+    </div>
+</div>
+
+{% endblock %}
+

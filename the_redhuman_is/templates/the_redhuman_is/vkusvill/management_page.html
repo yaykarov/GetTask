@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block extra_html_head %}
+{{ filter_form.media }}
+{% endblock %}
+
+{% block buttons %}
+<h4>ВкусВилл: импорт данных</h4>
+
+{% endblock %}
+
+{% block obj-data %}
+<h5 class="mt-1">Файл с выработкой</h5>
+<div class="row mb-5">
+    <div class="col col-2">
+    <form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:vkusvill_save_and_check_performance_file' %}">
+        {% csrf_token %}
+        <input type="file" name="performance" class="mb-2"/>
+        <button type="submit" class="btn btn-sm btn-outline-primary">Отправить выработку</button>
+    </form>
+    </div>
+</div>
+
+<h5>Файл с итоговым пересортом (<a href="{% url 'the_redhuman_is:vkusvill_errors_files_list' %}">список уже импортированных файлов</a>)</h5>
+<form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:vkusvill_save_and_check_errors_file' %}" class="mb-5">
+    {% csrf_token %}
+    <div class="form-row mb-0 mt-0">
+        <div class="form-group col col-auto mb-0 mt-0">
+            {{ filter_form.first_day }}
+        </div>
+        <div class="form-group col col-auto mb-0 mt-0">
+            {{ filter_form.last_day }}
+        </div>
+    </div>
+    <div class="form-row mb-0 mt-2">
+        <input type="file" name="errors"/>
+    </div>
+    <div class="form-row mb-0 mt-2">
+        <button type="submit" class="btn btn-sm btn-outline-primary">Отправить пересорт</button>
+    </div>
+</form>
+
+<h5>Преобразование Югая</h5>
+<form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:vkusvill_make_ugai_transform' %}" class="mb-5">
+    {% csrf_token %}
+    <div class="form-row mb-0 mt-0">
+        <div class="form-group col col-auto mb-0 mt-0">
+            {{ filter_form.first_day }}
+        </div>
+        <div class="form-group col col-auto mb-0 mt-0">
+            {{ filter_form.last_day }}
+        </div>
+    </div>
+    <div class="form-row mb-0 mt-2">
+        <input type="file" name="errors"/>
+    </div>
+    <div class="form-row mb-0 mt-2">
+        <button type="submit" class="btn btn-sm btn-outline-primary">Провести преобразование (необратимо!)</button>
+    </div>
+</form>
+{% endblock %}
+

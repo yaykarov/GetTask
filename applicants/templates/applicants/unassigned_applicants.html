@@ -1,0 +1,7 @@
+{% for applicant in applicants %}
+<a href="{% url 'applicants:assign' applicant.pk %}" class="list-group-item list-group-item-action applicant-assign-link" title="Взять себе">
+    {{ applicant.name }},
+    {{ applicant.phone }}
+    {% if applicant.comment %}, {{ applicant.comment }} {% endif %}
+</a>
+{% endfor %}

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block extra_html_head %}
+{{ interval_form.media }}
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+{{ call_form.media }}
+<link rel="stylesheet" href="{% static 'css/crispy_filter.css' %}">
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+{% endblock %}
+
+{% block buttons %}
+<div class="row ml-1">
+    <div class="col">
+        <h5>МТС</h5>
+        <div>
+            <a href="{% url 'the_redhuman_is:delivery_workers_to_connect_to_mts'%}">
+                скачать файл для запроса прав
+            </a>
+        </div>
+    </div>
+</div>
+<div class="row ml-1 mt-4">
+    <div class="col">
+        <h5>Распределение по городам</h5>
+        <div>
+            <a href="{% url 'the_redhuman_is:delivery_cities_report'%}">
+                скачать распределение по городам
+            </a>
+        </div>
+    </div>
+</div>
+<div class="row ml-1 mt-4">
+    <div class="col">
+        <h5>Список на обзвон</h5>
+
+        {% crispy call_form %}
+    </div>
+</div>
+
+<div class="row ml-1 mt-4">
+<div class="col">
+    <h5>Кол-во подозрительных выходов</h5>
+</div>
+</div>
+
+<form method="GET" class="form-inline mb-0" target="_blank" action="{% url 'the_redhuman_is:backoffice_delivery_suspicious_turnouts_report' %}">
+    <div class="form-row mb-0">
+        <div class="form-group col col-auto">
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="id_first_day" style="margin-right: 0px;">С</label>
+                </div>
+            {{ interval_form.first_day }}
+            </div>
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="id_last_day" style="margin-left: 8px; margin-right: 0px;">По</label>
+            </div>
+            {{ interval_form.last_day }}
+            </div>
+            <button class="btn btn-sm btn-outline-primary ml-3" type="submit" >
+                Скачать
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+{% endblock %}

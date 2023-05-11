@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<h4>Результат грубой проверки файла с выработкой</h4>
+{% endblock %}
+
+{% block obj-data %}
+{% if not format_errors and not not_in_xls and not not_in_turnouts %}
+<h5>Ошибок нет.</h5>
+{% endif %}
+
+{% if format_errors %}
+<h5>Ошибки формата исходного файла</h5>
+<div class="row mb-4">
+    <div class="col col-auto">
+        <ul class="list-group">
+        {% for day, errors in format_errors.items %}
+            {% for error in errors %}
+                <li class="list-group-item">{{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+{% if not_in_xls %}
+<h5>Номера терминалов, которые есть в наших табелях, но их нет в файле</h5>
+<div class="row mb-4">
+    <div class="col col-auto">
+        <ul class="list-group">
+        {% for code, timesheets in not_in_xls %}
+            <li class="list-group-item">
+                {{ code }}:
+                {% for timesheet in timesheets %}
+                    <a href="{% url 'the_redhuman_is:timesheet' timesheet.pk %}">
+                        {{ timesheet.pk }}: {{ timesheet.sheet_date|date:'d.m.Y' }}/{{ timesheet.customer }}/{{ timesheet.cust_location.location_name }}
+                    </a> 
+                {% endfor %}
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+{% if not_in_turnouts %}
+<h5>Номера терминалов, которые есть в файле, но которых нет в наших табелях</h5>
+<div class="row mb-4">
+    <div class="col col-auto">
+        <ul class="list-group">
+        {% for day, code in not_in_turnouts %}
+            <li class="list-group-item">{{ day|date:'d.m.Y' }}: {{ code }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+<form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:vkusvill_import_performance_file' performance_file_pk %}">
+    {% csrf_token %}
+    <button class="btn btn-sm btn-outline-primary" type="submit">Подтвердить и установить выработку</button>
+</form>
+
+{% endblock %}

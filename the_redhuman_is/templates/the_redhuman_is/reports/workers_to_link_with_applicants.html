@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<h4>Работники, требующие линковки с соискателями ({{ workers|length }} душ)</h4>
+{% endblock %}
+
+{% block obj-data %}
+<div class="container">
+    <div class="row">
+        <div class="col col-auto">
+        {% for worker in workers %}
+        <a class="list-group-item list-group-item-action" href="{% url 'the_redhuman_is:worker_detail' worker.pk %}" target="_blank">{{ worker }}</a>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

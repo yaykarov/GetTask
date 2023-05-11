@@ -1,0 +1,18 @@
+<td>
+    <form class="edit_form" method="post" action="{% url 'the_redhuman_is:edit_bank_service' %}" method="post">
+        {% csrf_token %}
+    </form>
+    <input id="id_{{ form.prefix }}-id" name="{{ form.prefix }}-id" value="{{ service_param.pk }}" class="id" type="hidden">
+    {{ form.service }}
+</td>
+<td>{{ form.calculator_type }}</td>
+<td>{{ form.val }}</td>
+<td>
+    Д: {{ service_param.service.debit }}<br>
+    К: {{ service_param.bank.account_51 }}
+</td>
+<td>
+    Д: {{ service_param.account }}<br>
+    К: {{ service_param.bank.account_51 }}
+</td>
+<td><a class="save_link" href="#{{ service_param.id }}">Сохранить</a></td>

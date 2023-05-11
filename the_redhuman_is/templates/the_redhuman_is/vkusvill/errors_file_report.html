@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% load human_readable_values %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+<style>
+.row-warning {
+    background-color: #FEE;
+}
+</style>
+{% endblock %}
+
+{% block buttons %}
+<form id="xls-form" method="GET" action="{{ errors_file.data_file.url }}">
+</form>
+<h4>
+<button type="submit" form="xls-form" class="btn btn-outline-primary">
+    <i class="fa fa-download"></i>
+</button>
+Результат анализа файла с суммарной выработкой и ошибками с {{ errors_file.first_day|date:'d.m.Y' }} по {{ errors_file.last_day|date:'d.m.Y' }}
+{% if errors_file.import_timestamp %}
+, импортирован {{ errors_file.import_timestamp|date:'d.m.Y H:i:s' }}
+{% endif %}
+</h4>
+{% endblock %}
+
+{% block obj-data %}
+<table id="main-table" class="table table-hover compact">
+    <thead>
+        <tr>
+            <th>Терминал</th>
+            <th>Выручка по нашим данным</th>
+            <th>Ставка штрафа в файле</th>
+            <th>Сумма штрафа</th>
+            <th>Выручка с учетом штрафа</th>
+            <th>Выручка в файле</th>
+            <th>Выручка в файле минус выручка по нашим данным</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for code, values in data.items %}
+        <tr{% if values.5 < -100 or 100 < values.5 %} class="row-warning"{% endif %}>
+            <td class="text-center">{{ code }}</td>
+            {% for value in values %}
+            <td class="text-center">{{ value|floatformat:1|separate }}</td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% if not errors_file.import_timestamp %}
+<form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:vkusvill_import_errors_file' errors_file.pk %}">
+    {% csrf_token %}
+    <button class="btn btn-sm btn-outline-primary" type="submit">Подтвердить и установить штрафы</button>
+</form>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+
+<script>
+$(document).ready(
+    function() {
+        $('#main-table').DataTable({
+            "pageLength": 100,
+            "order": [],
+            "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+            "stateSave": true,
+            "oLanguage": {
+                "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                "sSearch": "Поиск:",
+                "sZeroRecords": "Ничего не найдено - извините",
+                "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                "sInfoFiltered": "(filtered from _MAX_ total records)",
+                "oPaginate": {
+                    "sFirst": "Первая",
+                    "sNext": ">",
+                    "sPrevious": "<",
+                    "sLast": "Последняя",
+                },
+            },
+        });
+    }
+);
+</script>
+
+{% endblock %}

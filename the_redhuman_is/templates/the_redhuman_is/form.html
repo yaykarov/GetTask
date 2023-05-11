@@ -1,0 +1,11 @@
+{{ form.non_field_errors }}
+{% for field in form %}
+	<div class="f_row">
+		{{ field.errors }}
+		{{ field.label_tag }}
+		<div class="f_input">
+			{{ field }}
+			{% if field.help_text %}<div class="note">{{ field.help_text }}</div>{% endif %}
+		</div>
+	</div>
+{% endfor %}

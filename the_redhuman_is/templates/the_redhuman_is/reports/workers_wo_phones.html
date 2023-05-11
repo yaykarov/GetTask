@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load redhuman_tags %}
+
+{% block buttons %}
+<h4>
+Соискатели, которые считаются вышедшими, но рабочего с таким телефоном нет ({{ applicants|length }} душ)
+</h4>
+{% endblock %}
+
+{% block obj-data %}
+{% include 'the_redhuman_is/core/modal.include' with link_class='cell' modal_id='dialog' modal_body_id='dialog_body' %}
+<div class="list-group">
+{% for applicant in applicants %}
+<a href="{% url 'applicants:history' applicant.pk %}" class="list-group-item list-group-item-action cell">
+    {{ applicant.phone }}, {{ applicant.name }}, {{ applicant.author }}
+</a>
+{% endfor %}
+</div>
+
+<br>
+
+<h4>
+Работники, вышедшие недавно, но без телефона ({{ workers.count }} душ)
+</h4>
+<div class="list-group">
+{% for worker in workers %}
+<a href="{% url 'the_redhuman_is:worker_detail' worker.pk %}" class="list-group-item list-group-item-action">
+{{ worker }}
+</a>
+{% endfor %}
+</div>
+
+{% endblock %}

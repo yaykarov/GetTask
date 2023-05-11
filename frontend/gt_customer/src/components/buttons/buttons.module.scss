@@ -1,0 +1,196 @@
+
+.button {
+        width: 128px;
+        height: 48px;
+        background: #000000;
+        border-radius: 6px;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+}
+
+.buttonsContainerItem {
+        font-family: Roboto, sans-serif;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: .1s;
+        padding: 10px;
+        border-radius: 6px;
+}
+
+.buttonsContainerItem:hover {
+        background-color: #f2f2f2;
+}
+
+.buttonsContainer {
+        display: flex;
+        justify-content: space-between;
+}
+
+
+.buttonsContainerIcon1 {
+        margin-bottom: 1px;
+        margin-right: 7px;
+        width: 19px;
+        height: 19px;
+}
+
+.buttonsContainerIcon2 {
+        margin-bottom: 1px;
+        margin-right: 7px;
+        width: 22px;
+        height: 22px;
+}
+
+.buttonsContainerIcon3 {
+        margin-bottom: 1px;
+        margin-right: 7px;
+        width: 19px;
+        height: 19px;
+}
+
+
+.view {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 40px;
+        font-family: Roboto;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 16px;
+        opacity: 0.5;
+        cursor: pointer;
+}
+
+.view:hover {
+        opacity: 1;
+}
+
+.view div {
+        margin-left: 8px;
+}
+
+.viewPopup {
+        width: 500px;
+        height: 1120px;
+        position: relative;
+        padding-top: 40px;
+        padding-left: 40px;
+}
+
+.viewPopupClose {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+}
+
+.viewPopupTitle {
+        font-family: Roboto;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 24px;
+        line-height: 28px;
+        margin-bottom: 40px;
+}
+
+.checkboxContainer {
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        position: relative;
+        padding-left: 35px;
+        cursor: pointer;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+}
+
+.checkboxLabel {
+        margin-top: 2px;
+        font-family: Roboto, sans-serif;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 16px;
+        line-height: 19px;
+}
+
+/* Hide the browser's default checkbox */
+.checkboxContainer input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+}
+
+/* Create a custom checkbox */
+.checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 22px;
+        height: 22px;
+        background-color: #f2f2f2;
+        border-radius: 6px;
+}
+
+/* On mouse-over, add a grey background color */
+.checkboxContainer:hover input ~ .checkmark {
+        background-color: #ccc;
+}
+
+/* When the checkbox is checked, add background */
+.checkboxContainer input:checked ~ .checkmark {
+        background-color: #000;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+}
+
+/* Show the checkmark when checked */
+.checkboxContainer input:checked ~ .checkmark:after {
+        display: block;
+}
+
+/* Style the checkmark/indicator */
+.checkboxContainer .checkmark:after {
+        left: 8px;
+        top: 4px;
+        width: 5px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 1px 1px 0;
+        -webkit-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        transform: rotate(45deg);
+}
+
+.button {
+        position: absolute;
+        bottom: 40px;
+        width: 149px;
+        height: 48px;
+        background: #000000;
+        border-radius: 6px;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+}

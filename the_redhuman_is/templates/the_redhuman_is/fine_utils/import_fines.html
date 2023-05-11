@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_html_head %}
+{{ fines_form.media }}
+{% endblock %}
+
+{% block buttons %}
+<h4>Внесение штрафов или вычетов</h4>
+{% endblock %}
+
+{% block obj-data %}
+<a href="{% url 'the_redhuman_is:fine_utils_operations_pack_list' %}">список уже внесенных групп операций</a>
+<div class="row mt-3">
+    <div class="col col-2">
+    <form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:fine_utils_do_import_fines' %}">
+        {% csrf_token %}
+        {{ fines_form }}
+        <input type="file" name="fines" class="mt-2"/>
+        <button type="submit" class="btn btn-sm btn-outline-primary mt-2">Внести вычеты из файла</button>
+    </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+{% endblock %}

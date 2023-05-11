@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load mathfilters %}
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css" integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous">
+<style>
+    input,button {
+        font-size: 10pt !important;
+        font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
+    }
+    #doc-table {
+        width: 100%;
+    }
+    #doc-table_filter label {
+        float: right;
+    }
+    #doc-table_length label select {
+        float: right;
+    }
+    td, tr {
+        padding: 0px !important;
+    }
+    td.alert {
+        text-align: center;
+    }
+</style>
+{% endblock %}
+{% block body %}
+<div class="container">
+    <div id="alert-container">
+    {% for message in messages %}
+        <div class="alert alert-danger">{{ message.message }}
+        {% if message.action %}
+        <a href="#" class="badge badge-primary warning" data-action="{{ message.action }}">Исправить</a>
+        {% endif %}
+        <button class="close" type="button" data-dismiss="alert" arial-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+    {% endfor %}
+    </div>
+    <div style="margin-bottom: 20px;">
+        <div class="row">
+        <div class="col col-lg-12">
+        <h4>
+            Следующий период:
+            {% if next_period_start is not None %}
+                c {{ next_period_start | date:"SHORT_DATE_FORMAT" }} по {{ next_period_end | date:"SHORT_DATE_FORMAT"}}
+            {% else %}
+                Нет данных
+            {% endif %}
+        </h4>
+        <table id="period_close_table" class="table rh-table table-hover rh-table-full-width">
+
+            {% if next_period_start is not None %}
+                <thead>
+                    <tr>
+                        <th>Клиент</th>
+                        <th>Объект</th>
+                        <th>Незакрытые сверки</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for problem in closing_requirements %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'the_redhuman_is:customer_detail' problem.customer.id %}">{{ problem.customer.name }}</a>
+                        </td>
+                        <td>{{ problem.location.name }}</td>
+                        <td>
+                        {% spaceless %}
+                            {% for reconciliation in problem.unclosed_ts %}
+                                <a href="{% url 'the_redhuman_is:reconciliation_show' reconciliation %}">сверка №{{ reconciliation }}</a>{% if not forloop.last or problem.no_recon_ts is not None %}, {% endif %}
+                            {% endfor %}
+                            {% if problem.no_recon_ts is not None %}
+                                нет сверок с {{ problem.no_recon_ts|date:"d.m.Y" }}
+                            {% endif %}
+                        {% endspaceless %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td class="alert" colspan="3">Незакрытых сверок и выходов нет.</td><td style="display: none;"/><td style="display: none;"/></tr>
+                {% endfor %}
+                </tbody>
+            {% endif %}
+        </table>
+        </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col col-lg-12">
+            <form id="creation_form" action="" class="form-inline" method="POST">
+                {% csrf_token %}
+                <div class="input-group date" data-provide="datepicker">
+                    <input type="text" class="form-control" name="begin" value="{{next_period_start | date:"SHORT_DATE_FORMAT"}}">
+                    <input type="text" class="form-control" name="end" value="{{next_period_end | date:"SHORT_DATE_FORMAT"}}">
+                </div>
+                <button class="btn btn-primary" type="submit">Создать документ</button>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col col-lg-12">
+            <table id="doc-table" class="table">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>#</th>
+                    <th>Создатель</th>
+                    <th>Дата создания</th>
+                    <th>Начало</th>
+                    <th>Конец</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for document in documents %}
+                <tr data-pk="{{ document.pk }}">
+                    <td><button class="btn show-ops">+</button></td>
+                    <td>{{ document.pk }}</td>
+                    <td>{{ document.author }}</td>
+                    <td>{{ document.create_timepoint }}</td>
+                    <td>{{ document.begin | date:"SHORT_DATE_FORMAT" }}</td>
+                    <td>{{ document.end | date:"SHORT_DATE_FORMAT" }}</td>
+                    <td><button class="btn btn-outline-danger del-doc">х</button></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="message-modal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Удаление документа</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Все изменения будут удалены. Удалить?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                    <button class="btn btn-primary" id="modal-ok">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+
+<script>
+    function show_alert(message, is_danger, action) {
+        let alert = document.createElement('div');
+        if (is_danger)
+            alert.className = 'alert alert-danger';
+        else
+            alert.className = 'alert alert-success';
+        let html = message;
+        if (action)
+            html += "<a href=\"#\" class=\"badge badge-primary warning\" data-action="+action+">Исправить</a></div>\n";
+        html += "<button class=\"close\" type=\"button\" data-dismiss=\"alert\" arial-label=\"Close\">" +
+         "<span aria-hidden=\"true\">&times;</span></button>";
+        alert.innerHTML = html;
+        $("#alert-container")[0].appendChild(alert);
+    }
+    function get_td(value) {
+        return "<td>" + value + "</td>";
+    }
+    $(document).ready(function() {
+        $.fn.dataTable.moment('DD.MM.YYYY');
+        let formData = new FormData(document.forms.creation_form);
+        let table = $("#doc-table").DataTable({
+            "pageLength": -1,
+            "order": [],
+            "lengthMenu": [[300, 150, 50, -1], [300, 150, 50, "Все"]],
+            "oLanguage": {
+                "sLengthMenu": "_MENU_",
+                "sSearch": "Поиск:",
+                "sZeroRecords": "Ничего не найдено - извините",
+                "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                "sInfoFiltered": "(filtered from _MAX_ total records)",
+                "oPaginate": {
+                    "sFirst": "Первая",
+                    "sNext": ">",
+                    "sPrevious": "<",
+                    "sLast": "Последняя",
+                },
+            },
+        });
+        $(".warning[data-action]").on("click",function(){
+            let url = "{% url 'the_redhuman_is:period_close_document_action_ajax' %}";
+            let action = $(this).attr("data-action");
+            $.ajax({url: url, method: "POST", data: {"action": action, "csrfmiddlewaretoken": formData.get("csrfmiddlewaretoken")},
+            success: function(data){
+                for (message of data.messages)
+                    show_alert(message,false,null);
+            },
+            error: function(data){
+                let message = data.responseText.length > 300 ? data.responseText.slice(0,300) : data.responseText;
+                show_alert(message,true,null);
+            }});
+        });
+        $(".show-ops").on("click",function(){
+            let url = "{% url 'the_redhuman_is:period_get_close_documents_ajax' %}";
+            let tr = $(this).closest("tr");
+            let row = table.row(tr);
+            if (tr.next().find("table").length==0) {
+
+                $.ajax({
+                    url: url,
+                    method: "GET",
+                    data: {"document_id": $(this).closest("tr").attr("data-pk")},
+                    success: function(data) {
+                        let format = "<table class='table'><thead><tr><th>Дебет-Счет</th><th>Кредит-Счет</th><th>Сумма</th></tr></thead><tbody>";
+                        let keys = ['debet','credit','close_operation'];
+                        for (let operation of data.document) {
+                            format += "<tr>";
+                            for (let key of keys) {
+                                format += get_td(operation[key]);
+                            }
+                            format += "</tr>";
+                        }
+                        format += "</tbody></table>";
+                        row.child(format).show();
+                        tr.addClass('shown');
+                    }
+                });
+            } else if (row.child.isShown()) {
+                // This row is already open - close it
+                row.child.hide();
+                tr.removeClass('shown');
+            } else {
+                // Open this row
+                row.child( format(row.data()) ).show();
+                tr.addClass('shown');
+            }
+        });
+        $(".del-doc").on("click",function() {
+            let btn = this;
+            $("#message-modal").modal("show");
+            let pk = $(this).closest("tr").attr("data-pk");
+            $("#modal-ok").on(
+                "click",
+                function() {
+                    let url = "{% url 'the_redhuman_is:period_close_document_action_ajax' %}";
+                    $.ajax(
+                        {url: url, method: "POST", data: {document_id: pk, action: "delete", "csrfmiddlewaretoken": formData.get("csrfmiddlewaretoken")}, success: function(data){
+                            let col = $("[data-pk="+pk+"]");
+                            table.row(col).remove().draw();
+                            $("#message-modal").modal("hide");
+                            show_alert("Документ удален",false,null);
+                        }, error: function(data){
+                            $("#message-modal").modal("hide");
+                            let message = data.responseText.length > 300 ? data.responseText.slice(0,300) : data.responseText;
+                            show_alert(message,true,null);
+                        }}
+                    );
+                    $("#message-modal").modal("hide");
+                    $(btn).hide();
+                }
+            );
+        });
+        $('#period_close_table').DataTable({
+            "pageLength": 50,
+            "order": [],
+            "lengthMenu": [[100, 20, -1], [100, 20, "Все"]],
+            "stateSave": true,
+            "searching": false,
+            "info": false,
+            "paging": false,
+            "oLanguage": {
+                "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                "sSearch": "Поиск:",
+                "sZeroRecords": "Ничего не найдено - извините",
+                "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                "sInfoFiltered": "(filtered from _MAX_ total records)",
+                "oPaginate": {
+                    "sFirst": "Первая",
+                    "sNext": ">",
+                    "sPrevious": "<",
+                    "sLast": "Последняя",
+                },
+            },
+            "orderCellsTop": true,
+        });
+    })
+</script>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block extra_html_head %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+{% endblock %}
+
+{% block buttons %}
+    <p class="small">Заявка на подбор на:
+        <label>  {{ order.customer_order.on_date|date:"d.m.Y" }} {{ order.customer_order.bid_turn }} {{ order.customer_order.on_time|date:"H:i" }}</label><br>
+       Объект:
+        <label>  {{ order.customer_order.cust_location }} {{ order.customer_order.customer }}</label><br>
+       Количество:
+        <label>  {{ order.customer_order.number_of_workers }} чел.</label>
+    </p>
+    <table class="table rh-table">
+        <thead>
+        <tr>
+            <th>Рабочий</th>
+            <th>Кол-во<br>выходов</th>
+            <th>Телефон</th>
+        </tr>
+        </thead>
+        {% for w in wfs %}
+            <tr>
+                <td>
+                    <a href="{% url 'the_redhuman_is:worker_detail' pk=w.worker.pk %}">{{ w }}</a>
+                </td>
+                <td>{{ w.worker__worker_turnouts__count }}</td>
+                <td>{{ w.worker.tel_number }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
+{% block table1 %}
+    <table id="main_table" class="table rh-table">
+        <thead>
+        <tr>
+            <th>Рабочий</th>
+            <th>Телефон</th>
+            <th>Должность</th>
+            <th>Кол-во выходов</th>
+            <th>Кол-во в день</th>
+            <th>Кол-во в ночь</th>
+            <th>Дней с посл. выхода</th>
+            <th>В заявку</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for worker in workers %}
+            <tr>
+                <td>
+                    <a href="{% url 'the_redhuman_is:worker_detail' pk=worker.pk %}">{{ worker }}</a>
+                </td>
+                <td>{{ worker.tel_number }}</td>
+                <td>{{ worker.position }}</td>
+                <td>{{ worker.worker_turnouts__count }}</td>
+                <td>{{ worker.day_timesheets }}</td>
+                <td>{{ worker.night_timesheets }}</td>
+                <td>{{ worker.days_after_last_turnout }}</td>
+                <td>
+                    <a href="{% url 'the_redhuman_is:add_worker_into_order' pk_o=order.pk pk_w=worker.pk %}">
+                        <button>В заявку</button>
+                    </a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#main_table').DataTable({
+                "select": {
+                    style: 'os',
+                },
+                "fixedHeader": {
+                    header: true,
+                    footer: false
+                },
+                "processing": true,
+                "jQueryUI": true,
+                "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+                "sPaginationType": "full_numbers",
+                "sWrapper": "dataTables_wrapper form-inline",
+                "oLanguage": {
+                    "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                    "sSearch": "Поиск:",
+                    "sZeroRecords": "Ничего не найдено - извините",
+                    "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                    "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                    "sInfoFiltered": "(filtered from _MAX_ total records)",
+                    "oPaginate": {
+                        "sFirst": "Первая",
+                        "sNext": ">",
+                        "sPrevious": "<",
+                        "sLast": "Последняя",
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

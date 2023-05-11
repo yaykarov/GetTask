@@ -1,0 +1,14 @@
+{% load human_readable_values %}
+{% if cell.credit or cell.debet %}
+    {% if cell.credit %}
+        <div class="text-success">{{ cell.credit|separate }}</div>
+    {% endif %}
+    {% if cell.debet %}
+        <div class="text-danger">{{ cell.debet|separate }}</div>
+    {% endif %}
+    {% if cell.credit == 0 and cell.debet == 0 %}
+        <div class="text-primary">0</div>
+    {% endif %}
+{% else %}
+    <i class="fas fa-plus fa-xs text-secondary"></i>
+{% endif %}

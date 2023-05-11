@@ -1,0 +1,23 @@
+{% if object.comments.all %}
+    <div class="row">
+        <div class="col mx-3" id="commentsList">
+            {% for item in object.comments.all %}
+                <div class="row">
+                    <div class="col">
+                        <small class="text-muted">
+                            {{ item.date|date:'d.m.y H:i' }}
+                            {{ item.sender }}
+                        </small>
+                    </div>
+                </div>
+                <div class="row border-bottom">
+                    <div class="col">
+                        {{ item.comment }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    <small>Комментариев нет</small>
+{% endif %}

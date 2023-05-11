@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+<style>
+label {
+  font-weight: 700;
+}
+</style>
+{% load humanize %}
+{% load mathfilters %}
+
+{% block buttons %}
+
+{% endblock %}
+
+{% block obj-data %}
+
+{% endblock %}
+
+{% block table-data %}
+<table>
+  <caption>Оборотно-сальдовая ведомость</caption>
+  <tr>
+    <th>Наименование счета</th>
+    <th>Оплачено, всего</th>
+    <th>Начислено, всего</th>
+    <th>Начислить</th>
+    <th>Выплатить</th>
+  </tr>
+  {% for operating_account in operating_accounts %}
+  <tr>
+    <td><a href="{% url 'the_redhuman_is:worker_detail' pk=operating_account.worker.pk %}">{{ operating_account.account }}</td>
+    <td>{{ operating_account.account.turnover_debet|intcomma }}</td>
+    <td>{{ operating_account.account.turnover_credit|intcomma }}</td>
+    {% if operating_account.account.turnover_saldo >= 0 %}
+    <td>{{ operating_account.account.turnover_saldo|intcomma }}</td>
+    <td></td>
+    {% elif operating_account.account.turnover_saldo < 0 %}
+    <td></td>
+    <td>{{ operating_account.account.turnover_saldo|abs|intcomma }}</td>
+    {% endif %}
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

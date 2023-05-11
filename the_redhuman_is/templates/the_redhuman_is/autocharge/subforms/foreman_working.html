@@ -1,0 +1,22 @@
+<form  name="{{ id_suffix }}" id="id_form_{{ id_suffix }}" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div style="float:left">
+        <div id="{{ id_suffix }}_1_calc_container" class="entry_container">
+            {{ calc1|safe }}
+        </div>
+    </div>
+
+    <div style="float: left" class="ml-2">
+        Надбавка за вышедших людей:<br>
+        <div id="{{ id_suffix }}_2_calc_container" class="entry_container">
+            {{ calc2|safe }}
+        </div>
+    </div>
+
+    <div style="clear: both"></div>
+</form>
+
+<script>
+    setupCalculatorForm("{{ id_suffix }}_1");
+</script>

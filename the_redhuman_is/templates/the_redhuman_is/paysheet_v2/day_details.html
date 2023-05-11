@@ -1,0 +1,24 @@
+{% load static %}
+{% load redhuman_tags %}
+{% load human_readable_values %}
+
+<div class="card">
+    <div class="card-header">
+        <span class="mr-4">Рабочий:<b class="ml-2">{{ worker }}</b></span><span class="ml-4">Дата: <b class="ml-2">{{ date }}</b></span>
+    </div>
+    <div class="card-body">
+        <div id="result" class="alert alert-info mb-2 p-2" role="alert" hidden="true"></div>
+        <div id="error" class="alert alert-danger mb-2 p-2" role="alert" hidden="true"></div>
+        {% for operation in operations %}
+            <div class="alert alert-secondary mb-2 p-2" role="alert">
+                <b>{{ operation.operation.amount|separate }} руб. - {{ operation.title }} - </b> {{ operation.operation.comment }}
+                {% if not paysheet.is_closed and not readonly %}
+                    <form method="POST" action="{% url 'the_redhuman_is:paysheet_v2_remove_operation' paysheet_pk=paysheet.pk operation_pk=operation.operation.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-danger" type="submit">Удалить из ведомости</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>

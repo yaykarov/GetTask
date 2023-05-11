@@ -1,0 +1,42 @@
+<form  name="{{ id_suffix }}" id="id_form_{{ id_suffix }}" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="input-group input-group-sm mt-1 mb-1">
+        <div class="input-group-prepend">
+            <span class="input-group-text">Тип параметра 1:</span>
+        </div>
+        <select class="parameter-type form-control form-control-sm" name="parameter1_{{ id_suffix }}" id="id_parameter1_{{ id_suffix }}" style="max-width: 300px;">
+        {% for key, name in parameter_choices %}
+            <option value="{{ key }}"{% if key == selected_key_1 %} selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+        </select>
+    </div>
+    <div class="input-group input-group-sm mt-1 mb-1">
+        <div class="input-group-prepend">
+            <span class="input-group-text">Тип параметра 2:</span>
+        </div>
+        <select class="parameter-type form-control form-control-sm" name="parameter2_{{ id_suffix }}" id="id_parameter2_{{ id_suffix }}" style="max-width: 300px;">
+        {% for key, name in parameter_choices %}
+            <option value="{{ key }}"{% if key == selected_key_2 %} selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+        </select>
+    </div>
+    <div id="container_{{ id_suffix }}">
+        <div class="in"></div>
+    </div>
+    <button id="id_add_button_{{ id_suffix }}" class="btn btn-sm btn-outline-primary mt-1" type="submit" onClick="return onIntervalAdd('{{ id_suffix }}');">+</button>
+</form>
+
+<script>
+{% for interval in intervals %}
+addInterval(
+    'container_{{ id_suffix }}',
+    'id_add_button_{{ id_suffix }}',
+    '{{ interval.id_suffix }}',
+    '{{ interval.begin }}',
+    '{{ interval.k }}',
+    '{{ interval.b }}',
+    $('#id_parameter1_{{ id_suffix }} option:selected').text(),
+    $('#id_parameter2_{{ id_suffix }} option:selected').text()
+);
+{% endfor %}
+</script>

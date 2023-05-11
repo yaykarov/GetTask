@@ -1,0 +1,18 @@
+
+.mfp-content {
+  width:         1024px !important;
+  border-radius: $border-radius;
+  padding: 0 !important;
+  input {
+    //@extend .form-control;
+    //@extend .form-control-sm;
+  }
+  .t_input input {
+    width: 60px;
+  }
+  .btn {
+    font-size:   13px;
+    padding:     3px 6px;
+    line-height: 1.1;
+  }
+}

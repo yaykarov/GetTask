@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+  {% block buttons %}
+    <a href="{% url 'search_ads:hr_reports' %}"><button>Назад</button></a>
+    <a href="{% url 'search_ads:new_hr_account' %}"><button>Добавить аккаунт сайта вакансий</button></a>
+    <a href="{% url 'search_ads:new_hr_report' %}"><button>Создать отчет</button></a>
+  {% endblock %}
+  {% block table-data %}
+  <head>
+
+    </head>
+    <caption><label>Аккаунты на сайтах вакансий</label></caption>
+    <table id="main_table" class="cell-border compact">
+        <thead>
+            <tr>
+                <th>Имя сотрудника</th>
+                <th>Сайт аккаунта</th>
+                <th>id/Телефон</th>
+                <th>Электронная почта</th>
+                <th>Ссылка</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+                <tr>
+                    <td>{{ account.worker }}</td>
+                    <td>{{ account.site }}</td>
+                    <td>{{ account.id_or_tel }}</td>
+                    <td>{{ account.email }}</td>
+                    <td>{{ account.ref }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

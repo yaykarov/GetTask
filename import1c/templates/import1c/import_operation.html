@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block extra_html_head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet" />
+
+<style>
+.child {
+    position:    relative;
+    margin-left: 10px;
+}
+.float {
+    float: right;
+}
+.clearfix {
+    overflow: hidden;
+}
+#root {
+    font-size:   10pt;
+}
+.node {
+}
+.nodes-list {
+    margin-left: 10px;
+}
+.hidden {
+    display: none;
+}
+.saldo {
+    margin-left:  7px;
+    margin-right: 7px;
+}
+.node-opener {
+    margin-right: 7px;
+    cursor:       pointer;
+}
+.field {
+    width: 100%;
+}
+i {
+    margin: 0;
+    color:  #007bff;
+}
+.node-opener:hover i {
+    color: white;
+}
+.btn-group {
+    padding: 2px;
+}
+.btn-group .btn {
+    margin:         0px;
+    padding-right:  8px;
+    padding-left:   8px;
+    padding-top:    0;
+    padding-bottom: 0;
+}
+
+ul.messages li {
+    max-width: 100%;
+    display: block;
+    background-color: #ccc;
+    padding: 0 10px;
+    margin: 10px;
+}
+</style>
+{% endblock %}
+
+{% block buttons %}
+{% if messages %}
+<div>
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+<h4>Импорт выписки из банк-клиента (операций: {{unimported_operations_count}})</h4>
+{% endblock %}
+
+{% block obj-data %}
+<div id="vue-app">
+    <div class="row mb-2">
+        <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Скрывать счета с нулевым сальдо</span>
+            </div>
+            <div class="input-group-append">
+                <div class="input-group-text">
+                    <input id="hide_zero_saldo_checkbox" type="checkbox">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div id="root" class="col">
+            <account-node account-title="Корневые счета"
+                          v-on:debet-select="debet=$event"
+                          v-on:credit-select="credit=$event"
+                          v-bind:selected-debet="debet != -1 ? debet.id : -1"
+                          v-bind:selected-credit="credit != -1 ? credit.id: -1"
+                          v-bind:last-operation="last_operation"></account-node>
+        </div>
+        <div class="col-6 ml-auto">
+            <form id="operation_form" method="POST" action="{% url 'import1c:add-operation' %}" v-on:submit.prevent="save_operation()">
+                {% csrf_token %}
+                <table class="table rh-table" style='width: 100%;'>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_expense">Расход:</label></th>
+                        <td style='width: 100%;'>{{ expense_form.expense }}</td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_reconciliation">Сверка:</label></th>
+                        <td style='width: 100%;'>{{ reconciliation_form.reconciliation }}</td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_date">Дата:</label></th>
+                        <td>
+                            <input type="text" name="date" id="id_date" class="field" value="{{ date|date:'d.m.Y' }}" readonly required style='width: 100%;'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_time">Время:</label></th>
+                        <td>
+                            <input type="text" name="time" id="id_time" class="field" value="0:00" readonly required style='width: 100%;'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_debit">Дебет:</label></th>
+                        <td style='width: 100%;'>{{ account_selection_form.debit }}</td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_credit">Кредит:</label></th>
+                        <td style='width: 100%;'>{{ account_selection_form.credit }}</td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_amount">Сумма:</label></th>
+                        <td>
+                            <input type="text" name="amount" value="{{ amount }}" class="field" id="id_amount" readonly style='width: 100%;'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold">
+                            <label for="id_comment">Комментарий:</label></td>
+                        <td>
+                            <textarea cols="48" rows="4" name="comment" id="id_comment" style='width: 100%;'>{{ comment }}</textarea>
+                        </td>
+                    </tr>
+                </table>
+                <input type="hidden" name="imported_node" id="id_imported_node" value="{{ imported_node.pk }}" required />
+                <span id="id_message"></span>
+                <div class="row">
+                    <div class="col-auto ml-auto">
+                        <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div style="clear: both">
+    {% for account_kv in accounts %}
+    <h3>Детали счёта</h3>
+    <ul>
+        {% for k, v in account_kv.to_node.items %}
+            <li><strong>{{ k }}</strong>: {{ v }}</li>
+        {% endfor %}
+    </ul>
+    {% endfor %}
+
+    <h3>Детали операции</h3>
+    <ul>
+        {% for k, v in node_kv %}
+            <li><strong>{{ k }}</strong>: {{ v }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ expense_form.media }}
+<script type="text/javascript" src="{% static 'js/vue-dev.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/vue_components.js' %}"></script>
+
+<script>
+let app = new Vue({
+    el: "#vue-app",
+    delimiters: ["[[","]]"],
+    data: {
+        debet: -1,
+        credit: -1,
+        sort_key: 'timepoint',
+        sort_dir: true,
+    },
+    methods: {
+        save_operation() {
+            if (!$("#id_debit").val() || !$("#id_credit").val()) {
+                _setMessage('Не выбран дебет-счет или кредит счет');
+                return false;
+            } else {
+                let form = $("#operation_form");
+                let url = form.attr('action');
+                let data = form.serializeArray();
+                let method = form.attr('method');
+                $.ajax(
+                    {
+                        url: url,
+                        method: method,
+                        data: data,
+                        success: this.show_new_operation,
+                        error: this.show_operation_error
+                    }
+                )
+            }
+        },
+        show_new_operation(data) {
+            _setMessage("Успешно сохранено.");
+            _clearSaveForm();
+            window.location.reload(true);
+        },
+        show_operation_error(data) {
+            _setMessage("Что-то пошло не так. Проблемы с сервером?");
+        },
+        set_zero_saldo_accounts_visibility(visible) {
+            this.$children[0].areZeroSaldoAccountsVisible = visible;
+        }
+    },
+    computed: {
+    },
+    mounted: function() {
+        {% if debet %}
+        this.$children[0].$emit(
+            'debet-select',
+            {
+                id: {{debet.id}},
+                name: '{{debet.full_name|safe}}'
+            }
+        );
+        {% endif %}
+        {% if credit %}
+        this.$children[0].$emit(
+            'credit-select',
+            {
+                id: {{credit.id}},
+                name: '{{credit.full_name|safe}}'
+            }
+        );
+        {% endif %}
+    }
+});
+
+function _setMessage(text) {
+    document.getElementById("id_message").innerHTML = text;
+}
+
+function _clearSaveForm() {
+    $("#id_debit").val(null).trigger("change");
+    $("#id_credit").val(null).trigger("change");
+    document.getElementById("id_amount").value = null;
+    document.getElementById("id_comment").value = null;
+}
+
+let lastFetchId = 0;
+
+function _update_debit() {
+    const pk = $("#id_expense").val();
+    let url = "{% url 'the_redhuman_is:expenses_account' %}" + "?pk=" + pk;
+    lastFetchId += 1;
+    const currentFetchId = lastFetchId;
+    fetch(new URL(url, window.location)).then(
+        async response => {
+            if (lastFetchId != currentFetchId) {
+                return;
+            }
+
+            const body = await response.json();
+            if (body.status === "ok") {
+                $("#id_debet").val(body.data.id);
+                $("#id_debet_account_name").val(body.data.full_name);
+            }
+        }
+    );
+}
+
+$(document).ready(
+    function () {
+        $("#hide_zero_saldo_checkbox").on(
+            'click',
+            function() {
+                app.set_zero_saldo_accounts_visibility(!$("#hide_zero_saldo_checkbox").prop('checked'));
+            }
+        );
+
+        $("#id_expense").on(
+            'change',
+            _update_debit
+        );
+    }
+);
+</script>
+{% endblock %}

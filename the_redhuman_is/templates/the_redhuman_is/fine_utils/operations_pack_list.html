@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<h4>Список групп операций, которые можно попробовать откатить</h4>
+{% endblock %}
+
+{% block obj-data %}
+<table id="main-table" class="rh-table table table-hover">
+    <thead>
+        <tr class="text-center">
+            <th>Время импорта</th>
+            <th>Автор</th>
+            <th>Комментарий</th>
+            <th>Файл</th>
+            <th></th>
+            {% if request.user.is_superuser %}
+            <th>Удалить операции из ведомости</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+    {% for pack in packs %}
+        <tr class="text-center">
+            <td>{{ pack.timestamp|date:'d.m.Y H:i:s' }}</td>
+            <td>{{ pack.author.username }}</td>
+            <td>{{ pack.comment }}</td>
+            <td>
+                {% if pack.deductions_file %}
+                <a href="{{ pack.deductions_file.data_file.url }}">скачать</a>
+                {% else %}
+                Нет
+                {% endif %}
+            </td>
+            <td>
+            {% if request.user.is_superuser %}
+                <form id="form_{{ forloop.counter0 }}" method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:fine_utils_rollback_operations_pack' pack.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                        откатить операции
+                    </button>
+                </form>
+            {% else %}
+                откатить операции
+            {% endif %}
+            </td>
+            {% if request.user.is_superuser %}
+            <td><input form="form_{{ forloop.counter0 }}" type="checkbox" name="remove_from_paysheet"/></td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock %}

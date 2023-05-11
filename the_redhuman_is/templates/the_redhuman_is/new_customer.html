@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Клиент</title>
+</head>
+
+{% block buttons %}
+    <h4>Новый клиент</h4>
+{% endblock %}
+
+{% block table-data %}
+    <div class="row">
+        <div class="col-auto">
+            <form method="POST">
+                {% csrf_token %}
+                <table>
+                    {{ cform.as_table }}
+                </table>
+                <button type="submit" class="btn btn-primary btn-sm btn-block">Сохранить</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+</html>

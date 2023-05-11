@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load redhuman_tags %}
+{% block body %}
+    <div class="row-1">
+        <div class="col">
+            <a href="{% url 'the_redhuman_is:photo_load_session_add' 'worker' %}" class="btn btn-sm btn-outline-primary mb-2">
+                <i class="far fa-plus-square"></i>
+                Фото рабочего
+            </a>
+            <a href="{% url 'the_redhuman_is:photo_load_session_add' 'contract' %}" class="btn btn-sm btn-outline-primary mb-2">
+                <i class="far fa-plus-square"></i>
+                Фото договора
+            </a>
+            <a href="{% url 'the_redhuman_is:photo_load_session_add' 'timesheet' %}" class="btn btn-sm btn-outline-primary mb-2">
+                <i class="far fa-plus-square"></i>
+                Фото табеля
+            </a>
+            <a href="{% url 'the_redhuman_is:photo_load_session_list' %}?q=new" class="btn btn-sm btn-outline-primary mb-2">Новые</a>
+            <a href="{% url 'the_redhuman_is:photo_load_session_list' %}?q=work" class="btn btn-sm btn-outline-primary mb-2">В работе</a>
+            <a href="{% url 'the_redhuman_is:photo_load_session_list' %}?q=comment" class="btn btn-sm btn-outline-primary mb-2">С комментариями</a>
+            <a href="{% url 'the_redhuman_is:photo_load_session_list' %}?q=last_30_days" class="btn btn-sm btn-outline-primary mb-2">За 30 дней</a>
+            <a href="{% url 'the_redhuman_is:photo_load_session_list' %}?q=all" class="btn btn-sm btn-outline-primary mb-2">Все</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <table class="table rh-table">
+                <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Дата</th>
+                    <th>Тип</th>
+                    <th>Кол-во</th>
+                    <th>Статус</th>
+                    <th>Создал</th>
+                    <th>Обрабатывает</th>
+                    <th>Комментарий</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+                </thead>
+                {% for object in object_list %}
+                    <tr>
+                        <td>
+                            {% if object.status != 'complete' %}
+                                {% if "Бригадиры" in user_groups %}
+                                    <a href="{% url 'the_redhuman_is:photo_load_session_update' object.id object.content_type %}">{{ object.id }}</a>
+                                {% else %}
+                                    <a href="{% url 'the_redhuman_is:photo_load_session_sort' object.id object.content_type %}">{{ object.id }}</a>
+                                {% endif %}
+                            {% else %}
+                                {{ object.id }}
+                            {% endif %}
+                        </td>
+                        <td>{{ object.date_create|date:'d.m.Y H:i' }}</td>
+                        <td>{{ object.get_content_type }}</td>
+                        <td class="text-center">{{ object.photo_count }}</td>
+                        <td>
+                            <span class="badge
+                                {% if object.status == 'new' %}
+                                badge-warning
+                                {% elif object.status == 'work' %}
+                                badge-success
+                                {% elif object.status == 'comment' %}
+                                badge-danger
+                                {% elif object.status == 'complete' %}
+                                badge-light
+                                {% endif %}">
+                                {{ object.get_status }}
+                            </span>
+                        </td>
+                        <td>{{ object.sender.get_full_name }}</td>
+                        <td>{{ object.handler.get_full_name }}</td>
+                        <td>{{ object.last_comment|default_if_none:'' }}</td>
+                        <td>
+                            {% if object.status != 'complete' %}
+                                <a href="{% url 'the_redhuman_is:photo_load_session_update' object.id object.content_type %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if object.status != 'complete' and object.content_type == 'worker' and object.photosessioncitizenship is not None %}
+                                <a href="{% url 'the_redhuman_is:photo_load_session_delete' object.id %}" class="delete btn btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+$(document).ready(
+    function () {
+        $("a.delete").click(function (e) {
+            e.preventDefault();
+            let clicked = $(this);
+            let url = clicked.attr("href");
+            $.ajax({
+                dataType: 'json',
+                method: 'POST',
+                url: url,
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                success: function () {
+                    clicked.parents('tr').remove();
+                }
+             });
+        })
+    }
+);
+</script>
+{% endblock %}

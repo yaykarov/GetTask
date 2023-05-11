@@ -1,0 +1,232 @@
+.tableWrapper {
+  position: relative;
+  min-height: 215px;
+  margin-top: 24px;
+  margin-left: 30px;
+  width: calc(100% - 60px);
+
+  padding: 20px 10px 0;
+  margin-bottom: 80px;
+
+  -ms-overflow-style: none;
+  -ms-overflow-style: none; /* IE 10+ */
+  scrollbar-width: none; /* Firefox */
+  overflow-x: auto;
+}
+
+.tableWrapper::-webkit-scrollbar {
+  width: 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0;
+}
+.tableBodyFirstTd {
+  border-bottom: 1px solid #d9d9d9;
+  font-family: Roboto, sans serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 11px;
+  line-height: 20px;
+  color: #b3b3b3;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  height: 30px;
+  padding-bottom: 8px;
+  white-space: nowrap;
+}
+
+.tableImgWrapper {
+  display: flex;
+  align-items: center;
+}
+
+.tableButton {
+  opacity: 0.2;
+  cursor: pointer;
+}
+
+.tableButton:not(:first-child) {
+  margin-left: 8px;
+}
+
+.tableButton:hover {
+  opacity: 1;
+}
+
+.tableExpandButton {
+  width: 32px;
+  height: 24px;
+  background: #f2f2f2;
+  border-radius: 12px;
+  line-height: 24px;
+  text-align: center;
+  cursor: pointer;
+  margin-left: 8px;
+  padding: 0 10px;
+}
+
+.tableExpandButton:hover {
+  background: #d2d2d2;
+}
+
+.tablePhotoIcon {
+  margin: 10px 0;
+}
+
+.dateRange,
+.dateRange > div:first-child {
+  border-radius: 6px;
+}
+
+.button {
+  position: absolute;
+  bottom: 40px;
+  width: 149px;
+  height: 48px;
+  background: #000000;
+  border-radius: 6px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.addressPopup {
+  width: 700px;
+  height: 320px;
+  position: relative;
+  padding-top: 40px;
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+.button1 {
+  position: absolute;
+  bottom: 40px;
+  width: 250px;
+  height: 48px;
+  background: #000000;
+  border-radius: 6px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.button2 {
+  width: 110px;
+  height: 40px;
+  border: 1px solid black;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 10px;
+  cursor: pointer;
+  font-family: Roboto, sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.addressPopupLine {
+  width: 100%;
+  display: flex;
+  justify-content: stretch;
+  align-items: center;
+}
+
+.photoPopup:hover > div:last-child {
+  display: block;
+}
+
+.photoPopup > div:last-child {
+  display: none;
+  height: auto !important;
+  width: auto !important;
+  z-index: 1000 !important;
+  opacity: 1;
+  border-radius: 6px;
+  padding: 0 !important;
+}
+
+.tooltip {
+  position: relative;
+}
+
+.tooltip .tooltipContent {
+  background: red;
+  visibility: hidden;
+  text-align: center;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltipContent::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+}
+
+.tooltip:hover .tooltipContent {
+  visibility: visible;
+  opacity: 1;
+}
+
+.tooltipWrapper {
+  position: absolute;
+  z-index: 100;
+}
+
+.disabled {
+  opacity: 0.5 !important;
+  cursor: default !important;
+}
+
+.addressSuggestions {
+  position: absolute;
+  width: 400px;
+}
+
+.addressSuggestions input {
+  width: 100%;
+  height: 40px;
+  background: #f2f2f2;
+  border-radius: 6px;
+  padding: 15px;
+  outline: none !important;
+  border: none !important;
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.addressSuggestions input:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none;
+}
+
+.tableButton2 {
+  opacity: 0;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.table > tr:not(:first-child):hover > td:last-child > .tableButton2 {
+  opacity: 1;
+}

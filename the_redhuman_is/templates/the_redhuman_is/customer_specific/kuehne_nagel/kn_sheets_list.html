@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<h4>Кюне+Нагель: список сохраненных табелей</h4>
+{% endblock %}
+
+{% block obj-data %}
+<table class="rh-table table table-hover">
+    <thead>
+        <tr>
+            <th>Время импорта</th>
+            <th>Автор</th>
+            <th>Файл</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sheet in sheets %}
+            <tr>
+                <td>{{ sheet.timestamp|date:'d.m.Y H:i:s' }}</td>
+                <td>{{ sheet.author.username }}</td>
+                <td>
+                    <a href="{{ sheet.data_file.url }}">
+                    {{ sheet.short_filename }}
+                    </a>
+                </td>
+                <td>
+                    <a href="{% url 'the_redhuman_is:kuehne_nagel_kn_sheet_report' pk=sheet.pk %}" target="_blank">
+                        посмотреть отчет
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

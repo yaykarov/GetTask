@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<h4>{{ customer_name }} - не удалось найти следующих работников:</h4>
+{% endblock %}
+
+{% block obj-data %}
+<div class="row mb-4">
+    <div class="col col-auto">
+        <ul class="list-group">
+        {% for worker, similar in problem_workers.items %}
+            <li class="list-group-item">
+                {{ worker }}, похожие:
+                {% for s in similar %}
+                    {{ s }}
+                    {% if forloop.counter1 < similar|length %}
+                    , 
+                    {% endif %}
+                {% endfor %}
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<h5 class="mb-4">Проверьте, что имена людей в файле указаны точно так, как в программе, и они в полной форме (фамилия, имя, отчество, если есть). Также убедитесь, что верно указан клиент.</h5>
+
+{% if format_errors %}
+<h4>Ошибки формата файла:</h4>
+<div class="row mb-4">
+    <div class="col col-auto">
+        <ul class="list-group">
+        {% for error in format_errors %}
+            <li class="list-group-item">
+                {{ error }}
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

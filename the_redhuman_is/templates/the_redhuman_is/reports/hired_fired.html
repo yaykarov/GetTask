@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_html_head %}
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'vendor/select2/dist/css/select2.css' %}" type="text/css" media="all" rel="stylesheet"/>
+{% endblock %}
+
+{% block buttons %}
+<h4>Поток персонала</h4>
+{% endblock %}
+
+{% block obj-data %}
+{% include 'the_redhuman_is/core/modal.include' with link_class='cell' modal_id='dialog' modal_body_id='dialog_body' %}
+<form method="GET">
+    <div class="form-row">
+        <div class="form-group col col-auto">
+            <label for="id_manager">{{ form.manager.label }}</label>
+            {{ form.manager }}
+        </div>
+        <div class="form-group col col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">Показать</button>
+        </div>
+    </div>
+</form>
+<table class="table rh-table">
+    <thead>
+        <tr>
+            <th>Клиент</th>
+            {% for month in months %}
+                <th>{{ month|date:"m.y" }}</th>
+            {% endfor %}
+            <th>Названия показателей</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for location, row in data %}
+            <tr>
+                <td>{{ location.customer_id }} - {{ location.location_name }}</td>
+                {% for hired, fired, hired_fired, year, month in row %}
+                <td>
+                    <center><a class="cell" href="{% url 'the_redhuman_is:hired_fired_details' location.pk year month %}">
+                    <div class="text-success">
+                        {{ hired }}
+                    </div>
+                    <div class="text-primary">
+                        {{ fired }}
+                    </div>
+                    <div class="text-danger">
+                        {{ hired_fired }}
+                    </div>
+                    </a></center>
+                </td>
+                {% endfor %}
+                <td>
+                    <div class="text-success">
+                        входящий&nbsp;поток,&nbsp;чел./мес.
+                    </div>
+                    <div class="text-primary">
+                        выбытие,&nbsp;чел./мес.
+                    </div>
+                    <div class="text-danger">
+                        первый&nbsp;и&nbsp;последний&nbsp;раз&nbsp;работал&nbsp;в&nbsp;этом&nbsp;месяце
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td>Итого</td>
+            {% for hired, fired, hired_fired in sum_row %}
+            <td><center>
+                <div class="text-success">
+                    {{ hired }}
+                </div>
+                <div class="text-primary">
+                    {{ fired }}
+                </div>
+                <div class="text-danger">
+                    {{ hired_fired }}
+                </div>
+            </td></center>
+            {% endfor %}
+        </tr>
+    </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'vendor/select2/dist/js/select2.full.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+<script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,118 @@
+.delivery_table {
+    table-layout: fixed;
+}
+
+.delivery_table th {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+}
+
+.delivery_table_cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+}
+
+.tooltip_container {
+    position: absolute;
+    display: inline-block;
+}
+
+.delivery_table_cell .tooltip_text {
+    visibility: hidden;
+    white-space: nowrap;
+    overflow: visible;
+
+    background-color: #FFF;
+    color: #000;
+    text-align: left;
+    padding: 2px;
+    border-radius: 2px;
+
+    /* Position the tooltip text */
+    position: absolute;
+    z-index: 1;
+
+    /* Fade in tooltip */
+    opacity: 0;
+    transition: opacity 0.1s;
+}
+
+/* override ant's default */
+.ant-tooltip {
+    max-width: 1000px!important;
+}
+
+.ant-tooltip .ant-tooltip-inner {
+    background-color: #FFF!important;
+    color: #000!important;
+}
+
+.ant-badge-count {
+    min-width: 16px;
+    height: 16px;
+    line-height: 16px;
+    border-radius: 8px;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.delivery_table_cell:hover .tooltip_text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.delivery_table_column {
+    background-color: rgba(0, 0, 0, 0.075);
+}
+
+.delivery_table_row {
+    height: 21px;
+    overflow-y: visible;
+}
+
+.delivery_table_row_new {
+    background: #FFFFFF;
+}
+
+.delivery_table_row_cancelled {
+    background: #FFCCCC;
+}
+
+.delivery_table_row_driver_callback {
+    background: #FFFFAA;
+}
+
+.delivery_table_row_no_response {
+    background: #FFDDDD;
+}
+
+.delivery_table_row_cancelled_with_payment {
+    background: #CCFFCC;
+}
+
+.delivery_table_row_partly_confirmed {
+    background: #7A57C770;
+}
+
+.delivery_table_row_partly_arrival_submitted {
+    background: #CDCAF6AA;
+}
+
+.delivery_table_row_partly_arrived {
+    background: #D9DDF2AA;
+}
+
+.delivery_table_row_partly_photo_attached {
+    background: #D9EEF2AA;
+}
+
+.delivery_table_row_photo_attached {
+    background: #C6ECDFAA;
+}
+
+.delivery_table_row_finished {
+    background: #EEFFEE;
+}

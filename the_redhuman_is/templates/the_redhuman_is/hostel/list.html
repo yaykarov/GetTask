@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_html_head %}
+{{ worker_form.media }}
+{{ checkin_date_form.media }}
+<script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap4.min.css"/>
+{% endblock %}
+
+
+{% block buttons %}
+<h4>Компенсации за проживание не в наших общежитиях</h4>
+{% endblock %}
+
+{% block obj-data %}
+<form method="POST" enctype="multipart/form-data" class="form-inline" action="{% url 'the_redhuman_is:hostel_set_bonus' %}">
+    {% csrf_token %}
+    <div class="form-row mb-0">
+        {{ worker_form.worker }}
+        <div class="ml-1"></div>
+        {{ checkin_date_form.date }}
+        <div class="ml-1"></div>
+        <div class="input-group input-group-sm">
+            <input type="text" name="amount" value="200" class="form-control form-control-sm" style="max-width: 60px;"/>
+            <div class="input-group-append">
+                <span class="input-group-text">р. за рабочий день</span>
+            </div>
+        </div>
+        <div class="ml-1"></div>
+        <button type="submit" class="btn btn-sm btn-outline-primary">Установить компенсацию</button>
+    </div>
+</form>
+
+<form id="checkout-form" method="POST" enctype="multipart/form-data" class="form-inline" action="{% url 'the_redhuman_is:hostel_set_bonus_last_day' %}">
+    {% csrf_token %}
+    <div class="form-row mt-1 mb-0">
+        {{ checkout_date_form.date }}
+        <div class="ml-1"></div>
+        <button type="submit" class="btn btn-sm btn-outline-primary">Прекратить компенсацию с указанного дня</button>
+    </div>
+</form>
+
+{% if request.user.is_superuser %}
+<form method="POST" enctype="multipart/form-data" class="form-inline" action="{% url 'the_redhuman_is:update_all_hostel_bonuses' %}">
+    {% csrf_token %}
+    <div class="form-row mt-1 mb-4">
+        <button type="submit" class="btn btn-sm btn-outline-danger">Обновить или установить вообще все компенсации</button>
+    </div>
+</form>
+{% endif %}
+
+<h5>Актуальные компенсации:</h5>
+<div class="row">
+<div class="col col-auto">
+<table id="bonus-table" class="table table-hover rh-table">
+    <thead>
+        <tr>
+            <th><input type="checkbox" id="bonus-select-all"></th>
+            <th>Рабочий</th>
+            <th>Последний выход на</th>
+            <th>Компенсация за рабочий день</th>
+            <th>Действует с</th>
+            <th>Действует по</th>
+            {% if request.user.is_superuser %}<th></th>{% endif %}
+        </tr>
+    </thead>
+    {% for bonus in bonuses %}
+    <tr>
+        <td>
+            <input type="checkbox" class="bonus-selection" id="bonus_{{ bonus.pk }}" name="bonus_pk" value="{{ bonus.pk }}" form="checkout-form">
+        </td>
+        <td>
+            <a href="{% url 'the_redhuman_is:worker_detail' bonus.worker.pk %}">
+                {{ bonus.full_name }}
+            </a>
+        </td>
+        <td class="text-center">{{ bonus.last_turnout_customer }} - {{ bonus.last_turnout_location }}</td>
+        <td class="text-center">{{ bonus.amount }}</td>
+        <td class="text-center">{{ bonus.first_day|date:'d.m.y'}}</td>
+        <td class="text-center">{% if bonus.last_day %}{{ bonus.last_day|date:'d.m.y'}}{% else %}-{% endif %}</td>
+        {% if request.user.is_superuser %}
+        <td>
+            <form method="POST" enctype="multipart/form-data" action="{% url 'the_redhuman_is:update_all_hostel_bonuses' %}">
+                {% csrf_token %}
+                <input type="hidden" name="worker_pk" value="{{ bonus.worker.pk }}"></input>
+                <button type="submit" class="btn btn-sm btn-outline-danger">Обновить компенсации</button>
+            </form>
+        </td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+</table>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+
+<script>
+    $(document).ready(
+        function() {
+            $('#bonus-select-all').on(
+                'click',
+                function() {
+                    $('.bonus-selection').prop('checked', this.checked);
+                }
+            );
+
+            $.fn.dataTable.moment('DD.MM.YY');
+            $("#bonus-table").DataTable(
+                {
+                    "processing": true,
+                    "jQueryUI": true,
+                    "lengthMenu": [[100, 20, -1], [100, 20, "All"]],
+                    "sPaginationType": "full_numbers",
+                    "oLanguage": {
+                        "sLengthMenu": "Отображено _MENU_ записей на страницу",
+                        "sSearch": "Поиск:",
+                        "sZeroRecords": "Ничего не найдено - извините",
+                        "sInfo": "Показано с _START_ по _END_ из _TOTAL_ записей",
+                        "sInfoEmpty": "Показано с 0 по 0 из 0 записей",
+                        "sInfoFiltered": "(filtered from _MAX_ total records)",
+                        "oPaginate": {
+                            "sFirst": "Первая",
+                            "sNext": ">",
+                            "sPrevious": "<",
+                            "sLast": "Последняя",
+                        }
+                    },
+                    "orderCellsTop": true,
+                }
+            );
+        }
+    );
+</script>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<a href="{% url 'the_redhuman_is:new_worker' %}" target="_blank"><button>Добавить рабочего</button></a>
+
+{% endblock %}
+
+{% block table-data %}
+  <table>
+    <tr>
+      <th>Дата</th>
+      <th>Смена</th>
+      <th>Заказчик</th>
+      <th>Объект</th>
+      <th>Контактное лицо</th>
+      <th>Бригадир</th>
+      <th>Количество рабочих</th>
+    </tr>
+  {% for timesheet in timesheets %}
+    <tr>
+      <td><a href="{% url 'the_redhuman_is:timesheet' pk=timesheet.pk %}">{{ timesheet.sheet_date|date:"d.m.Y" }}</a></td>
+      <td>{{ timesheet.sheet_turn }}</td>
+      <td>{{ timesheet.customer }}</td>
+      <td>{{ timesheet.cust_location }}</td>
+      <td>{{ timesheet.customer_repr }}</td>
+      <td>{{ timesheet.foreman }}</td>
+      <td>{{ timesheet.turnouts_number }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+{% endblock %}

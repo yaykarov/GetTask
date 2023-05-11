@@ -1,0 +1,10 @@
+.rh-calendar-top-form {
+  @extend .rh-form-sm;
+  .col-auto{
+    max-width: 410px;
+    //padding-right: 0;
+  }
+  select.form-control-sm {
+    height: calc(1.6rem + 2px) !important;
+  }
+}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block buttons %}
+<h4>Список телеграм-пользователей ({{ users|length }} душ)</h4>
+{% endblock %}
+
+{% block obj-data %}
+<div class="row">
+<div class="list-group col col-auto">
+{% for user, worker in users %}
+{% if worker %}
+<a href="{% url 'the_redhuman_is:worker_detail' worker.pk %}" class="list-group-item list-group-item-action" target="_blank">
+{% else %}
+<div class="list-group-item list-group-item-danger">
+{% endif %}
+    {{ forloop.counter }}.
+    {{ user}},
+    {{ user.user }},
+    {{ user.user.first_name }} {{ user.user.last_name }}
+    <form action="{% url 'telegram_bot:delete_user' user.pk %}" class="form-inline float-right" method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <button class="btn btn-sm btn-outline-danger" type=submit>удалить</button>
+        </div>
+    </form>
+{% if worker %}
+</a>
+{% else %}
+</div>
+{% endif %}
+{% endfor %}
+</div>
+</div>
+{% endblock %}

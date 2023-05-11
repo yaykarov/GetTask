@@ -1,0 +1,12 @@
+
+.account26-table {
+    width: 100%;
+    overflow: auto;
+    word-wrap: break-word;
+    table-layout: fixed;
+}
+.obj-data-kassform1 {
+    position: static !important;
+    max-width: 50%;
+    overflow: auto;
+}

@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+<style>
+label {
+  font-weight: 700;
+}
+</style>
+{% load humanize %}
+{% load mathfilters %}
+
+{% block buttons %}
+{% if worker %}
+<label>ФИО: <a href="{% url 'the_redhuman_is:worker_detail' pk=worker.pk %}">{{ worker }}</a></label>
+{% endif %}
+{% endblock %}
+
+{% block cform1 %}
+<table>
+  <tr>
+    <th>Приход</th>
+    <th>Расход</th>
+    <th>Остаток</th>
+  </tr>
+  <tr>
+    <td>{{ total_kd_ops|intcomma }}</td>
+    <td>{{ total_kc_ops|intcomma }}</td>
+    <td>{{ kass_saldo|intcomma }}</td>
+  </tr>
+</table>
+<p></p>
+<form action="" method="post">
+  {% csrf_token %}
+  <table>
+    {{ form_po.as_table }}
+  </table>
+  </br>
+  <button type="submit" style="width:300px;height:75px">Выплатить</button>
+</form>
+{% endblock %}
+
+{% block cform2 %}
+<table>
+  <tr>
+    <th>Начислено</th>
+    <th>Выплачено</th>
+    <th>К выплате</th>
+  </tr>
+  <tr>
+    {% if total_wc_ops >= 0 %}
+    <td>{{ total_wc_ops|intcomma }}</td>
+    <td>{{ total_wd_ops|intcomma }}</td>
+    <td>{{ worker_saldo|intcomma }}</td>
+    {% else %}
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    {% endif %}
+  </tr>
+</table>
+<p></p>
+<form action="" method="post">
+  {% csrf_token %}
+  <table>
+    {{ form_tp.as_table }}
+  </table>
+  </br>
+  <button type="submit" style="width:300px;height:75px">Начислить</button>
+</form>
+{% endblock %}
+
+{% block table1 %}
+
+<table>
+  <caption><strong>Касса</strong></caption>
+  <tr>
+    <th>Дата</th>
+    <th>Комментарий</th>
+    <th>Приход</th>
+    <th>Расход</th>
+  </tr>
+
+  <tr>
+    {% if "50" in k_op.debet.name %}
+    <td>{{ k_op.timepoint|date:"d.m.Y" }}</td>
+    <td>{{ k_op.comment }}</td>
+    <td>{{ k_op.amount|intcomma }}</td>
+    <td></td>
+    {% endif %}
+    {% if "50" in k_op.credit.name %}
+    <td>{{ k_op.timepoint|date:"d.m.Y" }}</td>
+    <td>{{ k_op.comment }}</td>
+    <td></td>
+    <td>{{ k_op.amount|intcomma }}</td>
+    {% endif %}
+  </tr>
+
+</table>
+{% endblock %}
+
+
+{% block table2 %}
+
+<table>
+  <caption><strong>Взаиморасчеты</strong></caption>
+    <tr>
+      <th>Дата</th>
+      <th>Комментарий</th>
+      <th>Начислено</th>
+      <th>Выплачено</th>
+    </tr>
+    {% for w_op in w_ops %}
+      <tr>
+        {% if "26" in w_op.debet.name %}
+        <td>{{ w_op.timepoint|date:"d.m.Y" }}</td>
+        <td>{{ w_op.comment }}</td>
+        <td>{{ w_op.amount|intcomma }}</td>
+        <td></td>
+        {% endif %}
+        {% if "50" in w_op.credit.name %}
+        <td>{{ w_op.timepoint|date:"d.m.Y" }}</td>
+        <td>{{ w_op.comment }}</td>
+        <td></td>
+        <td>{{ w_op.amount|intcomma }}</td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

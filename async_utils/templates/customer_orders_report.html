@@ -1,0 +1,33 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <table>
+            <caption><h2>Заявки без табелей на {{ timepoint|date:"H:i d.m.Y"}}</h2></caption>
+            <thead>
+                <tr>
+                    <th>Дата подачи</th>
+                    <th>Дата вызова</th>
+                    <th>Время вызова</th>
+                    <th>Клиент</th>
+                    <th>Обьект</th>
+                    <th>Смена</th>
+                    <th>Кол-во по запросу</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for order in orders%}
+                <tr>
+                    <td>{{ order.bid_date_time|date:"d.m.Y" }}</td>
+                    <td>{{ order.on_date|date:"d.m.Y" }}</td>
+                    <td>{{ order.on_time|date:"H:i" }}</td>
+                    <td>{{ order.customer }}</td>
+                    <td>{{ order.cust_location }}</td>
+                    <td>{{ order.bid_turn }}</td>
+                    <td>{{ order.number_of_workers }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </body>
+</html>
